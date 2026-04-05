@@ -1,6 +1,8 @@
 //basic window
 #include "raylib.h" 
+#include "rlgl.h"
 
+void DrawTriangleBasic(Vector3 position, float width, float height, float length, Color color);
 
 int main(void) {
     const int screenWidth = 1280;
@@ -24,12 +26,13 @@ int main(void) {
     while(!WindowShouldClose()) {
         UpdateCamera(&camera, cameraMode);
         BeginDrawing();
-            ClearBackground(LIGHTGRAY);
+            ClearBackground(DARKGRAY);
 
             BeginMode3D(camera);
 
-                DrawCube( (Vector3) { 0.0f, 1.0f, 0.0f }, 1.0f, 1.0f, 1.0f, RAYWHITE);
-                DrawCubeWires( (Vector3) { 0.0f, 1.0f, 0.0f }, 1.0f, 1.0f, 1.0f, BLACK);
+                //DrawCube( (Vector3) { 0.0f, 1.0f, 0.0f }, 1.0f, 1.0f, 1.0f, RAYWHITE);
+                //DrawCubeWires( (Vector3) { 0.0f, 1.0f, 0.0f }, 1.0f, 1.0f, 1.0f, BLACK);
+                DrawTriangleBasic((Vector3) { 0.0f, 1.0f, 0.0f }, 1.0f, 1.0f, 1.0f, WHITE);
 
             EndMode3D();
             
@@ -40,4 +43,25 @@ int main(void) {
     CloseWindow();
 
     return 0;       
+}
+
+void DrawTriangleBasic(Vector3 position, float width, float height, float length, Color color) {
+    float x = 0.0f;
+    float y = 0.0f; 
+    float z = 0.0f;
+
+    rlPushMatrix();
+
+
+        rlBegin(RL_TRIANGLES);
+            rlColor4ub(color.r, color.g, color.b, color.a);
+
+            rlNormal3f(0.0f, 0.0f, 1.0f);
+            rlVertex3f(x - width/2, y - height/2, z + length/2);
+            rlVertex3f(x + width/2, y - height/2, z + length/2);
+            rlVertex3f(x - width/2, y + height/2, z + length/2);
+
+
+        rlEnd();
+    rlPopMatrix();
 }
