@@ -1,20 +1,38 @@
 //basic window
 #include "raylib.h" 
 
-#define screenWidth 1800
-#define screenHeight 1450
 
 int main(void) {
-    InitWindow(screenWidth, screenHeight, "raylib basic window :)");
+    const int screenWidth = 1280;
+    const int screenHeight = 720;
+    InitWindow(screenWidth, screenHeight, "NewCraft");
 
+    Camera camera = { 0 };
+    camera.position = (Vector3) { 0.0f, 1.8f, 4.0f };
+    camera.target = (Vector3) { 0.0f, 2.0f, 0.0f };
+    camera.up = (Vector3) { 0.0f, 1.0f, 0.0f };
+    camera.fovy = 70.0f;
+    camera.projection = CAMERA_PERSPECTIVE;
+
+    int cameraMode = CAMERA_FIRST_PERSON;
+
+
+
+
+    DisableCursor();
     SetTargetFPS(60);
-
-    //main game loop here
     while(!WindowShouldClose()) {
+        UpdateCamera(&camera, cameraMode);
         BeginDrawing();
-            ClearBackground(RAYWHITE);
+            ClearBackground(LIGHTGRAY);
 
-            DrawText("congrats! our first window!", 190, 200, 20, LIGHTGRAY);
+            BeginMode3D(camera);
+
+                DrawCube( (Vector3) { 0.0f, 1.0f, 0.0f }, 1.0f, 1.0f, 1.0f, RAYWHITE);
+                DrawCubeWires( (Vector3) { 0.0f, 1.0f, 0.0f }, 1.0f, 1.0f, 1.0f, BLACK);
+
+            EndMode3D();
+            
 
         EndDrawing();
     }
