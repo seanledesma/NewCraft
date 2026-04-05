@@ -2,7 +2,7 @@
 #include "raylib.h" 
 #include "rlgl.h"
 
-void DrawTriangleBasic(Vector3 position, float width, float height, float length, Color color);
+void DrawTriangleBasic(Vector3 position, float width, float height, float length, Color color, Texture* texture);
 
 int main(void) {
     const int screenWidth = 1280;
@@ -18,8 +18,8 @@ int main(void) {
 
     int cameraMode = CAMERA_FIRST_PERSON;
 
-
-
+    Texture texture = LoadTexture("assets/dirt.png");
+    //texture.id = 1;
 
     DisableCursor();
     SetTargetFPS(60);
@@ -32,7 +32,7 @@ int main(void) {
 
                 //DrawCube( (Vector3) { 0.0f, 1.0f, 0.0f }, 1.0f, 1.0f, 1.0f, RAYWHITE);
                 //DrawCubeWires( (Vector3) { 0.0f, 1.0f, 0.0f }, 1.0f, 1.0f, 1.0f, BLACK);
-                DrawTriangleBasic((Vector3) { 0.0f, 1.0f, 0.0f }, 1.0f, 1.0f, 1.0f, WHITE);
+                DrawTriangleBasic((Vector3) { 0.0f, 1.0f, 0.0f }, 1.0f, 1.0f, 1.0f, WHITE, &texture);
 
             EndMode3D();
             
@@ -40,28 +40,58 @@ int main(void) {
         EndDrawing();
     }
 
+    UnloadTexture(texture);
     CloseWindow();
 
     return 0;       
 }
 
-void DrawTriangleBasic(Vector3 position, float width, float height, float length, Color color) {
+void DrawTriangleBasic(Vector3 position, float width, float height, float length, Color color, Texture* texture) {
     float x = 0.0f;
     float y = 0.0f; 
     float z = 0.0f;
 
     rlPushMatrix();
 
-
+        rlSetTexture(texture->id);
         rlBegin(RL_TRIANGLES);
             rlColor4ub(color.r, color.g, color.b, color.a);
 
-            rlNormal3f(0.0f, 0.0f, 1.0f);
-            rlVertex3f(x - width/2, y - height/2, z + length/2);
-            rlVertex3f(x + width/2, y - height/2, z + length/2);
-            rlVertex3f(x - width/2, y + height/2, z + length/2);
+            // Vertex 1: Top point
+            rlTexCoord2f(0.5f, 1.0f); 
+            rlVertex3f(0.0f, 1.0f, 0.0f);
+
+            // Vertex 2: Bottom left
+            rlTexCoord2f(0.0f, 0.0f); 
+            rlVertex3f(-1.0f, -1.0f, 0.0f);
+
+            // Vertex 3: Bottom right
+            rlTexCoord2f(1.0f, 1.0f); 
+            rlVertex3f(1.0f, -1.0f, 0.0f);
+
+            // rlNormal3f(0.0f, 0.0f, 1.0f);
+            // rlTexCoord2f(0.5f, 0.0f);
+            // rlVertex3f(x - width/2, y - height/2, z + length/2);
+            // rlTexCoord2f(0.0f, 1.0f);
+            // rlVertex3f(x + width/2, y - height/2, z + length/2);
+            // rlTexCoord2f(1.0f, 1.0f);
+            // rlVertex3f(x - width/2, y + height/2, z + length/2);
+            
+            // rlVertex3f(x + width/2, y - height/2, z + length/2);
+            // rlVertex3f(x + width/2, y + height/2, z + length/2);
+            // rlVertex3f(x - width/2, y + height/2, z + length/2);
+
+            // rlNormal3f(0.0f, 0.0f, -1.0f);
+            // rlVertex3f(x - width/2, y - height/2, z - length/2);
+            // rlVertex3f(x - width/2, y + height/2, z - length/2);
+            // rlVertex3f(x + width/2, y - height/2, z - length/2);
+
+            // rlVertex3f(x + width/2, y + height/2, z - length/2);
+            // rlVertex3f(x + width/2, y - height/2, z - length/2);
+            // rlVertex3f(x - width/2, y + height/2, z - length/2);
 
 
         rlEnd();
+        rlSetTexture(0);
     rlPopMatrix();
 }
