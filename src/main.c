@@ -54,20 +54,31 @@ void DrawTriangleBasic(Vector3 position, float width, float height, float length
     rlPushMatrix();
 
         rlSetTexture(texture->id);
-        rlBegin(RL_TRIANGLES);
+         rlBegin(RL_QUADS);
             rlColor4ub(color.r, color.g, color.b, color.a);
-
-            // Vertex 1: Top point
-            rlTexCoord2f(0.5f, 1.0f); 
-            rlVertex3f(0.0f, 1.0f, 0.0f);
-
+            // for whatever reason, RL_QUADS goes bottom left, bottom right, top right, top left... counter clockwise
             // Vertex 2: Bottom left
             rlTexCoord2f(0.0f, 0.0f); 
             rlVertex3f(-1.0f, -1.0f, 0.0f);
-
             // Vertex 3: Bottom right
-            rlTexCoord2f(1.0f, 1.0f); 
+            rlTexCoord2f(0.0f, 1.0f); 
             rlVertex3f(1.0f, -1.0f, 0.0f);
+
+            // Vertex 3: Top right
+            rlTexCoord2f(1.0f, 1.0f); 
+            rlVertex3f(1.0f, 1.0f, 0.0f);            
+
+            // Vertex 1: Top left
+            rlTexCoord2f(1.0f, 0.0f); 
+            rlVertex3f(-1.0f, 1.0f, 0.0f);
+
+
+            
+
+
+            
+
+
 
             // rlNormal3f(0.0f, 0.0f, 1.0f);
             // rlTexCoord2f(0.5f, 0.0f);
@@ -92,6 +103,7 @@ void DrawTriangleBasic(Vector3 position, float width, float height, float length
 
 
         rlEnd();
+
         rlSetTexture(0);
     rlPopMatrix();
 }
