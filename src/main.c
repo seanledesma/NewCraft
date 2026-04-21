@@ -2,7 +2,7 @@
 #include "raylib.h" 
 #include "rlgl.h"
 
-void DrawTriangleBasic(Vector3 position, float width, float height, float length, Color color, Texture* texture);
+void draw_cube_basic(Vector3 position, Color color, Texture* texture);
 
 int main(void) {
     const int screenWidth = 1280;
@@ -32,7 +32,7 @@ int main(void) {
 
                 //DrawCube( (Vector3) { 0.0f, 1.0f, 0.0f }, 1.0f, 1.0f, 1.0f, RAYWHITE);
                 //DrawCubeWires( (Vector3) { 0.0f, 1.0f, 0.0f }, 1.0f, 1.0f, 1.0f, BLACK);
-                DrawTriangleBasic((Vector3) { 0.0f, 1.0f, 0.0f }, 1.0f, 1.0f, 1.0f, WHITE, &texture);
+                draw_cube_basic((Vector3) { 0.0f, 3.0f, 0.0f }, WHITE, &texture);
 
             EndMode3D();
             
@@ -46,7 +46,7 @@ int main(void) {
     return 0;       
 }
 
-void DrawTriangleBasic(Vector3 position, float width, float height, float length, Color color, Texture* texture) {
+void draw_cube_basic(Vector3 pos, Color color, Texture* texture) {
     float x = 0.0f;
     float y = 0.0f; 
     float z = 0.0f;
@@ -57,28 +57,94 @@ void DrawTriangleBasic(Vector3 position, float width, float height, float length
          rlBegin(RL_QUADS);
             rlColor4ub(color.r, color.g, color.b, color.a);
             // for whatever reason, RL_QUADS goes bottom left, bottom right, top right, top left... counter clockwise
+
+            // Z-POSITIVE face
+            rlNormal3f(0.0f, 0.0f, 1.0f);
             // Vertex 2: Bottom left
-            rlTexCoord2f(0.0f, 0.0f); 
-            rlVertex3f(-1.0f, -1.0f, 0.0f);
+            rlTexCoord2f(0.0f, 0.0f); rlVertex3f(pos.x-1.0f, pos.y-1.0f, pos.z+1.0f);
+
             // Vertex 3: Bottom right
-            rlTexCoord2f(0.0f, 1.0f); 
-            rlVertex3f(1.0f, -1.0f, 0.0f);
+            rlTexCoord2f(0.0f, 1.0f); rlVertex3f(pos.x+1.0f, pos.y-1.0f, pos.z+1.0f);
 
             // Vertex 3: Top right
-            rlTexCoord2f(1.0f, 1.0f); 
-            rlVertex3f(1.0f, 1.0f, 0.0f);            
+            rlTexCoord2f(1.0f, 1.0f); rlVertex3f(pos.x+1.0f, pos.y+1.0f, pos.z+1.0f);            
 
             // Vertex 1: Top left
-            rlTexCoord2f(1.0f, 0.0f); 
-            rlVertex3f(-1.0f, 1.0f, 0.0f);
+            rlTexCoord2f(1.0f, 0.0f); rlVertex3f(pos.x-1.0f, pos.z+1.0f, pos.z+1.0f);
+            
+            // Z-NEGATIVE FACE
+            rlNormal3f(0.0f, 0.0f, -1.0f);
+            // Vertex 2: Bottom left
+            rlTexCoord2f(0.0f, 0.0f); rlVertex3f(pos.x+1.0f, pos.y-1.0f, pos.z-1.0f);
+
+            // Vertex 3: Bottom right
+            rlTexCoord2f(0.0f, 1.0f); rlVertex3f(pos.x-1.0f, -1.0f, -1.0f);
+
+            // Vertex 3: Top right
+            rlTexCoord2f(1.0f, 1.0f); rlVertex3f(-1.0f, 1.0f, -1.0f);            
+
+            // Vertex 1: Top left
+            rlTexCoord2f(1.0f, 0.0f); rlVertex3f(1.0f, 1.0f, -1.0f);
 
 
+            // Y-POSITIVE FACE (TOP)
+            rlNormal3f(0.0f, 1.0f, 0.0f);
+            // Vertex 2: Bottom left
+            rlTexCoord2f(0.0f, 0.0f); rlVertex3f(-1.0f, 1.0f, 1.0f);
+
+            // Vertex 3: Bottom right
+            rlTexCoord2f(0.0f, 1.0f); rlVertex3f(1.0f, 1.0f, 1.0f);
+
+            // Vertex 3: Top right
+            rlTexCoord2f(1.0f, 1.0f); rlVertex3f(1.0f, 1.0f, -1.0f);            
+
+            // Vertex 1: Top left
+            rlTexCoord2f(1.0f, 0.0f); rlVertex3f(-1.0f, 1.0f, -1.0f);
+
+
+            // Y-NEGATIVE (BOTTOM FACE)
+            rlNormal3f(0.0f, 1.0f, 0.0f);
+            // Vertex 2: Bottom left
+            rlTexCoord2f(0.0f, 0.0f); rlVertex3f(1.0f, -1.0f, 1.0f);
+
+            // Vertex 3: Bottom right
+            rlTexCoord2f(0.0f, 1.0f); rlVertex3f(-1.0f, -1.0f, 1.0f);
+
+            // Vertex 3: Top right
+            rlTexCoord2f(1.0f, 1.0f); rlVertex3f(-1.0f, -1.0f, -1.0f);            
+
+            // Vertex 1: Top left
+            rlTexCoord2f(1.0f, 0.0f); rlVertex3f(1.0f, -1.0f, -1.0f);
             
 
+            // X-NEGATIVE FACE (LEFT)
+            rlNormal3f(0.0f, 0.0f, 1.0f);
+            // Vertex 2: Bottom left
+            rlTexCoord2f(0.0f, 0.0f); rlVertex3f(-1.0f, -1.0f, -1.0f);
 
+            // Vertex 3: Bottom right
+            rlTexCoord2f(0.0f, 1.0f); rlVertex3f(-1.0f, -1.0f, 1.0f);
+
+            // Vertex 3: Top right
+            rlTexCoord2f(1.0f, 1.0f); rlVertex3f(-1.0f, 1.0f, 1.0f);            
+
+            // Vertex 1: Top left
+            rlTexCoord2f(1.0f, 0.0f); rlVertex3f(-1.0f, 1.0f, -1.0f);
             
 
+            // X-POSITIVE FACE (RIGHT)
+            rlNormal3f(0.0f, 0.0f, 1.0f);
+            // Vertex 2: Bottom left
+            rlTexCoord2f(0.0f, 0.0f); rlVertex3f(1.0f, -1.0f, 1.0f);
 
+            // Vertex 3: Bottom right
+            rlTexCoord2f(0.0f, 1.0f); rlVertex3f(1.0f, -1.0f, -1.0f);
+
+            // Vertex 3: Top right
+            rlTexCoord2f(1.0f, 1.0f); rlVertex3f(1.0f, 1.0f, -1.0f);            
+
+            // Vertex 1: Top left
+            rlTexCoord2f(1.0f, 0.0f); rlVertex3f(1.0f, 1.0f, 1.0f);
 
             // rlNormal3f(0.0f, 0.0f, 1.0f);
             // rlTexCoord2f(0.5f, 0.0f);
