@@ -1,6 +1,10 @@
 //basic window
 #include "raylib.h" 
 #include "rlgl.h"
+#include "raymath.h"
+
+#include <stdlib.h>
+#include <string.h>
 
 void draw_cube_basic(Vector3 position, Color color, Texture* texture);
 Mesh gen_cube_mesh();
@@ -22,13 +26,20 @@ int main(void) {
     //Texture texture = LoadTexture("assets/dirt.png");
     Texture texture = LoadTexture("assets/grass.png");
     //texture.id = 1;
+    Mesh cube = gen_cube_mesh();
+    UploadMesh(&cube, false);
+
+    Material material = LoadMaterialDefault();
+    material.maps[MATERIAL_MAP_DIFFUSE].texture = texture;
+
+    Matrix matrix = MatrixTranslate(0.0f, 0.0f, 0.0f);
 
     DisableCursor();
     SetTargetFPS(60);
     while(!WindowShouldClose()) {
         UpdateCamera(&camera, cameraMode);
 
-        Mesh cube = gen_cube_mesh();
+        
 
         BeginDrawing();
             DrawFPS(10, 10);
@@ -38,9 +49,12 @@ int main(void) {
 
                 //DrawCube( (Vector3) { 0.0f, 1.0f, 0.0f }, 1.0f, 1.0f, 1.0f, RAYWHITE);
                 //DrawCubeWires( (Vector3) { 0.0f, 1.0f, 0.0f }, 1.0f, 1.0f, 1.0f, BLACK);
-                draw_cube_basic((Vector3) { 0.0f, 1.0f, 0.0f }, WHITE, &texture);
+
+                //draw_cube_basic((Vector3) { 0.0f, 1.0f, 0.0f }, WHITE, &texture);
                 //draw_cube_basic((Vector3) { 1.0f, 0.0f, 0.0f }, WHITE, &texture);
                 //draw_cube_basic((Vector3) { -2.0f, 1.0f, 0.0f }, WHITE, &texture);
+
+                DrawMesh(cube, material, matrix);
 
             EndMode3D();
             
@@ -48,6 +62,7 @@ int main(void) {
         EndDrawing();
     }
 
+    UnloadMesh(cube);
     UnloadTexture(texture);
     CloseWindow();
 
@@ -159,7 +174,140 @@ void draw_cube_basic(Vector3 pos, Color color, Texture* texture) {
 }
 
 Mesh gen_cube_mesh() {
-    float vertices[] = {
+    Mesh mesh = {0};
 
+    float size = 0.5f;
+    float zero = 0.0f;
+    float one = 1.0f;
+
+    float vertices[] = {
+        -size, -size, size,
+        size, -size, size,
+        size, size, size,
+        -size, size, size,
+
+        size, -size, -size,
+        -size, -size, -size,
+        -size, size, -size,
+        size, size, -size,
+
+        -size, size, size,
+        size, size, size,
+        size, size, -size,
+        -size, size, -size,
+
+        size, -size, size,
+        -size, -size, size,
+        -size, -size, -size,
+        size, -size, -size,
+
+        -size, -size, -size,
+        -size, -size, size,
+        -size, size, size,
+        -size, size, -size,
+
+        size, -size, size,
+        size, -size, -size,
+        size, size, -size,
+        size, size, size,
     };
+
+    float texcoords[] = {
+        zero, one,
+        one, one,
+        one, zero,
+        zero, zero,
+
+        zero, one,
+        one, one,
+        one, zero,
+        zero, zero,
+
+        zero, one,
+        one, one,
+        one, zero,
+        zero, zero,
+
+        zero, one,
+        one, one,
+        one, zero,
+        zero, zero,
+
+        zero, one,
+        one, one,
+        one, zero,
+        zero, zero,
+
+        zero, one,
+        one, one,
+        one, zero,
+        zero, zero,
+    };
+
+    // float normals[] = {
+    //     zero, zero, one,
+    //     zero, zero, -one,
+    //     zero, one, zero,
+    //     zero, one, zero,//not neg one?
+    //     zero, zero, one,
+    //     zero, zero, one, //this does not look right
+    // };
+
+    float normals[] = { //yoinked from raylib
+        0.0f, 0.0f, 1.0f,
+        0.0f, 0.0f, 1.0f,
+        0.0f, 0.0f, 1.0f,
+        0.0f, 0.0f, 1.0f,
+        0.0f, 0.0f,-1.0f,
+        0.0f, 0.0f,-1.0f,
+        0.0f, 0.0f,-1.0f,
+        0.0f, 0.0f,-1.0f,
+        0.0f, 1.0f, 0.0f,
+        0.0f, 1.0f, 0.0f,
+        0.0f, 1.0f, 0.0f,
+        0.0f, 1.0f, 0.0f,
+        0.0f,-1.0f, 0.0f,
+        0.0f,-1.0f, 0.0f,
+        0.0f,-1.0f, 0.0f,
+        0.0f,-1.0f, 0.0f,
+        1.0f, 0.0f, 0.0f,
+        1.0f, 0.0f, 0.0f,
+        1.0f, 0.0f, 0.0f,
+        1.0f, 0.0f, 0.0f,
+        -1.0f, 0.0f, 0.0f,
+        -1.0f, 0.0f, 0.0f,
+        -1.0f, 0.0f, 0.0f,
+        -1.0f, 0.0f, 0.0f
+    };
+
+    mesh.vertices = (float *)malloc(24*3*sizeof(float));
+    memcpy(mesh.vertices, vertices, 24*3*sizeof(float));
+
+    mesh.texcoords = (float *)malloc(24*2*sizeof(float));
+    memcpy(mesh.texcoords, texcoords, 24*2*sizeof(float));
+
+    mesh.normals = (float *)malloc(24*3*sizeof(float));
+    memcpy(mesh.normals, normals, 24*3*sizeof(float));
+
+    mesh.indices = (unsigned short *)RL_MALLOC(36*sizeof(unsigned short));
+
+    int k = 0;
+
+    // Indices can be initialized right now
+    for (int i = 0; i < 36; i += 6)
+    {
+        mesh.indices[i] = 4*k;
+        mesh.indices[i + 1] = 4*k + 1;
+        mesh.indices[i + 2] = 4*k + 2;
+        mesh.indices[i + 3] = 4*k;
+        mesh.indices[i + 4] = 4*k + 2;
+        mesh.indices[i + 5] = 4*k + 3;
+
+        k++;
+    }
+
+    mesh.vertexCount = 24;
+    mesh.triangleCount = 12;
+
+    return mesh;
 }
