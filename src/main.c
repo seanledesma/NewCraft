@@ -6,6 +6,38 @@
 #include <stdlib.h>
 #include <string.h>
 
+
+#define DIRT_TEX_COORD_U_MIN 0.05f;
+#define DIRT_TEX_COORD_U_MAX 0.18f;
+#define DIRT_TEX_COORD_V_MIN 0.82f;
+#define DIRT_TEX_COORD_V_MAX 0.98f;
+#define GRASS_TEX_COORD_U_MIN 0.22f;
+#define GRASS_TEX_COORD_U_MAX 0.38f;
+#define GRASS_TEX_COORD_V_MIN 0.42f;
+#define GRASS_TEX_COORD_V_MAX 0.58f;
+#define GRASS_LIGHT_TEX_COORD_U_MIN 0.42f;
+#define GRASS_LIGHT_TEX_COORD_U_MAX 0.58f;
+#define GRASS_LIGHT_TEX_COORD_V_MIN 0.42f;
+#define GRASS_LIGHT_TEX_COORD_V_MAX 0.58f;
+#define LAVA_TEX_COORD_U_MIN 0.82f;
+#define LAVA_TEX_COORD_U_MAX 0.98f;
+#define LAVA_TEX_COORD_V_MIN 0.42f;
+#define LAVA_TEX_COORD_V_MAX 0.58f;
+
+#define MAGMA_TEX_COORD_U_MIN 0.42f;
+#define MAGMA_TEX_COORD_U_MAX 0.58f;
+#define MAGMA_TEX_COORD_V_MIN 0.82f;
+#define MAGMA_TEX_COORD_V_MAX 0.98f;
+
+
+/*
+*   TO DO
+*   - Get texture atlas to work on one block
+*   - Get meshing to work for entire chunk
+*   - Atlas working for entire chunk
+*   - Then chunking system
+*/
+
 void draw_cube_basic(Vector3 position, Color color, Texture* texture);
 Mesh gen_cube_mesh();
 
@@ -24,7 +56,10 @@ int main(void) {
     int cameraMode = CAMERA_FIRST_PERSON;
 
     //Texture texture = LoadTexture("assets/dirt.png");
-    Texture texture = LoadTexture("assets/grass.png");
+    Texture texture = LoadTexture("assets/tex_atlas_2.png");
+    if (texture.id == 0) {
+        TraceLog(LOG_ERROR, "Texture could not be loaded! Check path or format.");
+    }
     //texture.id = 1;
     Mesh cube = gen_cube_mesh();
     UploadMesh(&cube, false);
@@ -44,7 +79,7 @@ int main(void) {
         BeginDrawing();
             DrawFPS(10, 10);
             ClearBackground(DARKGRAY);
-
+            //DrawTexture(texture, 0.0f, 0.0f, WHITE);
             BeginMode3D(camera);
 
                 //DrawCube( (Vector3) { 0.0f, 1.0f, 0.0f }, 1.0f, 1.0f, 1.0f, RAYWHITE);
@@ -212,37 +247,86 @@ Mesh gen_cube_mesh() {
         size, size, size,
     };
 
+    // float u_min = 5.0f/16.0f;
+    // float u_max = 6.0f/16.0f;
+    // float v_min = 4.0f/16.0f;
+    // float v_max = 5.0f/16.0f;
+    // float u_min = GRASS_LIGHT_TEX_COORD_U_MIN;
+    // float u_max = GRASS_LIGHT_TEX_COORD_U_MAX;
+    // float v_min = GRASS_LIGHT_TEX_COORD_V_MIN;
+    // float v_max = GRASS_LIGHT_TEX_COORD_V_MAX;
+    // float u_min = LAVA_TEX_COORD_U_MIN;
+    // float u_max = LAVA_TEX_COORD_U_MAX;
+    // float v_min = LAVA_TEX_COORD_V_MIN;
+    // float v_max = LAVA_TEX_COORD_V_MAX;
+    float u_min = MAGMA_TEX_COORD_U_MIN;
+    float u_max = MAGMA_TEX_COORD_U_MAX;
+    float v_min = MAGMA_TEX_COORD_V_MIN;
+    float v_max = MAGMA_TEX_COORD_V_MAX;
+
     float texcoords[] = {
-        zero, one,
-        one, one,
-        one, zero,
-        zero, zero,
+        u_min, v_max,
+        u_max, v_max,
+        u_max, v_min,
+        u_min, v_min,
 
-        zero, one,
-        one, one,
-        one, zero,
-        zero, zero,
+        u_min, v_max,
+        u_max, v_max,
+        u_max, v_min,
+        u_min, v_min,
 
-        zero, one,
-        one, one,
-        one, zero,
-        zero, zero,
+        u_min, v_max,
+        u_max, v_max,
+        u_max, v_min,
+        u_min, v_min,
 
-        zero, one,
-        one, one,
-        one, zero,
-        zero, zero,
+        u_min, v_max,
+        u_max, v_max,
+        u_max, v_min,
+        u_min, v_min,
 
-        zero, one,
-        one, one,
-        one, zero,
-        zero, zero,
+        u_min, v_max,
+        u_max, v_max,
+        u_max, v_min,
+        u_min, v_min,
 
-        zero, one,
-        one, one,
-        one, zero,
-        zero, zero,
+        u_min, v_max,
+        u_max, v_max,
+        u_max, v_min,
+        u_min, v_min,
     };
+
+    // float texcoords[] = {
+    //     zero, one,
+    //     one, one,
+    //     one, zero,
+    //     zero, zero,
+
+    //     zero, one,
+    //     one, one,
+    //     one, zero,
+    //     zero, zero,
+
+    //     zero, one,
+    //     one, one,
+    //     one, zero,
+    //     zero, zero,
+
+    //     zero, one,
+    //     one, one,
+    //     one, zero,
+    //     zero, zero,
+
+    //     zero, one,
+    //     one, one,
+    //     one, zero,
+    //     zero, zero,
+
+    //     zero, one,
+    //     one, one,
+    //     one, zero,
+    //     zero, zero,
+    // };
 
     // float normals[] = {
     //     zero, zero, one,
