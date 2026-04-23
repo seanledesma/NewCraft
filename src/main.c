@@ -6,28 +6,37 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define CHUNK_SIZE 16
+#define HALF_CHUNK CHUNK_SIZE/2
+#define CHUNK_CUBED (CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE)
+#define BLOCK_AIR 0
+#define BLOCK_GRASS 1
+#define BLOCK_DIRT 2
+#define BLOCK_STONE 3
+#define BLOCK_LAVA 4
+#define BLOCK_MAGMA 5
 
-#define DIRT_TEX_COORD_U_MIN 0.05f;
-#define DIRT_TEX_COORD_U_MAX 0.18f;
-#define DIRT_TEX_COORD_V_MIN 0.82f;
-#define DIRT_TEX_COORD_V_MAX 0.98f;
-#define GRASS_TEX_COORD_U_MIN 0.22f;
-#define GRASS_TEX_COORD_U_MAX 0.38f;
-#define GRASS_TEX_COORD_V_MIN 0.42f;
-#define GRASS_TEX_COORD_V_MAX 0.58f;
-#define GRASS_LIGHT_TEX_COORD_U_MIN 0.42f;
-#define GRASS_LIGHT_TEX_COORD_U_MAX 0.58f;
-#define GRASS_LIGHT_TEX_COORD_V_MIN 0.42f;
-#define GRASS_LIGHT_TEX_COORD_V_MAX 0.58f;
-#define LAVA_TEX_COORD_U_MIN 0.82f;
-#define LAVA_TEX_COORD_U_MAX 0.98f;
-#define LAVA_TEX_COORD_V_MIN 0.42f;
-#define LAVA_TEX_COORD_V_MAX 0.58f;
+#define DIRT_TEX_COORD_U_MIN 0.05f
+#define DIRT_TEX_COORD_U_MAX 0.18f
+#define DIRT_TEX_COORD_V_MIN 0.82f
+#define DIRT_TEX_COORD_V_MAX 0.98f
+#define GRASS_TEX_COORD_U_MIN 0.22f
+#define GRASS_TEX_COORD_U_MAX 0.38f
+#define GRASS_TEX_COORD_V_MIN 0.42f
+#define GRASS_TEX_COORD_V_MAX 0.58f
+#define GRASS_LIGHT_TEX_COORD_U_MIN 0.42f
+#define GRASS_LIGHT_TEX_COORD_U_MAX 0.58f
+#define GRASS_LIGHT_TEX_COORD_V_MIN 0.42f
+#define GRASS_LIGHT_TEX_COORD_V_MAX 0.58f
+#define LAVA_TEX_COORD_U_MIN 0.82f
+#define LAVA_TEX_COORD_U_MAX 0.98f
+#define LAVA_TEX_COORD_V_MIN 0.42f
+#define LAVA_TEX_COORD_V_MAX 0.58f
 
-#define MAGMA_TEX_COORD_U_MIN 0.42f;
-#define MAGMA_TEX_COORD_U_MAX 0.58f;
-#define MAGMA_TEX_COORD_V_MIN 0.82f;
-#define MAGMA_TEX_COORD_V_MAX 0.98f;
+#define MAGMA_TEX_COORD_U_MIN 0.42f
+#define MAGMA_TEX_COORD_U_MAX 0.58f
+#define MAGMA_TEX_COORD_V_MIN 0.82f
+#define MAGMA_TEX_COORD_V_MAX 0.98f
 
 
 /*
@@ -38,8 +47,41 @@
 *   - Then chunking system
 */
 
+
+
+typedef struct Block {
+    int block_type;
+    Vector3 pos;
+    float tex_coord_u_min;
+    float tex_coord_u_max;
+    float tex_coord_v_min;
+    float tex_coord__v_max;
+    float vertices[24*3];
+    float texcoords[24*2];
+    float normals[24*3];
+    float indices[36];
+    float vertexCount;
+    float triangleCount;
+
+} Block;
+
+typedef struct Chunk {
+    Vector3 world_pos;
+    Block blocks[CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE];
+
+} Chunk;
+
+typedef struct ChunkMesh {
+    Mesh mesh;
+    Chunk chunk;
+} ChunkMesh;
+
+
 void draw_cube_basic(Vector3 position, Color color, Texture* texture);
-Mesh gen_cube_mesh();
+Block gen_block_mesh();
+Mesh gen_chunk_mesh(Chunk* chunk);
+Chunk gen_chunk();
+
 
 int main(void) {
     const int screenWidth = 1280;
@@ -61,8 +103,14 @@ int main(void) {
         TraceLog(LOG_ERROR, "Texture could not be loaded! Check path or format.");
     }
     //texture.id = 1;
-    Mesh cube = gen_cube_mesh();
-    UploadMesh(&cube, false);
+    //Mesh cube = gen_block_mesh();
+    //UploadMesh(&cube, false);
+    Chunk chunk = { 0 };
+    chunk = gen_chunk();
+    Mesh mesh = { 0 };
+    mesh = gen_chunk_mesh(&chunk);
+
+    UploadMesh(&mesh, false);
 
     Material material = LoadMaterialDefault();
     material.maps[MATERIAL_MAP_DIFFUSE].texture = texture;
@@ -89,7 +137,7 @@ int main(void) {
                 //draw_cube_basic((Vector3) { 1.0f, 0.0f, 0.0f }, WHITE, &texture);
                 //draw_cube_basic((Vector3) { -2.0f, 1.0f, 0.0f }, WHITE, &texture);
 
-                DrawMesh(cube, material, matrix);
+                DrawMesh(mesh, material, matrix);
 
             EndMode3D();
             
@@ -97,154 +145,50 @@ int main(void) {
         EndDrawing();
     }
 
-    UnloadMesh(cube);
+    UnloadMesh(mesh);
     UnloadTexture(texture);
     CloseWindow();
 
     return 0;       
 }
 
-void draw_cube_basic(Vector3 pos, Color color, Texture* texture) {
-    float size = 0.5f;
-
-    rlPushMatrix();
-
-        rlSetTexture(texture->id);
-         rlBegin(RL_QUADS);
-            rlColor4ub(color.r, color.g, color.b, color.a);
-            // for whatever reason, RL_QUADS goes bottom left, bottom right, top right, top left... counter clockwise
-            // and, again for whatever reason, png format has origin at top left, opengl at bottom left, so must swap tex coords here (not intuitive)
-            // Z-POSITIVE face
-            rlNormal3f(0.0f, 0.0f, 1.0f);
-            // Vertex 2: Bottom left
-            rlTexCoord2f(0.0f, 1.0f); rlVertex3f(pos.x-size, pos.y-size, pos.z+size);
-
-            // Vertex 3: Bottom right
-            rlTexCoord2f(1.0f, 1.0f); rlVertex3f(pos.x+size, pos.y-size, pos.z+size);
-
-            // Vertex 3: Top right
-            rlTexCoord2f(1.0f, 0.0f); rlVertex3f(pos.x+size, pos.y+size, pos.z+size);            
-
-            // Vertex 1: Top left
-            rlTexCoord2f(0.0f, 0.0f); rlVertex3f(pos.x-size, pos.y+size, pos.z+size);
-            
-            // Z-NEGATIVE FACE
-            rlNormal3f(0.0f, 0.0f, -1.0f);
-            // Vertex 2: Bottom left
-            rlTexCoord2f(0.0f, 1.0f); rlVertex3f(pos.x+size, pos.y-size, pos.z-size);
-
-            // Vertex 3: Bottom right
-            rlTexCoord2f(1.0f, 1.0f); rlVertex3f(pos.x-size, pos.y-size, pos.z-size);
-
-            // Vertex 3: Top right
-            rlTexCoord2f(1.0f, 0.0f); rlVertex3f(pos.x-size, pos.y+size, pos.z-size);            
-
-            // Vertex 1: Top left
-            rlTexCoord2f(0.0f, 0.0f); rlVertex3f(pos.x+size, pos.y+size, pos.z-size);
 
 
-            // Y-POSITIVE FACE (TOP)
-            rlNormal3f(0.0f, 1.0f, 0.0f);
-            // Vertex 2: Bottom left
-            rlTexCoord2f(0.0f, 1.0f); rlVertex3f(pos.x-size, pos.y+size, pos.z+size);
-
-            // Vertex 3: Bottom right
-            rlTexCoord2f(1.0f, 1.0f); rlVertex3f(pos.x+size, pos.y+size, pos.z+size);
-
-            // Vertex 3: Top right
-            rlTexCoord2f(1.0f, 0.0f); rlVertex3f(pos.x+size, pos.y+size, pos.z-size);            
-
-            // Vertex 1: Top left
-            rlTexCoord2f(0.0f, 0.0f); rlVertex3f(pos.x-size, pos.y+size, pos.z-size);
-
-
-            // Y-NEGATIVE (BOTTOM FACE)
-            rlNormal3f(0.0f, 1.0f, 0.0f);
-            // Vertex 2: Bottom left
-            rlTexCoord2f(0.0f, 1.0f); rlVertex3f(pos.x+size, pos.y-size, pos.z+size);
-
-            // Vertex 3: Bottom right
-            rlTexCoord2f(1.0f, 1.0f); rlVertex3f(pos.x-size, pos.y-size, pos.z+size);
-
-            // Vertex 3: Top right
-            rlTexCoord2f(1.0f, 0.0f); rlVertex3f(pos.x-size, pos.y-size, pos.z-size);            
-
-            // Vertex 1: Top left
-            rlTexCoord2f(0.0f, 0.0f); rlVertex3f(pos.x+size, pos.y-size, pos.z-size);
-            
-
-            // X-NEGATIVE FACE (LEFT)
-            rlNormal3f(0.0f, 0.0f, 1.0f);
-            // Vertex 2: Bottom left
-            rlTexCoord2f(0.0f, 1.0f); rlVertex3f(pos.x-size, pos.y-size, pos.z-size);
-
-            // Vertex 3: Bottom right
-            rlTexCoord2f(1.0f, 1.0f); rlVertex3f(pos.x-size, pos.y-size, pos.z+size);
-
-            // Vertex 3: Top right
-            rlTexCoord2f(1.0f, 0.0f); rlVertex3f(pos.x-size, pos.y+size, pos.z+size);            
-
-            // Vertex 1: Top left
-            rlTexCoord2f(0.0f, 0.0f); rlVertex3f(pos.x-size, pos.y+size, pos.z-size);
-            
-
-            // X-POSITIVE FACE (RIGHT)
-            rlNormal3f(0.0f, 0.0f, 1.0f);
-            // Vertex 2: Bottom left
-            rlTexCoord2f(0.0f, 1.0f); rlVertex3f(pos.x+size, pos.y-size, pos.z+size);
-
-            // Vertex 3: Bottom right
-            rlTexCoord2f(1.0f, 1.0f); rlVertex3f(pos.x+size, pos.y-size, pos.z-size);
-
-            // Vertex 3: Top right
-            rlTexCoord2f(1.0f, 0.0f); rlVertex3f(pos.x+size, pos.y+size, pos.z-size);            
-
-            // Vertex 1: Top left
-            rlTexCoord2f(0.0f, 0.0f); rlVertex3f(pos.x+size, pos.y+size, pos.z+size);
-
-        rlEnd();
-
-        rlSetTexture(0);
-    rlPopMatrix();
-}
-
-Mesh gen_cube_mesh() {
-    Mesh mesh = {0};
+Block gen_block_mesh(int x, int y, int z) {
+    Block block = {0};
 
     float size = 0.5f;
-    float zero = 0.0f;
-    float one = 1.0f;
 
     float vertices[] = {
-        -size, -size, size,
-        size, -size, size,
-        size, size, size,
-        -size, size, size,
+        x-size, y-size, z+size,
+        x+size, y-size, z+size,
+        x+size, y+size, z+size,
+        x-size, y+size, z+size,
 
-        size, -size, -size,
-        -size, -size, -size,
-        -size, size, -size,
-        size, size, -size,
+        x+size, y-size, z-size,
+        x-size, y-size, z-size,
+        x-size, y+size, z-size,
+        x+size, y+size, z-size,
 
-        -size, size, size,
-        size, size, size,
-        size, size, -size,
-        -size, size, -size,
+        x-size, y+size, z+size,
+        x+size, y+size, z+size,
+        x+size, y+size, z-size,
+        x-size, y+size, z-size,
 
-        size, -size, size,
-        -size, -size, size,
-        -size, -size, -size,
-        size, -size, -size,
+        x+size, y-size, z+size,
+        x-size, y-size, z+size,
+        x-size, y-size, z-size,
+        x+size, y-size, z-size,
 
-        -size, -size, -size,
-        -size, -size, size,
-        -size, size, size,
-        -size, size, -size,
+        x-size, y-size, z-size,
+        x-size, y-size, z+size,
+        x-size, y+size, z+size,
+        x-size, y+size, z-size,
 
-        size, -size, size,
-        size, -size, -size,
-        size, size, -size,
-        size, size, size,
+        x+size, y-size, z+size,
+        x+size, y-size, z-size,
+        x+size, y+size, z-size,
+        x+size, y+size, z+size,
     };
 
     // float u_min = 5.0f/16.0f;
@@ -364,34 +308,233 @@ Mesh gen_cube_mesh() {
         -1.0f, 0.0f, 0.0f
     };
 
-    mesh.vertices = (float *)malloc(24*3*sizeof(float));
-    memcpy(mesh.vertices, vertices, 24*3*sizeof(float));
+    //mesh.vertices = (float *)malloc(24*3*sizeof(float));
+    memcpy(block.vertices, vertices, 24*3*sizeof(float));
 
-    mesh.texcoords = (float *)malloc(24*2*sizeof(float));
-    memcpy(mesh.texcoords, texcoords, 24*2*sizeof(float));
+    //mesh.texcoords = (float *)malloc(24*2*sizeof(float));
+    memcpy(block.texcoords, texcoords, 24*2*sizeof(float));
 
-    mesh.normals = (float *)malloc(24*3*sizeof(float));
-    memcpy(mesh.normals, normals, 24*3*sizeof(float));
+    //mesh.normals = (float *)malloc(24*3*sizeof(float));
+    memcpy(block.normals, normals, 24*3*sizeof(float));
 
-    mesh.indices = (unsigned short *)RL_MALLOC(36*sizeof(unsigned short));
+    //mesh.indices = (unsigned short *)RL_MALLOC(36*sizeof(unsigned short));
 
     int k = 0;
 
     // Indices can be initialized right now
     for (int i = 0; i < 36; i += 6)
     {
-        mesh.indices[i] = 4*k;
-        mesh.indices[i + 1] = 4*k + 1;
-        mesh.indices[i + 2] = 4*k + 2;
-        mesh.indices[i + 3] = 4*k;
-        mesh.indices[i + 4] = 4*k + 2;
-        mesh.indices[i + 5] = 4*k + 3;
+        block.indices[i] = 4*k;
+        block.indices[i + 1] = 4*k + 1;
+        block.indices[i + 2] = 4*k + 2;
+        block.indices[i + 3] = 4*k;
+        block.indices[i + 4] = 4*k + 2;
+        block.indices[i + 5] = 4*k + 3;
 
         k++;
     }
 
-    mesh.vertexCount = 24;
-    mesh.triangleCount = 12;
+    block.vertexCount = 24;
+    block.triangleCount = 12;
+
+    return block;
+}
+
+Mesh gen_chunk_mesh(Chunk* chunk) {
+    ChunkMesh chunk_mesh = {0};
+    Mesh mesh = {0};
+    float total_vertices[(CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE) * 24 * 3];
+    float total_texcoords[(CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE) * 24 * 2];
+    float total_normals[(CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE) * 24 * 3];
+    float total_indices[(CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE) * 36];
+    int nv = 0;  //keeps track of merged list counter
+    int nt = 0;
+    int nn = 0;
+    int ni = 0;
+
+    for (int i = 0; i < sizeof(chunk->blocks) / sizeof(chunk->blocks[0]); i++) {
+        for (int j = 0; j < sizeof(chunk->blocks[0].vertices) / sizeof(chunk->blocks[0].vertices[0]); j++) {
+            total_vertices[nv] = chunk->blocks[i].vertices[j];
+            total_normals[nt] = chunk->blocks[i].normals[j];
+        }
+
+        for (int j = 0; j < sizeof(chunk->blocks[0].texcoords) / sizeof(chunk->blocks[0].texcoords[0]); j++) {
+            total_texcoords[nt] = chunk->blocks[i].texcoords[j];
+        }
+
+        for (int j = 0; j < sizeof(chunk->blocks[0].indices) / sizeof(chunk->blocks[0].indices[0]); j++) {
+            total_indices[ni] = chunk->blocks[i].indices[j];
+        }
+    }
+
+    // mesh.vertices = (float *)malloc(CHUNK_CUBED * 24*3*sizeof(float));
+    // memcpy(mesh.vertices, total_vertices, CHUNK_CUBED * 24*3*sizeof(float));
+
+    // mesh.texcoords = (float *)malloc(CHUNK_CUBED * 24*2*sizeof(float));
+    // memcpy(mesh.texcoords, total_normals, CHUNK_CUBED * 24*2*sizeof(float));
+
+    // mesh.normals = (float *)malloc(CHUNK_CUBED * 24*3*sizeof(float));
+    // memcpy(mesh.normals, total_normals, CHUNK_CUBED * 24*3*sizeof(float));
+
+    // mesh.indices = (unsigned short *)RL_MALLOC(CHUNK_CUBED * 36*sizeof(unsigned short));
+    // memcpy(mesh.indices, total_indices, CHUNK_CUBED * 34*sizeof(float));
+
+    // mesh.vertexCount = (CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE) * 24;
+    // mesh.triangleCount = (CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE) * 12;
+
+    // mesh.vertices = (float *)malloc(24*3*sizeof(float));
+    // memcpy(mesh.vertices, total_vertices, 24*3*sizeof(float));
+
+    // mesh.texcoords = (float *)malloc(24*2*sizeof(float));
+    // memcpy(mesh.texcoords, total_normals, 24*2*sizeof(float));
+
+    // mesh.normals = (float *)malloc(24*3*sizeof(float));
+    // memcpy(mesh.normals, total_normals, 24*3*sizeof(float));
+
+    // mesh.indices = (unsigned short *)RL_MALLOC(36*sizeof(unsigned short));
+    // memcpy(mesh.indices, total_indices, 34*sizeof(float));
+
+
+    mesh.vertices = (float *)malloc((sizeof(total_vertices) / sizeof(total_vertices[0]))*sizeof(float));
+    memcpy(mesh.vertices, total_vertices, (sizeof(total_vertices) / sizeof(total_vertices[0]))*sizeof(float));
+
+    mesh.texcoords = (float *)malloc((sizeof(total_texcoords) / sizeof(total_texcoords[0]))*sizeof(float));
+    memcpy(mesh.texcoords, total_texcoords, (sizeof(total_texcoords) / sizeof(total_texcoords[0]))*sizeof(float));
+
+    mesh.normals = (float *)malloc((sizeof(total_normals) / sizeof(total_normals[0]))*sizeof(float));
+    memcpy(mesh.normals, total_normals, (sizeof(total_normals) / sizeof(total_normals[0]))*sizeof(float));
+
+    mesh.indices = (unsigned short *)RL_MALLOC((sizeof(total_indices) / sizeof(total_indices[0]))*sizeof(unsigned short));
+    memcpy(mesh.indices, total_indices, (sizeof(total_indices) / sizeof(total_indices[0]))*sizeof(float));
+
+    mesh.vertexCount = (CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE) * 24;
+    mesh.triangleCount = (CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE) * 12;
 
     return mesh;
+}
+
+Chunk gen_chunk() {
+    Chunk chunk = {0};
+    chunk.world_pos = (Vector3) { 0.0f, 0.0f, 0.0f };
+    for (int i = 0; i < CHUNK_SIZE; i++) {
+        for (int j = 0; j < CHUNK_SIZE; j++) {
+            for (int k = 0; k < CHUNK_SIZE; k++) {
+
+                Block block = gen_block_mesh(
+                    chunk.world_pos.x - HALF_CHUNK, 
+                    chunk.world_pos.y - HALF_CHUNK, 
+                    chunk.world_pos.z - HALF_CHUNK);
+                block.block_type = BLOCK_MAGMA; //hard coded for now
+                chunk.blocks[i+j+k] = block;
+            }
+        }
+    }
+    
+    return chunk;
+}
+
+
+
+void draw_cube_basic(Vector3 pos, Color color, Texture* texture) {
+    float size = 0.5f;
+
+    rlPushMatrix();
+
+        rlSetTexture(texture->id);
+         rlBegin(RL_QUADS);
+            rlColor4ub(color.r, color.g, color.b, color.a);
+            // for whatever reason, RL_QUADS goes bottom left, bottom right, top right, top left... counter clockwise
+            // and, again for whatever reason, png format has origin at top left, opengl at bottom left, so must swap tex coords here (not intuitive)
+            // Z-POSITIVE face
+            rlNormal3f(0.0f, 0.0f, 1.0f);
+            // Vertex 2: Bottom left
+            rlTexCoord2f(0.0f, 1.0f); rlVertex3f(pos.x-size, pos.y-size, pos.z+size);
+
+            // Vertex 3: Bottom right
+            rlTexCoord2f(1.0f, 1.0f); rlVertex3f(pos.x+size, pos.y-size, pos.z+size);
+
+            // Vertex 3: Top right
+            rlTexCoord2f(1.0f, 0.0f); rlVertex3f(pos.x+size, pos.y+size, pos.z+size);            
+
+            // Vertex 1: Top left
+            rlTexCoord2f(0.0f, 0.0f); rlVertex3f(pos.x-size, pos.y+size, pos.z+size);
+            
+            // Z-NEGATIVE FACE
+            rlNormal3f(0.0f, 0.0f, -1.0f);
+            // Vertex 2: Bottom left
+            rlTexCoord2f(0.0f, 1.0f); rlVertex3f(pos.x+size, pos.y-size, pos.z-size);
+
+            // Vertex 3: Bottom right
+            rlTexCoord2f(1.0f, 1.0f); rlVertex3f(pos.x-size, pos.y-size, pos.z-size);
+
+            // Vertex 3: Top right
+            rlTexCoord2f(1.0f, 0.0f); rlVertex3f(pos.x-size, pos.y+size, pos.z-size);            
+
+            // Vertex 1: Top left
+            rlTexCoord2f(0.0f, 0.0f); rlVertex3f(pos.x+size, pos.y+size, pos.z-size);
+
+
+            // Y-POSITIVE FACE (TOP)
+            rlNormal3f(0.0f, 1.0f, 0.0f);
+            // Vertex 2: Bottom left
+            rlTexCoord2f(0.0f, 1.0f); rlVertex3f(pos.x-size, pos.y+size, pos.z+size);
+
+            // Vertex 3: Bottom right
+            rlTexCoord2f(1.0f, 1.0f); rlVertex3f(pos.x+size, pos.y+size, pos.z+size);
+
+            // Vertex 3: Top right
+            rlTexCoord2f(1.0f, 0.0f); rlVertex3f(pos.x+size, pos.y+size, pos.z-size);            
+
+            // Vertex 1: Top left
+            rlTexCoord2f(0.0f, 0.0f); rlVertex3f(pos.x-size, pos.y+size, pos.z-size);
+
+
+            // Y-NEGATIVE (BOTTOM FACE)
+            rlNormal3f(0.0f, 1.0f, 0.0f);
+            // Vertex 2: Bottom left
+            rlTexCoord2f(0.0f, 1.0f); rlVertex3f(pos.x+size, pos.y-size, pos.z+size);
+
+            // Vertex 3: Bottom right
+            rlTexCoord2f(1.0f, 1.0f); rlVertex3f(pos.x-size, pos.y-size, pos.z+size);
+
+            // Vertex 3: Top right
+            rlTexCoord2f(1.0f, 0.0f); rlVertex3f(pos.x-size, pos.y-size, pos.z-size);            
+
+            // Vertex 1: Top left
+            rlTexCoord2f(0.0f, 0.0f); rlVertex3f(pos.x+size, pos.y-size, pos.z-size);
+            
+
+            // X-NEGATIVE FACE (LEFT)
+            rlNormal3f(0.0f, 0.0f, 1.0f);
+            // Vertex 2: Bottom left
+            rlTexCoord2f(0.0f, 1.0f); rlVertex3f(pos.x-size, pos.y-size, pos.z-size);
+
+            // Vertex 3: Bottom right
+            rlTexCoord2f(1.0f, 1.0f); rlVertex3f(pos.x-size, pos.y-size, pos.z+size);
+
+            // Vertex 3: Top right
+            rlTexCoord2f(1.0f, 0.0f); rlVertex3f(pos.x-size, pos.y+size, pos.z+size);            
+
+            // Vertex 1: Top left
+            rlTexCoord2f(0.0f, 0.0f); rlVertex3f(pos.x-size, pos.y+size, pos.z-size);
+            
+
+            // X-POSITIVE FACE (RIGHT)
+            rlNormal3f(0.0f, 0.0f, 1.0f);
+            // Vertex 2: Bottom left
+            rlTexCoord2f(0.0f, 1.0f); rlVertex3f(pos.x+size, pos.y-size, pos.z+size);
+
+            // Vertex 3: Bottom right
+            rlTexCoord2f(1.0f, 1.0f); rlVertex3f(pos.x+size, pos.y-size, pos.z-size);
+
+            // Vertex 3: Top right
+            rlTexCoord2f(1.0f, 0.0f); rlVertex3f(pos.x+size, pos.y+size, pos.z-size);            
+
+            // Vertex 1: Top left
+            rlTexCoord2f(0.0f, 0.0f); rlVertex3f(pos.x+size, pos.y+size, pos.z+size);
+
+        rlEnd();
+
+        rlSetTexture(0);
+    rlPopMatrix();
 }
