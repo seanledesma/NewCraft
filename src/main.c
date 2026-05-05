@@ -20,6 +20,10 @@
 #define DIRT_TEX_COORD_U_MAX 0.18f
 #define DIRT_TEX_COORD_V_MIN 0.82f
 #define DIRT_TEX_COORD_V_MAX 0.98f
+#define DIRT_LIGHT_TEX_COORD_U_MIN 0.22f
+#define DIRT_LIGHT_TEX_COORD_U_MAX 0.38f
+#define DIRT_LIGHT_TEX_COORD_V_MIN 0.22f
+#define DIRT_LIGHT_TEX_COORD_V_MAX 0.38f
 #define GRASS_TEX_COORD_U_MIN 0.22f
 #define GRASS_TEX_COORD_U_MAX 0.38f
 #define GRASS_TEX_COORD_V_MIN 0.42f
@@ -85,8 +89,8 @@ Mesh do_it_all(void);
 
 
 int main(void) {
-    const int screenWidth = 1280;
-    const int screenHeight = 720;
+    const int screenWidth = 1920;
+    const int screenHeight = 1080;
     InitWindow(screenWidth, screenHeight, "NewCraft");
 
     Camera camera = { 0 };
@@ -129,7 +133,7 @@ int main(void) {
 
         BeginDrawing();
             DrawFPS(10, 10);
-            ClearBackground(DARKGRAY);
+            ClearBackground(LIGHTGRAY);
             //DrawTexture(texture, 0.0f, 0.0f, WHITE);
             BeginMode3D(camera);
 
@@ -251,6 +255,10 @@ Mesh do_it_all(void) {
                 float u_max = MAGMA_TEX_COORD_U_MAX;
                 float v_min = MAGMA_TEX_COORD_V_MIN;
                 float v_max = MAGMA_TEX_COORD_V_MAX;
+                // float u_min = DIRT_LIGHT_TEX_COORD_U_MIN;
+                // float u_max = DIRT_LIGHT_TEX_COORD_U_MAX;
+                // float v_min = DIRT_LIGHT_TEX_COORD_V_MIN;
+                // float v_max = DIRT_LIGHT_TEX_COORD_V_MAX;
 
                 float texcoords[] = {
                     // u_min, v_max,
@@ -369,23 +377,6 @@ Mesh do_it_all(void) {
 
                 memcpy(block.normals, normals, 36*3*sizeof(float));
 
-                //mesh.indices = (unsigned short *)RL_MALLOC(36*sizeof(unsigned short));
-
-                // int k = 0;
-
-                // // Indices can be initialized right now
-                // for (int i = 0; i < 36; i += 6)
-                // {
-                //     block.indices[i] = 4*k;
-                //     block.indices[i + 1] = 4*k + 1;
-                //     block.indices[i + 2] = 4*k + 2;
-                //     block.indices[i + 3] = 4*k;
-                //     block.indices[i + 4] = 4*k + 2;
-                //     block.indices[i + 5] = 4*k + 3;
-
-                //     k++;
-                // }
-
                 block.vertexCount = 36;
                 block.triangleCount = 12;
 
@@ -436,7 +427,7 @@ Mesh do_it_all(void) {
     memcpy(chunk_mesh.vertices, total_vertices, num_chunk_vertices * sizeof(float));
     
     chunk_mesh.texcoords = (float *)malloc(num_chunk_texcoords * sizeof(float));
-    memcpy(chunk_mesh.texcoords, total_vertices, num_chunk_texcoords * sizeof(float));
+    memcpy(chunk_mesh.texcoords, total_texcoords, num_chunk_texcoords * sizeof(float));
 
     chunk_mesh.normals = (float *)malloc(num_chunk_normals * sizeof(float));
     memcpy(chunk_mesh.normals, total_normals, num_chunk_normals * sizeof(float));
