@@ -22,6 +22,7 @@ ASSETS_DIR := assets
 
 # Source files
 SOURCES := $(SRC_DIR)/main.c \
+			$(SRC_DIR)/chunk.c \
 
 # Include directories
 INCLUDES := -I$(SRC_DIR) -I$(LIB_DIR)

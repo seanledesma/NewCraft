@@ -1,90 +1,10 @@
-//basic window
-#include "raylib.h" 
-#include "rlgl.h"
-#include "raymath.h"
-
-#include <stdlib.h>
-#include <string.h>
-
-#define CHUNK_SIZE 16
-#define HALF_CHUNK CHUNK_SIZE/2
-#define CHUNK_CUBED (CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE)
-#define BLOCK_AIR 0
-#define BLOCK_GRASS 1
-#define BLOCK_DIRT 2
-#define BLOCK_STONE 3
-#define BLOCK_LAVA 4
-#define BLOCK_MAGMA 5
-
-#define DIRT_TEX_COORD_U_MIN 0.05f
-#define DIRT_TEX_COORD_U_MAX 0.18f
-#define DIRT_TEX_COORD_V_MIN 0.82f
-#define DIRT_TEX_COORD_V_MAX 0.98f
-#define DIRT_LIGHT_TEX_COORD_U_MIN 0.22f
-#define DIRT_LIGHT_TEX_COORD_U_MAX 0.38f
-#define DIRT_LIGHT_TEX_COORD_V_MIN 0.22f
-#define DIRT_LIGHT_TEX_COORD_V_MAX 0.38f
-#define GRASS_TEX_COORD_U_MIN 0.22f
-#define GRASS_TEX_COORD_U_MAX 0.38f
-#define GRASS_TEX_COORD_V_MIN 0.42f
-#define GRASS_TEX_COORD_V_MAX 0.58f
-#define GRASS_LIGHT_TEX_COORD_U_MIN 0.42f
-#define GRASS_LIGHT_TEX_COORD_U_MAX 0.58f
-#define GRASS_LIGHT_TEX_COORD_V_MIN 0.42f
-#define GRASS_LIGHT_TEX_COORD_V_MAX 0.58f
-#define LAVA_TEX_COORD_U_MIN 0.82f
-#define LAVA_TEX_COORD_U_MAX 0.98f
-#define LAVA_TEX_COORD_V_MIN 0.42f
-#define LAVA_TEX_COORD_V_MAX 0.58f
-
-#define MAGMA_TEX_COORD_U_MIN 0.42f
-#define MAGMA_TEX_COORD_U_MAX 0.58f
-#define MAGMA_TEX_COORD_V_MIN 0.82f
-#define MAGMA_TEX_COORD_V_MAX 0.98f
-
-
-/*
-*   TO DO
-*   - Get texture atlas to work on one block
-*   - Get meshing to work for entire chunk
-*   - Atlas working for entire chunk
-*   - Then chunking system
-*/
-
-
-
-typedef struct Block {
-    int block_type;
-    Vector3 pos;
-    float tex_coord_u_min;
-    float tex_coord_u_max;
-    float tex_coord_v_min;
-    float tex_coord__v_max;
-    float vertices[36*3];
-    float texcoords[36*2];
-    float normals[36*3];
-    //float indices[36];
-    float vertexCount;
-    float triangleCount;
-
-} Block;
-
-typedef struct Chunk {
-    Vector3 world_pos;
-    Block blocks[CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE];
-
-} Chunk;
-
-typedef struct ChunkMesh {
-    Mesh mesh;
-    Chunk chunk;
-} ChunkMesh;
+#include "include.h"
 
 
 void draw_cube_basic(Vector3 position, Color color, Texture* texture);
 Mesh gen_block_mesh(int x, int y, int z);
-Mesh gen_chunk_mesh(Chunk* chunk);
-Chunk gen_chunk();
+//Mesh gen_chunk_mesh(Chunk* chunk);
+//Chunk gen_chunk();
 Mesh do_it_all(void);
 
 
@@ -117,6 +37,9 @@ int main(void) {
     mesh = do_it_all();
     //mesh = gen_block_mesh(0.0f, 0.0f, 0.0f);
 
+    ChunkMesh* chunkmesh = gen_chunk_mesh((Vector3) { 0.0f, 0.0f, 0.0f });
+
+    //UploadMesh(chunkmesh->mesh, false);
     UploadMesh(&mesh, false);
 
     Material material = LoadMaterialDefault();
@@ -144,6 +67,7 @@ int main(void) {
                 //draw_cube_basic((Vector3) { 1.0f, 0.0f, 0.0f }, WHITE, &texture);
                 //draw_cube_basic((Vector3) { -2.0f, 1.0f, 0.0f }, WHITE, &texture);
 
+                //DrawMesh(*chunkmesh->mesh, material, matrix);
                 DrawMesh(mesh, material, matrix);
 
             EndMode3D();
@@ -152,6 +76,7 @@ int main(void) {
         EndDrawing();
     }
 
+    //UnloadMesh(*chunkmesh->mesh);
     UnloadMesh(mesh);
     UnloadTexture(texture);
     CloseWindow();
@@ -657,125 +582,34 @@ Mesh gen_block_mesh(int x, int y, int z) {
     return mesh;
 }
 
-Mesh gen_chunk_mesh(Chunk* chunk) {
-    //ChunkMesh chunk_mesh = {0};
-    Mesh mesh = {0};
-    float total_vertices[(CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE) * 24 * 3];
-    float total_texcoords[(CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE) * 24 * 2];
-    float total_normals[(CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE) * 24 * 3];
-    float total_indices[(CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE) * 36];
-    int nv = 0;  //keeps track of merged list counter
-    int nt = 0;
-    int nn = 0;
-    int ni = 0;
+// Chunk gen_chunk() {
+//     Chunk chunk = {0};
+//     chunk.world_pos = (Vector3) { 0.0f, 0.0f, 0.0f };
+//     for (int i = 0; i < CHUNK_SIZE; i++) {
+//         for (int j = 0; j < CHUNK_SIZE; j++) {
+//             for (int k = 0; k < CHUNK_SIZE; k++) {
 
-
-    // for (int i = 0; i < (CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE); i++) {
-    //     if(chunk->blocks[i] == NULL) break;
-    //     for (int j = 0; j < (CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE) * 24 * 3; j++) {
-            
-    //         total_vertices[nv] = chunk->blocks[i].vertices[j];
-    //         total_normals[nt] = chunk->blocks[i].normals[j];
-    //     }
-
-    //     for (int j = 0; j < (CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE) * 24 * 2; j++) {
-    //         total_texcoords[nt] = chunk->blocks[i].texcoords[j];
-    //     }
-
-    //     // for (int j = 0; j < sizeof(chunk->blocks[0].indices) / sizeof(chunk->blocks[0].indices[0]); j++) {
-    //     //     total_indices[ni] = chunk->blocks[i].indices[j];
-    //     // }
-    // }
-
-    // for (int i = 0; i < sizeof(chunk->blocks) / sizeof(chunk->blocks[0]); i++) {
-    //     for (int j = 0; j < sizeof(chunk->blocks[0].vertices) / sizeof(chunk->blocks[0].vertices[0]); j++) {
-    //         total_vertices[nv] = chunk->blocks[i].vertices[j];
-    //         total_normals[nt] = chunk->blocks[i].normals[j];
-    //     }
-
-    //     for (int j = 0; j < sizeof(chunk->blocks[0].texcoords) / sizeof(chunk->blocks[0].texcoords[0]); j++) {
-    //         total_texcoords[nt] = chunk->blocks[i].texcoords[j];
-    //     }
-
-    //     // for (int j = 0; j < sizeof(chunk->blocks[0].indices) / sizeof(chunk->blocks[0].indices[0]); j++) {
-    //     //     total_indices[ni] = chunk->blocks[i].indices[j];
-    //     // }
-    // }
-
-    // mesh.vertices = (float *)malloc(CHUNK_CUBED * 24*3*sizeof(float));
-    // memcpy(mesh.vertices, total_vertices, CHUNK_CUBED * 24*3*sizeof(float));
-
-    // mesh.texcoords = (float *)malloc(CHUNK_CUBED * 24*2*sizeof(float));
-    // memcpy(mesh.texcoords, total_normals, CHUNK_CUBED * 24*2*sizeof(float));
-
-    // mesh.normals = (float *)malloc(CHUNK_CUBED * 24*3*sizeof(float));
-    // memcpy(mesh.normals, total_normals, CHUNK_CUBED * 24*3*sizeof(float));
-
-    // mesh.indices = (unsigned short *)RL_MALLOC(CHUNK_CUBED * 36*sizeof(unsigned short));
-    // memcpy(mesh.indices, total_indices, CHUNK_CUBED * 34*sizeof(float));
-
-    // mesh.vertexCount = (CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE) * 24;
-    // mesh.triangleCount = (CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE) * 12;
-
-    // mesh.vertices = (float *)malloc(24*3*sizeof(float));
-    // memcpy(mesh.vertices, total_vertices, 24*3*sizeof(float));
-
-    // mesh.texcoords = (float *)malloc(24*2*sizeof(float));
-    // memcpy(mesh.texcoords, total_normals, 24*2*sizeof(float));
-
-    // mesh.normals = (float *)malloc(24*3*sizeof(float));
-    // memcpy(mesh.normals, total_normals, 24*3*sizeof(float));
-
-    // mesh.indices = (unsigned short *)RL_MALLOC(36*sizeof(unsigned short));
-    // memcpy(mesh.indices, total_indices, 34*sizeof(float));
-
-
-    mesh.vertices = (float *)malloc((sizeof(total_vertices) / sizeof(total_vertices[0]))*sizeof(float));
-    memcpy(mesh.vertices, total_vertices, (sizeof(total_vertices) / sizeof(total_vertices[0]))*sizeof(float));
-
-    mesh.texcoords = (float *)malloc((sizeof(total_texcoords) / sizeof(total_texcoords[0]))*sizeof(float));
-    memcpy(mesh.texcoords, total_texcoords, (sizeof(total_texcoords) / sizeof(total_texcoords[0]))*sizeof(float));
-
-    mesh.normals = (float *)malloc((sizeof(total_normals) / sizeof(total_normals[0]))*sizeof(float));
-    memcpy(mesh.normals, total_normals, (sizeof(total_normals) / sizeof(total_normals[0]))*sizeof(float));
-
-    //mesh.indices = (unsigned short *)RL_MALLOC((sizeof(total_indices) / sizeof(total_indices[0]))*sizeof(unsigned short));
-    //memcpy(mesh.indices, total_indices, (sizeof(total_indices) / sizeof(total_indices[0]))*sizeof(float));
-
-    mesh.vertexCount = (CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE) * 24;
-    mesh.triangleCount = (CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE) * 12;
-
-    return mesh;
-}
-
-Chunk gen_chunk() {
-    Chunk chunk = {0};
-    chunk.world_pos = (Vector3) { 0.0f, 0.0f, 0.0f };
-    for (int i = 0; i < CHUNK_SIZE; i++) {
-        for (int j = 0; j < CHUNK_SIZE; j++) {
-            for (int k = 0; k < CHUNK_SIZE; k++) {
-
-                // Block block = {0};
-                // block = gen_block_mesh(
-                //     chunk.world_pos.x + i - HALF_CHUNK, 
-                //     chunk.world_pos.y + j - HALF_CHUNK, 
-                //     chunk.world_pos.z + k - HALF_CHUNK);
-                // block.pos = (Vector3) { (float) i, (float) j, (float) k };
-                // block.block_type = BLOCK_MAGMA; //hard coded for now
-                // chunk.blocks[i+j+k] = block;
-            }
-        }
-    }
-    Block block = {0};
-    // block = gen_block_mesh(
-    //     chunk.world_pos.x  - HALF_CHUNK, 
-    //     chunk.world_pos.y - HALF_CHUNK, 
-    //     chunk.world_pos.z - HALF_CHUNK);
-    block.block_type = BLOCK_MAGMA; //hard coded for now
-    chunk.blocks[0] = block;
+//                 // Block block = {0};
+//                 // block = gen_block_mesh(
+//                 //     chunk.world_pos.x + i - HALF_CHUNK, 
+//                 //     chunk.world_pos.y + j - HALF_CHUNK, 
+//                 //     chunk.world_pos.z + k - HALF_CHUNK);
+//                 // block.pos = (Vector3) { (float) i, (float) j, (float) k };
+//                 // block.block_type = BLOCK_MAGMA; //hard coded for now
+//                 // chunk.blocks[i+j+k] = block;
+//             }
+//         }
+//     }
+//     Block block = {0};
+//     // block = gen_block_mesh(
+//     //     chunk.world_pos.x  - HALF_CHUNK, 
+//     //     chunk.world_pos.y - HALF_CHUNK, 
+//     //     chunk.world_pos.z - HALF_CHUNK);
+//     block.block_type = BLOCK_MAGMA; //hard coded for now
+//     chunk.blocks[0] = block;
     
-    return chunk;
-}
+//     return chunk;
+// }
 
 
 
