@@ -78,7 +78,7 @@ typedef struct ChunkMesh {
 
 
 void draw_cube_basic(Vector3 position, Color color, Texture* texture);
-Block gen_block_mesh(int x, int y, int z);
+Mesh gen_block_mesh(int x, int y, int z);
 Mesh gen_chunk_mesh(Chunk* chunk);
 Chunk gen_chunk();
 Mesh do_it_all(void);
@@ -90,7 +90,7 @@ int main(void) {
     InitWindow(screenWidth, screenHeight, "NewCraft");
 
     Camera camera = { 0 };
-    camera.position = (Vector3) { 0.0f, 1.8f, 4.0f };
+    camera.position = (Vector3) { 0.0f, 1.8f, 20.0f };
     camera.target = (Vector3) { 0.0f, 2.0f, 0.0f };
     camera.up = (Vector3) { 0.0f, 1.0f, 0.0f };
     camera.fovy = 70.0f;
@@ -99,7 +99,7 @@ int main(void) {
     int cameraMode = CAMERA_FIRST_PERSON;
 
     //Texture texture = LoadTexture("assets/dirt.png");
-    //Texture texture = LoadTexture("assets/tex_atlas_2.png");
+    Texture texture = LoadTexture("assets/tex_atlas_2.png");
     //texture.id = 1;
     //Mesh cube = gen_block_mesh();
     //UploadMesh(&cube, false);
@@ -111,11 +111,12 @@ int main(void) {
     Mesh mesh = { 0 };
     //mesh = gen_chunk_mesh(&chunk);
     mesh = do_it_all();
+    //mesh = gen_block_mesh(0.0f, 0.0f, 0.0f);
 
     UploadMesh(&mesh, false);
 
     Material material = LoadMaterialDefault();
-    //material.maps[MATERIAL_MAP_DIFFUSE].texture = texture;
+    material.maps[MATERIAL_MAP_DIFFUSE].texture = texture;
 
     Matrix matrix = MatrixTranslate(0.0f, 0.0f, 0.0f);
 
@@ -148,7 +149,7 @@ int main(void) {
     }
 
     UnloadMesh(mesh);
-    //UnloadTexture(texture);
+    UnloadTexture(texture);
     CloseWindow();
 
     return 0;       
@@ -160,28 +161,33 @@ Mesh do_it_all(void) {
     // combine all vertices and normals and texcoords into mega arrays
     // return as mesh to draw
 
+    //NOTE: if i'm not going to use indices, i need to treat vertices as triangles not quads
+
     Chunk chunk = { 0 };
     chunk.world_pos = (Vector3) { 0.0f, 0.0f, 0.0f };
     int block_counter = 0;
     int total_vertex_count = 0;
     int total_triangle_count = 0;
+    //int total_index_count = 0;
     float total_vertices[CHUNK_CUBED * 24 * 3];
+    float total_texcoords[CHUNK_CUBED * 24 * 2];
     float total_normals[CHUNK_CUBED * 24 * 3];
+    //float total_indices[CHUNK_CUBED * 36];
 
     for (int i = 0; i < CHUNK_SIZE; i++) {
         //create all the conceptual blocks
         for (int j = 0; j < CHUNK_SIZE; j++) {
             for (int k = 0; k < CHUNK_SIZE; k++) {
                 Block block = { 0 };
-                block.pos.x = chunk.world_pos.x - HALF_CHUNK;
-                block.pos.y = chunk.world_pos.y - HALF_CHUNK;
-                block.pos.z = chunk.world_pos.z - HALF_CHUNK;
+                block.pos.x = chunk.world_pos.x - HALF_CHUNK + i;
+                block.pos.y = chunk.world_pos.y - HALF_CHUNK + j;
+                block.pos.z = chunk.world_pos.z - HALF_CHUNK + k;
 
                 int x = block.pos.x;
                 int y = block.pos.y;
                 int z = block.pos.z;
 
-                float size = 0.5f;
+                float size = 0.3f;
 
                 float vertices[] = {
                     x-size, y-size, z+size,
@@ -215,6 +221,43 @@ Mesh do_it_all(void) {
                     x+size, y+size, z+size,
                 };
 
+                float u_min = MAGMA_TEX_COORD_U_MIN;
+                float u_max = MAGMA_TEX_COORD_U_MAX;
+                float v_min = MAGMA_TEX_COORD_V_MIN;
+                float v_max = MAGMA_TEX_COORD_V_MAX;
+
+                float texcoords[] = {
+                    u_min, v_max,
+                    u_max, v_max,
+                    u_max, v_min,
+                    u_min, v_min,
+
+                    u_min, v_max,
+                    u_max, v_max,
+                    u_max, v_min,
+                    u_min, v_min,
+
+                    u_min, v_max,
+                    u_max, v_max,
+                    u_max, v_min,
+                    u_min, v_min,
+
+                    u_min, v_max,
+                    u_max, v_max,
+                    u_max, v_min,
+                    u_min, v_min,
+
+                    u_min, v_max,
+                    u_max, v_max,
+                    u_max, v_min,
+                    u_min, v_min,
+
+                    u_min, v_max,
+                    u_max, v_max,
+                    u_max, v_min,
+                    u_min, v_min,
+                };
+
                 float normals[] = { //yoinked from raylib
                     0.0f, 0.0f, 1.0f,
                     0.0f, 0.0f, 1.0f,
@@ -239,57 +282,93 @@ Mesh do_it_all(void) {
                     -1.0f, 0.0f, 0.0f,
                     -1.0f, 0.0f, 0.0f,
                     -1.0f, 0.0f, 0.0f,
-                    -1.0f, 0.0f, 0.0f
+                    -1.0f, 0.0f, 0.0f,
                 };
 
-                //mesh.vertices = (float *)malloc(24*3*sizeof(float));
                 memcpy(block.vertices, vertices, 24*3*sizeof(float));
+                
+                memcpy(block.texcoords, texcoords, 24*2*sizeof(float));
 
-                //mesh.normals = (float *)malloc(24*3*sizeof(float));
                 memcpy(block.normals, normals, 24*3*sizeof(float));
+
+                //mesh.indices = (unsigned short *)RL_MALLOC(36*sizeof(unsigned short));
+
+                // int k = 0;
+
+                // // Indices can be initialized right now
+                // for (int i = 0; i < 36; i += 6)
+                // {
+                //     block.indices[i] = 4*k;
+                //     block.indices[i + 1] = 4*k + 1;
+                //     block.indices[i + 2] = 4*k + 2;
+                //     block.indices[i + 3] = 4*k;
+                //     block.indices[i + 4] = 4*k + 2;
+                //     block.indices[i + 5] = 4*k + 3;
+
+                //     k++;
+                // }
 
                 block.vertexCount = 24;
                 block.triangleCount = 12;
 
                 total_vertex_count += 24;
                 total_triangle_count += 12;
+                //total_index_count += 36;
 
                 chunk.blocks[block_counter] = block;
                 block_counter++;
             }
         }
     }
-
+    int num_blocks_in_chunk = CHUNK_CUBED;
     int num_block_vertices = sizeof(chunk.blocks[0].vertices) / sizeof(chunk.blocks[0].vertices[0]);
+    int num_block_texcoords = sizeof(chunk.blocks[0].texcoords) / sizeof(chunk.blocks[0].texcoords[0]);
     int num_block_normals = sizeof(chunk.blocks[0].normals) / sizeof(chunk.blocks[0].normals[0]);
+    //int num_block_indices = 36;
     int Vcounter = 0;
+    int Tcounter = 0;
     int Ncounter = 0;
+    //int Icounter = 0;
     for (int i = 0; i < CHUNK_CUBED; i++) {
         //add up all the arrays
         //adding up vertices
         for (int k = 0; k < num_block_vertices; k++) {
-            total_vertices[Vcounter++] = chunk.blocks[i].normals[k];
+            total_vertices[Vcounter++] = chunk.blocks[i].vertices[k];
+        }
+        for (int k = 0; k < num_block_texcoords; k++) {
+            total_texcoords[Tcounter++] = chunk.blocks[i].texcoords[k];
         }
         for (int k = 0; k < num_block_normals; k++) {
             total_normals[Ncounter++] = chunk.blocks[i].normals[k];
         }
+        // for (int k = 0; k < num_block_indices; k++) {
+        //     total_indices[Icounter++] = chunk.blocks[i].indices[k];
+        // }
     }
-    int num_blocks_in_chunk = CHUNK_CUBED;
-    int num_chunk_vertices = num_block_vertices * num_blocks_in_chunk;
-    int num_chunk_normals = num_block_normals * num_blocks_in_chunk;
 
+    int num_chunk_vertices = num_block_vertices * num_blocks_in_chunk;
+    int num_chunk_texcoords = num_block_texcoords * num_blocks_in_chunk;
+    int num_chunk_normals = num_block_normals * num_blocks_in_chunk;
+    //nt num_chunk_indices = num_block_indices * num_blocks_in_chunk;
 
     //put it all together in a chunk mesh
 
     Mesh chunk_mesh = { 0 };
     chunk_mesh.vertices = (float *)malloc(num_chunk_vertices * sizeof(float));
     memcpy(chunk_mesh.vertices, total_vertices, num_chunk_vertices * sizeof(float));
+    
+    chunk_mesh.texcoords = (float *)malloc(num_chunk_texcoords * sizeof(float));
+    memcpy(chunk_mesh.texcoords, total_vertices, num_chunk_texcoords * sizeof(float));
 
     chunk_mesh.normals = (float *)malloc(num_chunk_normals * sizeof(float));
     memcpy(chunk_mesh.normals, total_normals, num_chunk_normals * sizeof(float));
 
+    // chunk_mesh.indices = (float *)malloc(num_chunk_indices * sizeof(float));
+    // memcpy(chunk_mesh.indices, total_indices, num_chunk_indices * sizeof(float));
+
     chunk_mesh.vertexCount = total_vertex_count;
     chunk_mesh.triangleCount = total_triangle_count;
+    //chunk_mesh.
 
     return chunk_mesh;
 }
@@ -313,8 +392,8 @@ Mesh do_it_all(void) {
 
 
 
-Block gen_block_mesh(int x, int y, int z) {
-    Block block = {0};
+Mesh gen_block_mesh(int x, int y, int z) {
+    Mesh mesh = {0};
 
     float size = 0.5f;
 
@@ -464,39 +543,39 @@ Block gen_block_mesh(int x, int y, int z) {
         -1.0f, 0.0f, 0.0f,
         -1.0f, 0.0f, 0.0f,
         -1.0f, 0.0f, 0.0f,
-        -1.0f, 0.0f, 0.0f
+        -1.0f, 0.0f, 0.0f,
     };
 
-    //mesh.vertices = (float *)malloc(24*3*sizeof(float));
-    memcpy(block.vertices, vertices, 24*3*sizeof(float));
+    mesh.vertices = (float *)malloc(24*3*sizeof(float));
+    memcpy(mesh.vertices, vertices, 24*3*sizeof(float));
 
-    //mesh.texcoords = (float *)malloc(24*2*sizeof(float));
-    memcpy(block.texcoords, texcoords, 24*2*sizeof(float));
+    mesh.texcoords = (float *)malloc(24*2*sizeof(float));
+    memcpy(mesh.texcoords, texcoords, 24*2*sizeof(float));
 
-    //mesh.normals = (float *)malloc(24*3*sizeof(float));
-    memcpy(block.normals, normals, 24*3*sizeof(float));
+    mesh.normals = (float *)malloc(24*3*sizeof(float));
+    memcpy(mesh.normals, normals, 24*3*sizeof(float));
 
-    //mesh.indices = (unsigned short *)RL_MALLOC(36*sizeof(unsigned short));
+    mesh.indices = (unsigned short *)RL_MALLOC(36*sizeof(unsigned short));
 
-    // int k = 0;
+    int k = 0;
 
-    // // Indices can be initialized right now
-    // for (int i = 0; i < 36; i += 6)
-    // {
-    //     block.indices[i] = 4*k;
-    //     block.indices[i + 1] = 4*k + 1;
-    //     block.indices[i + 2] = 4*k + 2;
-    //     block.indices[i + 3] = 4*k;
-    //     block.indices[i + 4] = 4*k + 2;
-    //     block.indices[i + 5] = 4*k + 3;
+    // Indices can be initialized right now
+    for (int i = 0; i < 36; i += 6)
+    {
+        mesh.indices[i] = 4*k;
+        mesh.indices[i + 1] = 4*k + 1;
+        mesh.indices[i + 2] = 4*k + 2;
+        mesh.indices[i + 3] = 4*k;
+        mesh.indices[i + 4] = 4*k + 2;
+        mesh.indices[i + 5] = 4*k + 3;
 
-    //     k++;
-    // }
+        k++;
+    }
 
-    block.vertexCount = 24;
-    block.triangleCount = 12;
+    mesh.vertexCount = 24;
+    mesh.triangleCount = 12;
 
-    return block;
+    return mesh;
 }
 
 Mesh gen_chunk_mesh(Chunk* chunk) {
@@ -609,10 +688,10 @@ Chunk gen_chunk() {
         }
     }
     Block block = {0};
-    block = gen_block_mesh(
-        chunk.world_pos.x  - HALF_CHUNK, 
-        chunk.world_pos.y - HALF_CHUNK, 
-        chunk.world_pos.z - HALF_CHUNK);
+    // block = gen_block_mesh(
+    //     chunk.world_pos.x  - HALF_CHUNK, 
+    //     chunk.world_pos.y - HALF_CHUNK, 
+    //     chunk.world_pos.z - HALF_CHUNK);
     block.block_type = BLOCK_MAGMA; //hard coded for now
     chunk.blocks[0] = block;
     
