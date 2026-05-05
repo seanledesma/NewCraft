@@ -132,7 +132,7 @@ int main(void) {
         
 
         BeginDrawing();
-            DrawFPS(10, 10);
+            
             ClearBackground(LIGHTGRAY);
             //DrawTexture(texture, 0.0f, 0.0f, WHITE);
             BeginMode3D(camera);
@@ -148,7 +148,7 @@ int main(void) {
 
             EndMode3D();
             
-
+            DrawFPS(10, 10);
         EndDrawing();
     }
 
@@ -187,11 +187,21 @@ Mesh do_it_all(void) {
                 block.pos.y = chunk.world_pos.y - HALF_CHUNK + j;
                 block.pos.z = chunk.world_pos.z - HALF_CHUNK + k;
 
+                //some basic culling
+                if(i == 0 || j == 0 || k == 0) {
+                    block.block_type = BLOCK_MAGMA;
+                }else if (i == CHUNK_SIZE-1 || j == CHUNK_SIZE-1 || k == CHUNK_SIZE-1) {
+                    block.block_type = BLOCK_MAGMA;
+                }else{
+                    block.block_type = BLOCK_AIR;
+                    continue;
+                }
+
                 float x = block.pos.x;
                 float y = block.pos.y;
                 float z = block.pos.z;
 
-                float size = 0.3f;
+                float size = 0.5f;
 
                 float vertices[] = {
                     //first front triangle
