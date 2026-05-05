@@ -169,9 +169,9 @@ Mesh do_it_all(void) {
     int total_vertex_count = 0;
     int total_triangle_count = 0;
     //int total_index_count = 0;
-    float total_vertices[CHUNK_CUBED * 24 * 3];
-    float total_texcoords[CHUNK_CUBED * 24 * 2];
-    float total_normals[CHUNK_CUBED * 24 * 3];
+    float total_vertices[CHUNK_CUBED * 36 * 3];
+    float total_texcoords[CHUNK_CUBED * 36 * 2];
+    float total_normals[CHUNK_CUBED * 36 * 3];
     //float total_indices[CHUNK_CUBED * 36];
 
     for (int i = 0; i < CHUNK_SIZE; i++) {
@@ -190,35 +190,61 @@ Mesh do_it_all(void) {
                 float size = 0.3f;
 
                 float vertices[] = {
+                    //first front triangle
+                    //(counter clock wise starting with bottom left)
+                    x-size, y-size, z+size,
+                    x+size, y+size, z+size,
+                    x-size, y+size, z+size,
+                    //second front triangle
                     x-size, y-size, z+size,
                     x+size, y-size, z+size,
                     x+size, y+size, z+size,
+
+                    //first back triangle
+                    x+size, y-size, z-size,
+                    x-size, y+size, z-size,
+                    x+size, y+size, z-size,
+
+                    //second back triangle
+                    x-size, y-size, z-size,
+                    x+size, y-size, z-size, 
+                    x+size, y+size, z-size,
+
+                    //top triangles
+                    x-size, y+size, z-size,
+                    x+size, y+size, z+size,
                     x-size, y+size, z+size,
 
+                    x-size, y+size, z-size,
+                    x+size, y+size, z-size,
+                    x+size, y+size, z-size,
+
+                    //bottom
+                    x-size, y-size, z+size,
                     x+size, y-size, z-size,
                     x-size, y-size, z-size,
-                    x-size, y+size, z-size,
-                    x+size, y+size, z-size,
 
+                    x-size, y-size, z+size,
+                    x+size, y-size, z+size, 
+                    x+size, y-size, z-size,
+
+                    //left
+                    x-size, y-size, z-size,
                     x-size, y+size, z+size,
-                    x+size, y+size, z+size,
-                    x+size, y+size, z-size,
                     x-size, y+size, z-size,
+
+                    x-size, y-size, z-size,
+                    x-size, y-size, z+size,
+                    x-size, y+size, z+size,
+
+                    //right
+                    x+size, y-size, z+size,
+                    x+size, y+size, z-size,
+                    x+size, y+size, z+size,
 
                     x+size, y-size, z+size,
-                    x-size, y-size, z+size,
-                    x-size, y-size, z-size,
-                    x+size, y-size, z-size,
-
-                    x-size, y-size, z-size,
-                    x-size, y-size, z+size,
-                    x-size, y+size, z+size,
-                    x-size, y+size, z-size,
-
-                    x+size, y-size, z+size,
                     x+size, y-size, z-size,
                     x+size, y+size, z-size,
-                    x+size, y+size, z+size,
                 };
 
                 float u_min = MAGMA_TEX_COORD_U_MIN;
@@ -227,69 +253,119 @@ Mesh do_it_all(void) {
                 float v_max = MAGMA_TEX_COORD_V_MAX;
 
                 float texcoords[] = {
+                    // u_min, v_max,
+                    // u_max, v_max,
+                    // u_max, v_min,
+                    // u_min, v_min,
+
                     u_min, v_max,
-                    u_max, v_max,
                     u_max, v_min,
                     u_min, v_min,
 
                     u_min, v_max,
                     u_max, v_max,
                     u_max, v_min,
-                    u_min, v_min,
 
                     u_min, v_max,
-                    u_max, v_max,
                     u_max, v_min,
                     u_min, v_min,
 
                     u_min, v_max,
                     u_max, v_max,
                     u_max, v_min,
-                    u_min, v_min,
 
                     u_min, v_max,
-                    u_max, v_max,
                     u_max, v_min,
                     u_min, v_min,
 
                     u_min, v_max,
                     u_max, v_max,
                     u_max, v_min,
+
+                    u_min, v_max,
+                    u_max, v_min,
                     u_min, v_min,
+
+                    u_min, v_max,
+                    u_max, v_max,
+                    u_max, v_min,
+
+                    u_min, v_max,
+                    u_max, v_min,
+                    u_min, v_min,
+
+                    u_min, v_max,
+                    u_max, v_max,
+                    u_max, v_min,
+
+                    u_min, v_max,
+                    u_max, v_min,
+                    u_min, v_min,
+
+                    u_min, v_max,
+                    u_max, v_max,
+                    u_max, v_min,
+
+
+                };
+                float zero = 0.0f;
+                float one = 1.0f;
+                float normals[] = { 
+
+                    zero, zero, one,
+                    zero, zero, one,
+                    zero, zero, one,
+
+                    zero, zero, one,
+                    zero, zero, one,
+                    zero, zero, one,
+
+                    zero, zero, -one,
+                    zero, zero, -one,
+                    zero, zero, -one,
+
+                    zero, zero, -one,
+                    zero, zero, -one,
+                    zero, zero, -one,
+
+                    zero, one, zero,
+                    zero, one, zero,
+                    zero, one, zero,
+
+                    zero, one, zero,
+                    zero, one, zero,
+                    zero, one, zero,
+
+                    zero, -one, zero,
+                    zero, -one, zero,
+                    zero, -one, zero,
+
+                    zero, -one, zero,
+                    zero, -one, zero,
+                    zero, -one, zero,
+
+                    -one, zero, zero,
+                    -one, zero, zero,
+                    -one, zero, zero,
+
+                    -one, zero, zero,
+                    -one, zero, zero,
+                    -one, zero, zero,
+
+                    one, zero, zero,
+                    one, zero, zero,
+                    one, zero, zero,
+
+                    one, zero, zero,
+                    one, zero, zero,
+                    one, zero, zero,
                 };
 
-                float normals[] = { //yoinked from raylib
-                    0.0f, 0.0f, 1.0f,
-                    0.0f, 0.0f, 1.0f,
-                    0.0f, 0.0f, 1.0f,
-                    0.0f, 0.0f, 1.0f,
-                    0.0f, 0.0f,-1.0f,
-                    0.0f, 0.0f,-1.0f,
-                    0.0f, 0.0f,-1.0f,
-                    0.0f, 0.0f,-1.0f,
-                    0.0f, 1.0f, 0.0f,
-                    0.0f, 1.0f, 0.0f,
-                    0.0f, 1.0f, 0.0f,
-                    0.0f, 1.0f, 0.0f,
-                    0.0f,-1.0f, 0.0f,
-                    0.0f,-1.0f, 0.0f,
-                    0.0f,-1.0f, 0.0f,
-                    0.0f,-1.0f, 0.0f,
-                    1.0f, 0.0f, 0.0f,
-                    1.0f, 0.0f, 0.0f,
-                    1.0f, 0.0f, 0.0f,
-                    1.0f, 0.0f, 0.0f,
-                    -1.0f, 0.0f, 0.0f,
-                    -1.0f, 0.0f, 0.0f,
-                    -1.0f, 0.0f, 0.0f,
-                    -1.0f, 0.0f, 0.0f,
-                };
-
-                memcpy(block.vertices, vertices, 24*3*sizeof(float));
+                memcpy(block.vertices, vertices, 36*3*sizeof(float));
                 
-                memcpy(block.texcoords, texcoords, 24*2*sizeof(float));
+                memcpy(block.texcoords, texcoords, 36*2*sizeof(float));
 
-                memcpy(block.normals, normals, 24*3*sizeof(float));
+                memcpy(block.normals, normals, 36*3*sizeof(float));
 
                 //mesh.indices = (unsigned short *)RL_MALLOC(36*sizeof(unsigned short));
 
@@ -308,10 +384,10 @@ Mesh do_it_all(void) {
                 //     k++;
                 // }
 
-                block.vertexCount = 24;
+                block.vertexCount = 36;
                 block.triangleCount = 12;
 
-                total_vertex_count += 24;
+                total_vertex_count += 36;
                 total_triangle_count += 12;
                 //total_index_count += 36;
 
