@@ -56,10 +56,10 @@ typedef struct Block {
     float tex_coord_u_max;
     float tex_coord_v_min;
     float tex_coord__v_max;
-    float vertices[24*3];
-    float texcoords[24*2];
-    float normals[24*3];
-    float indices[36];
+    float vertices[36*3];
+    float texcoords[36*2];
+    float normals[36*3];
+    //float indices[36];
     float vertexCount;
     float triangleCount;
 
@@ -183,9 +183,9 @@ Mesh do_it_all(void) {
                 block.pos.y = chunk.world_pos.y - HALF_CHUNK + j;
                 block.pos.z = chunk.world_pos.z - HALF_CHUNK + k;
 
-                int x = block.pos.x;
-                int y = block.pos.y;
-                int z = block.pos.z;
+                float x = block.pos.x;
+                float y = block.pos.y;
+                float z = block.pos.z;
 
                 float size = 0.3f;
 
@@ -206,27 +206,27 @@ Mesh do_it_all(void) {
                     x+size, y+size, z-size,
 
                     //second back triangle
-                    x-size, y-size, z-size,
-                    x+size, y-size, z-size, 
-                    x+size, y+size, z-size,
+                    x+size, y-size, z-size,
+                    x-size, y-size, z-size, 
+                    x-size, y+size, z-size,
 
                     //top triangles
-                    x-size, y+size, z-size,
-                    x+size, y+size, z+size,
                     x-size, y+size, z+size,
-
-                    x-size, y+size, z-size,
                     x+size, y+size, z-size,
+                    x-size, y+size, z-size,
+
+                    x-size, y+size, z+size,
+                    x+size, y+size, z+size,
                     x+size, y+size, z-size,
 
                     //bottom
-                    x-size, y-size, z+size,
-                    x+size, y-size, z-size,
                     x-size, y-size, z-size,
-
+                    x+size, y-size, z+size,
                     x-size, y-size, z+size,
-                    x+size, y-size, z+size, 
-                    x+size, y-size, z-size,
+
+                    x-size, y-size, z-size,
+                    x+size, y-size, z-size, 
+                    x+size, y-size, z+size,
 
                     //left
                     x-size, y-size, z-size,
@@ -258,6 +258,7 @@ Mesh do_it_all(void) {
                     // u_max, v_min,
                     // u_min, v_min,
 
+                    //front
                     u_min, v_max,
                     u_max, v_min,
                     u_min, v_min,
@@ -265,7 +266,7 @@ Mesh do_it_all(void) {
                     u_min, v_max,
                     u_max, v_max,
                     u_max, v_min,
-
+                    //back
                     u_min, v_max,
                     u_max, v_min,
                     u_min, v_min,
@@ -273,7 +274,7 @@ Mesh do_it_all(void) {
                     u_min, v_max,
                     u_max, v_max,
                     u_max, v_min,
-
+                    //top
                     u_min, v_max,
                     u_max, v_min,
                     u_min, v_min,
@@ -281,7 +282,7 @@ Mesh do_it_all(void) {
                     u_min, v_max,
                     u_max, v_max,
                     u_max, v_min,
-
+                    //bottom
                     u_min, v_max,
                     u_max, v_min,
                     u_min, v_min,
@@ -289,7 +290,7 @@ Mesh do_it_all(void) {
                     u_min, v_max,
                     u_max, v_max,
                     u_max, v_min,
-
+                    //left
                     u_min, v_max,
                     u_max, v_min,
                     u_min, v_min,
@@ -297,7 +298,7 @@ Mesh do_it_all(void) {
                     u_min, v_max,
                     u_max, v_max,
                     u_max, v_min,
-
+                    //right
                     u_min, v_max,
                     u_max, v_min,
                     u_min, v_min,
@@ -311,7 +312,7 @@ Mesh do_it_all(void) {
                 float zero = 0.0f;
                 float one = 1.0f;
                 float normals[] = { 
-
+                    //front
                     zero, zero, one,
                     zero, zero, one,
                     zero, zero, one,
@@ -319,7 +320,7 @@ Mesh do_it_all(void) {
                     zero, zero, one,
                     zero, zero, one,
                     zero, zero, one,
-
+                    //back
                     zero, zero, -one,
                     zero, zero, -one,
                     zero, zero, -one,
@@ -327,7 +328,7 @@ Mesh do_it_all(void) {
                     zero, zero, -one,
                     zero, zero, -one,
                     zero, zero, -one,
-
+                    //top
                     zero, one, zero,
                     zero, one, zero,
                     zero, one, zero,
@@ -335,7 +336,7 @@ Mesh do_it_all(void) {
                     zero, one, zero,
                     zero, one, zero,
                     zero, one, zero,
-
+                    //bottom
                     zero, -one, zero,
                     zero, -one, zero,
                     zero, -one, zero,
@@ -343,7 +344,7 @@ Mesh do_it_all(void) {
                     zero, -one, zero,
                     zero, -one, zero,
                     zero, -one, zero,
-
+                    //left
                     -one, zero, zero,
                     -one, zero, zero,
                     -one, zero, zero,
@@ -351,7 +352,7 @@ Mesh do_it_all(void) {
                     -one, zero, zero,
                     -one, zero, zero,
                     -one, zero, zero,
-
+                    //right
                     one, zero, zero,
                     one, zero, zero,
                     one, zero, zero,
@@ -359,6 +360,7 @@ Mesh do_it_all(void) {
                     one, zero, zero,
                     one, zero, zero,
                     one, zero, zero,
+                    
                 };
 
                 memcpy(block.vertices, vertices, 36*3*sizeof(float));
