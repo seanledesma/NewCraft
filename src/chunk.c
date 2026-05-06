@@ -2,22 +2,24 @@
 
 ChunkMesh* gen_chunk_mesh(Vector3 world_pos) {
 
-    ChunkMesh chunk_mesh = { 0 };
+    ChunkMesh* chunk_mesh = calloc(1, sizeof(ChunkMesh));
 
     //not sure if i need this
-    // memset(&chunk_mesh.chunk, 0, sizeof(chunk_mesh.chunk));
-    // memset(&chunk_mesh.mesh, 0, sizeof(chunk_mesh.mesh));
+    //chunk_mesh->chunk = (Chunk*)calloc(1,sizeof(Chunk));
+    //memset(chunk_mesh.chunk, 0, sizeof(Chunk));
+    //chunk_mesh->mesh = (Mesh*)calloc(1,sizeof(Mesh));
+    //memset(chunk_mesh.mesh, 0, sizeof(Mesh));
     // Chunk* tempchunk = { 0 };
     // tempchunk = gen_chunk(world_pos.x, world_pos.y, world_pos.z);
     // chunk_mesh.chunk = *tempchunk;
     
-    
-    chunk_mesh.chunk = gen_chunk(world_pos.x, world_pos.y, world_pos.z);
+    chunk_mesh->chunk = (Chunk*)calloc(1,sizeof(Chunk));
+    chunk_mesh->chunk = gen_chunk(world_pos.x, world_pos.y, world_pos.z);
 
     int num_blocks_in_chunk = CHUNK_CUBED;
-    int num_block_vertices = sizeof(chunk_mesh.chunk->blocks[0].vertices) / sizeof(chunk_mesh.chunk->blocks[0].vertices[0]);
-    int num_block_texcoords = sizeof(chunk_mesh.chunk->blocks[0].texcoords) / sizeof(chunk_mesh.chunk->blocks[0].texcoords[0]);
-    int num_block_normals = sizeof(chunk_mesh.chunk->blocks[0].normals) / sizeof(chunk_mesh.chunk->blocks[0].normals[0]);
+    int num_block_vertices = sizeof(chunk_mesh->chunk->blocks[0]->vertices) / sizeof(chunk_mesh->chunk->blocks[0]->vertices[0]);
+    int num_block_texcoords = sizeof(chunk_mesh->chunk->blocks[0]->texcoords) / sizeof(chunk_mesh->chunk->blocks[0]->texcoords[0]);
+    int num_block_normals = sizeof(chunk_mesh->chunk->blocks[0]->normals) / sizeof(chunk_mesh->chunk->blocks[0]->normals[0]);
 
     int Vcounter = 0;
     int Tcounter = 0;
@@ -27,13 +29,13 @@ ChunkMesh* gen_chunk_mesh(Vector3 world_pos) {
         //add up all the arrays
         //adding up vertices
         for (int k = 0; k < num_block_vertices; k++) {
-            chunk_mesh.chunk->total_vertices[Vcounter++] = chunk_mesh.chunk->blocks[i].vertices[k];
+            chunk_mesh->chunk->total_vertices[Vcounter++] = chunk_mesh->chunk->blocks[i]->vertices[k];
         }
         for (int k = 0; k < num_block_texcoords; k++) {
-            chunk_mesh.chunk->total_texcoords[Tcounter++] = chunk_mesh.chunk->blocks[i].texcoords[k];
+            chunk_mesh->chunk->total_texcoords[Tcounter++] = chunk_mesh->chunk->blocks[i]->texcoords[k];
         }
         for (int k = 0; k < num_block_normals; k++) {
-            chunk_mesh.chunk->total_normals[Ncounter++] = chunk_mesh.chunk->blocks[i].normals[k];
+            chunk_mesh->chunk->total_normals[Ncounter++] = chunk_mesh->chunk->blocks[i]->normals[k];
         }
 
     }
@@ -47,37 +49,38 @@ ChunkMesh* gen_chunk_mesh(Vector3 world_pos) {
     //Mesh chunk_mesh = { 0 };
     //chunk_mesh.mesh = { 0 };
 
-    Mesh mesh = { 0 };
+    //Mesh mesh = { 0 };
+    chunk_mesh->mesh = (Mesh*)calloc(1,sizeof(Mesh));
 
-    mesh.vertices = (float *)malloc(num_chunk_vertices * sizeof(float));
-    memcpy(mesh.vertices, chunk_mesh.chunk->total_vertices, num_chunk_vertices * sizeof(float));
+    chunk_mesh->mesh->vertices = (float *)calloc(1, num_chunk_vertices * sizeof(float));
+    memcpy(chunk_mesh->mesh->vertices, chunk_mesh->chunk->total_vertices, num_chunk_vertices * sizeof(float));
     
-    mesh.texcoords = (float *)malloc(num_chunk_texcoords * sizeof(float));
-    memcpy(mesh.texcoords, chunk_mesh.chunk->total_texcoords, num_chunk_texcoords * sizeof(float));
+    chunk_mesh->mesh->texcoords = (float *)calloc(1, num_chunk_texcoords * sizeof(float));
+    memcpy(chunk_mesh->mesh->texcoords, chunk_mesh->chunk->total_texcoords, num_chunk_texcoords * sizeof(float));
 
-    mesh.normals = (float *)malloc(num_chunk_normals * sizeof(float));
-    memcpy(mesh.normals, chunk_mesh.chunk->total_normals, num_chunk_normals * sizeof(float));
+    chunk_mesh->mesh->normals = (float *)calloc(1, num_chunk_normals * sizeof(float));
+    memcpy(chunk_mesh->mesh->normals, chunk_mesh->chunk->total_normals, num_chunk_normals * sizeof(float));
 
-    mesh.vertexCount = chunk_mesh.chunk->total_vertex_count;
-    mesh.triangleCount = chunk_mesh.chunk->total_triangle_count;
+    chunk_mesh->mesh->vertexCount = chunk_mesh->chunk->total_vertex_count;
+    chunk_mesh->mesh->triangleCount = chunk_mesh->chunk->total_triangle_count;
 
     //chunk_mesh.mesh = mesh;
     //chunk_mesh.mesh = (Mesh *)malloc(sizeof(Mesh));
     //memcpy(chunk_mesh.mesh, &mesh, sizeof(Mesh));
 
-    chunk_mesh.mesh = &mesh;
 
-    return &chunk_mesh;
+    return chunk_mesh;
 }
 
 Chunk* gen_chunk(int worldX, int worldY, int worldZ) {
-    Chunk chunk = { 0 };
+    //Chunk chunk = { 0 };
+    Chunk* chunk = (Chunk*)calloc(1,sizeof(Chunk));
 
-    chunk.world_pos = (Vector3) { worldX, worldY, worldZ };
+    chunk->world_pos = (Vector3) { worldX, worldY, worldZ };
 
     int block_counter = 0;
-    chunk.total_vertex_count = 0;
-    chunk.total_triangle_count = 0;
+    chunk->total_vertex_count = 0;
+    chunk->total_triangle_count = 0;
 
     for (int i = 0; i < CHUNK_SIZE; i++) {
         //create all the conceptual blocks
@@ -104,37 +107,40 @@ Chunk* gen_chunk(int worldX, int worldY, int worldZ) {
                 //     continue;
                 // }
 
-                Block* block = gen_block(chunk.world_pos, i, j, k);
+                //Block* block = gen_block(chunk.world_pos, i, j, k);
+                Block* block = (Block*)calloc(1, sizeof(Block));
+                block = gen_block(chunk->world_pos, i, j, k);
 
-                chunk.total_vertex_count += 36;
-                chunk.total_triangle_count += 12;
+                chunk->total_vertex_count += 36;
+                chunk->total_triangle_count += 12;
 
-                chunk.blocks[block_counter] = *block;       //keep eye on this
+                chunk->blocks[block_counter] = block;       //keep eye on this
                 block_counter++;
 
             }
         }
     }
 
-    return &chunk;
+    return chunk;
 }
 
 Block* gen_block(Vector3 world_pos, int blockX, int blockY, int blockZ) {
-    Block block = { 0 };
-    block.pos.x = world_pos.x - HALF_CHUNK + blockX;
-    block.pos.y = world_pos.y - HALF_CHUNK + blockY;
-    block.pos.z = world_pos.z - HALF_CHUNK + blockZ;
+    //Block block = { 0 };
+    Block* block = (Block*)calloc(1, sizeof(Block));
+    block->pos.x = world_pos.x - HALF_CHUNK + blockX;
+    block->pos.y = world_pos.y - HALF_CHUNK + blockY;
+    block->pos.z = world_pos.z - HALF_CHUNK + blockZ;
 
     //some basic culling
     if(blockX == 0 || blockY == 0 || blockZ == 0) {
-        block.block_type = BLOCK_MAGMA;
+        block->block_type = BLOCK_MAGMA;
     }else if (blockX == CHUNK_SIZE-1 || blockY == CHUNK_SIZE-1 || blockZ == CHUNK_SIZE-1) {
-        block.block_type = BLOCK_MAGMA;
+        block->block_type = BLOCK_MAGMA;
     }
 
-    float x = block.pos.x;
-    float y = block.pos.y;
-    float z = block.pos.z;
+    float x = block->pos.x;
+    float y = block->pos.y;
+    float z = block->pos.z;
 
     float size = 0.5f;
 
@@ -316,14 +322,14 @@ Block* gen_block(Vector3 world_pos, int blockX, int blockY, int blockZ) {
         
     };
 
-    memcpy(block.vertices, vertices, 36*3*sizeof(float));
+    memcpy(block->vertices, vertices, 36*3*sizeof(float));
     
-    memcpy(block.texcoords, texcoords, 36*2*sizeof(float));
+    memcpy(block->texcoords, texcoords, 36*2*sizeof(float));
 
-    memcpy(block.normals, normals, 36*3*sizeof(float));
+    memcpy(block->normals, normals, 36*3*sizeof(float));
 
-    block.vertexCount = 36;
-    block.triangleCount = 12;
+    block->vertexCount = 36;
+    block->triangleCount = 12;
 
-    return &block;
+    return block;
 }

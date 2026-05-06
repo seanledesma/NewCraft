@@ -78,7 +78,7 @@ typedef struct Chunk {
     float total_normals[CHUNK_CUBED * 36 * 3];
     int total_vertex_count;
     int total_triangle_count;
-    Block blocks[CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE];
+    Block* blocks[CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE];
 
 } Chunk;
 

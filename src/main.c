@@ -32,15 +32,20 @@ int main(void) {
 
     //Chunk chunk = { 0 };
     //chunk = gen_chunk();
-    Mesh mesh = { 0 };
+    //Mesh mesh = { 0 };
     //mesh = gen_chunk_mesh(&chunk);
-    mesh = do_it_all();
+    //mesh = do_it_all();
     //mesh = gen_block_mesh(0.0f, 0.0f, 0.0f);
 
     ChunkMesh* chunkmesh = gen_chunk_mesh((Vector3) { 0.0f, 0.0f, 0.0f });
 
+    //Mesh mesh = *chunkmesh->mesh;
+    //ChunkMesh* chunkmesh = (ChunkMesh*)calloc(1, sizeof(ChunkMesh));
+    //chunkmesh = gen_chunk_mesh((Vector3) { 0.0f, 0.0f, 0.0f });
+
     //UploadMesh(chunkmesh->mesh, false);
-    UploadMesh(&mesh, false);
+    //UploadMesh(&mesh, false);
+    UploadMesh(chunkmesh->mesh, false);
 
     Material material = LoadMaterialDefault();
     material.maps[MATERIAL_MAP_DIFFUSE].texture = texture;
@@ -68,7 +73,8 @@ int main(void) {
                 //draw_cube_basic((Vector3) { -2.0f, 1.0f, 0.0f }, WHITE, &texture);
 
                 //DrawMesh(*chunkmesh->mesh, material, matrix);
-                DrawMesh(mesh, material, matrix);
+                //DrawMesh(mesh, material, matrix);
+                DrawMesh(*(chunkmesh->mesh), material, matrix);
 
             EndMode3D();
             
@@ -77,7 +83,8 @@ int main(void) {
     }
 
     //UnloadMesh(*chunkmesh->mesh);
-    UnloadMesh(mesh);
+    UnloadMesh(*(chunkmesh->mesh));
+    //UnloadMesh(mesh);
     UnloadTexture(texture);
     CloseWindow();
 
@@ -319,15 +326,15 @@ Mesh do_it_all(void) {
                 total_triangle_count += 12;
                 //total_index_count += 36;
 
-                chunk.blocks[block_counter] = block;
+                chunk.blocks[block_counter] = &block;
                 block_counter++;
             }
         }
     }
     int num_blocks_in_chunk = CHUNK_CUBED;
-    int num_block_vertices = sizeof(chunk.blocks[0].vertices) / sizeof(chunk.blocks[0].vertices[0]);
-    int num_block_texcoords = sizeof(chunk.blocks[0].texcoords) / sizeof(chunk.blocks[0].texcoords[0]);
-    int num_block_normals = sizeof(chunk.blocks[0].normals) / sizeof(chunk.blocks[0].normals[0]);
+    int num_block_vertices = sizeof(chunk.blocks[0]->vertices) / sizeof(chunk.blocks[0]->vertices[0]);
+    int num_block_texcoords = sizeof(chunk.blocks[0]->texcoords) / sizeof(chunk.blocks[0]->texcoords[0]);
+    int num_block_normals = sizeof(chunk.blocks[0]->normals) / sizeof(chunk.blocks[0]->normals[0]);
     //int num_block_indices = 36;
     int Vcounter = 0;
     int Tcounter = 0;
@@ -337,13 +344,13 @@ Mesh do_it_all(void) {
         //add up all the arrays
         //adding up vertices
         for (int k = 0; k < num_block_vertices; k++) {
-            total_vertices[Vcounter++] = chunk.blocks[i].vertices[k];
+            total_vertices[Vcounter++] = chunk.blocks[i]->vertices[k];
         }
         for (int k = 0; k < num_block_texcoords; k++) {
-            total_texcoords[Tcounter++] = chunk.blocks[i].texcoords[k];
+            total_texcoords[Tcounter++] = chunk.blocks[i]->texcoords[k];
         }
         for (int k = 0; k < num_block_normals; k++) {
-            total_normals[Ncounter++] = chunk.blocks[i].normals[k];
+            total_normals[Ncounter++] = chunk.blocks[i]->normals[k];
         }
         // for (int k = 0; k < num_block_indices; k++) {
         //     total_indices[Icounter++] = chunk.blocks[i].indices[k];
