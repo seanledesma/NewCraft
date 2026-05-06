@@ -1,5 +1,8 @@
 #include "include.h"
 
+// here we create and return a chunk_mesh pointer which has two nested pointers,
+// one to what is returned by gen_chunk and the other to the mesh we create in this 
+// function using the pointer to the chunk returned by gen_chunk.
 ChunkMesh* gen_chunk_mesh(Vector3 world_pos) {
 
     ChunkMesh* chunk_mesh = calloc(1, sizeof(ChunkMesh));
@@ -53,6 +56,9 @@ ChunkMesh* gen_chunk_mesh(Vector3 world_pos) {
     return chunk_mesh;
 }
 
+// takes chunk world position to pass to block gen function. 
+// we create and return a pointer to a chunk strut which now
+// has blocks array full of pointers to blocks created in gen_block.
 Chunk* gen_chunk(int worldX, int worldY, int worldZ) {
     //Chunk chunk = { 0 };
     Chunk* chunk = (Chunk*)calloc(1,sizeof(Chunk));
@@ -84,6 +90,13 @@ Chunk* gen_chunk(int worldX, int worldY, int worldZ) {
     return chunk;
 }
 
+// takes world position and three loop positions to get block position.
+// culling should take place here since block textures are set here.
+// vertices are set from top left triangle, then bottom right triangle,
+// in a counter clockwise rotation starting from bottom left corner.
+// tex coords were not too hard, just upside down due to difference between
+// png and opengl. This is the lowest it goes, we return a pointer to the 
+// data generated here.
 Block* gen_block(Vector3 world_pos, int blockX, int blockY, int blockZ) {
     Block* block = (Block*)calloc(1, sizeof(Block));
     block->pos.x = world_pos.x - HALF_CHUNK + blockX;
