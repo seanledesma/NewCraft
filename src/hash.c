@@ -26,7 +26,10 @@ void DestroyTable(HashTable* hash_table) {
 
 //hashing function
 uint32_t Hash(int x, int y, int z, int size) {
-    return (x + (y * 31) + (z * 31 * 31)) % size; //simple hash algo
+    if(x < 0) x = x*-1;
+    if(y<0) y = y*-1;
+    if(z<0) z = z*-1;
+    return ((x + (y * 31) + (z * 31 * 31)) + 1) % size; //simple hash algo
     //return 1;
 }
 
