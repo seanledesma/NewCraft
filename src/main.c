@@ -20,14 +20,22 @@ int main(void) {
 
     Texture texture = LoadTexture("assets/tex_atlas_2.png");
 
-    ChunkMesh* chunkmesh = gen_chunk_mesh((Vector3) { 0.0f, 0.0f, 0.0f });
+    HashTable* hash_table = InitializeTable(100000);
+    ChunkMesh* chunkmesh = CreateChunkEntry((Vector3) { 0.0f, 0.0f, 0.0f }, hash_table);
+    ChunkMesh* chunkmesh2 = CreateChunkEntry((Vector3) { 50.0f, 0.0f, 0.0f }, hash_table);
+
+    //ChunkMesh* chunkmesh = gen_chunk_mesh((Vector3) { 0.0f, 0.0f, 0.0f });
+    //ChunkMesh* chunkmesh = gen_chunk_mesh((Vector3) { 0.0f, 0.0f, 0.0f });
 
     UploadMesh(chunkmesh->mesh, false);
+    UploadMesh(chunkmesh2->mesh, false);
 
     Material material = LoadMaterialDefault();
     material.maps[MATERIAL_MAP_DIFFUSE].texture = texture;
 
     Matrix matrix = MatrixTranslate(0.0f, 0.0f, 0.0f);
+
+
 
     DisableCursor();
     SetTargetFPS(60);
@@ -42,6 +50,7 @@ int main(void) {
             BeginMode3D(camera);
 
                 DrawMesh(*(chunkmesh->mesh), material, matrix);
+                DrawMesh(*(chunkmesh2->mesh), material, matrix);
 
             EndMode3D();
             
@@ -50,6 +59,7 @@ int main(void) {
     }
 
     UnloadMesh(*(chunkmesh->mesh));
+    UnloadMesh(*(chunkmesh2->mesh));
     UnloadTexture(texture);
     CloseWindow();
 

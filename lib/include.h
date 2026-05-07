@@ -87,10 +87,29 @@ typedef struct ChunkMesh {
     Chunk* chunk;
 } ChunkMesh;
 
+typedef struct TableEntry {
+    Vector3 key;
+    uint32_t value;
+    ChunkMesh* chunk_mesh;
+}TableEntry;
 
+typedef struct HashTable {
+    TableEntry* entries;
+    size_t capacity; // size of array
+    size_t length; // how many entries
+}HashTable;
+
+// chunk.c
 ChunkMesh* gen_chunk_mesh(Vector3 world_pos);
 Chunk* gen_chunk(int worldX, int worldY, int worldZ);
 Block* gen_block(Vector3 world_pos, int blockX, int blockY, int blockZ);
+
+// hash.c
+HashTable* InitializeTable(uint32_t capacity);
+void DestroyTable(HashTable* hash_table);
+uint32_t Hash(int x, int y, int z, int size);
+ChunkMesh* CreateChunkEntry(Vector3 pos, HashTable* hash_table);
+Chunk* FetchChunkEntry(Vector3 pos, HashTable* hash_table);
 
 
 #endif
