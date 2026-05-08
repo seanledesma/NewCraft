@@ -6,6 +6,7 @@
 
 HashTable* InitializeTable(uint32_t capacity) {
     HashTable* hash_table = (HashTable*)calloc(1, sizeof(HashTable));
+    hash_table->capacity = capacity;
     hash_table->entries = (TableEntry*)calloc(capacity, sizeof(TableEntry));
     for(int i = 0; i < capacity; i++) {
         //TableEntry* table_entry = (TableEntry*)calloc(1, sizeof(TableEntry));
@@ -25,10 +26,14 @@ void DestroyTable(HashTable* hash_table) {
 }
 
 //hashing function
-uint32_t Hash(int x, int y, int z, int size) {
-    if(x < 0) x = x*-1;
-    if(y<0) y = y*-1;
-    if(z<0) z = z*-1;
+int32_t Hash(int32_t x, int32_t y, int32_t z, int32_t size) {
+    if(x < 0) x = x*(-1);
+    if(y<0) y = y*(-1);
+    if(z<0) z = z*(-1);
+    if(x == 0 && y == 0 && z == 0) {
+        TraceLog(LOG_WARNING, "Hash division by zero");
+    }
+
     return ((x + (y * 31) + (z * 31 * 31)) + 1) % size; //simple hash algo
     //return 1;
 }
@@ -58,27 +63,38 @@ void RemoveChunkEntry() {
 }
 
 //fetch chunk from table
-Chunk* FetchChunkEntry(Vector3 pos, HashTable* hash_table) {
-    uint32_t tempVal = Hash(pos.x, pos.y, pos.z, hash_table->capacity);
+ChunkMesh* FetchChunkEntry(Vector3 pos, HashTable* hash_table) {
+    int32_t Xpos = (int32_t)floor(pos.x);
+    int32_t Ypos = (int32_t)floor(pos.y);
+    int32_t Zpos = (int32_t)floor(pos.z);
+    int32_t size = (int32_t)floor(hash_table->capacity);
+    int32_t tempVal = Hash(Xpos, Ypos, Zpos, size);
 
-    while(hash_table->entries[tempVal].key.x != pos.x 
-            && hash_table->entries[tempVal].key.y != pos.y
-                && hash_table->entries[tempVal].key.z != pos.z) {
+    while((int32_t)floor(hash_table->entries[tempVal].key.x) != Xpos 
+            && (int32_t)floor(hash_table->entries[tempVal].key.y) != Ypos
+                && (int32_t)floor(hash_table->entries[tempVal].key.z) != Zpos) {
+
+        // if chunk doesn't exist..
+        if (hash_table->entries[tempVal].key.x == sizeof(float)) {
+            ChunkMesh* chunk_mesh = CreateChunkEntry(pos, hash_table);
+            return chunk_mesh;
+        }
+
         //watch for overflow
-        if((tempVal + 1) <= hash_table->capacity){
+        if((tempVal + 1) < hash_table->capacity){
             tempVal++;
         } else {
             TraceLog(LOG_ERROR, "Failed to find chunk entry");
         }
         
     }
-    if(hash_table->entries[tempVal].key.x == pos.x 
-            && hash_table->entries[tempVal].key.y == pos.y
-                && hash_table->entries[tempVal].key.z == pos.z) {
+    if((int32_t)floor(hash_table->entries[tempVal].key.x) == Xpos 
+            && (int32_t)floor(hash_table->entries[tempVal].key.y) == Ypos
+                && (int32_t)floor(hash_table->entries[tempVal].key.z) == Zpos) {
 
         return hash_table->entries[tempVal].chunk_mesh;
-    }
-    TraceLog(LOG_ERROR, "Check hash fetch chunk entry function");
+    } 
+    TraceLog(LOG_ERROR, "Check hash.c fetch chunk entry function");
     return hash_table->entries[tempVal].chunk_mesh;
 }
 

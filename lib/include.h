@@ -12,6 +12,8 @@
 #define CHUNK_SIZE 16
 #define HALF_CHUNK CHUNK_SIZE/2
 #define CHUNK_CUBED (CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE)
+#define RENDER_DISTANCE 3
+#define NUM_RENDERED_CHUNKS (RENDER_DISTANCE * RENDER_DISTANCE * RENDER_DISTANCE)
 #define BLOCK_AIR 0
 #define BLOCK_GRASS 1
 #define BLOCK_DIRT 2
@@ -95,8 +97,8 @@ typedef struct TableEntry {
 
 typedef struct HashTable {
     TableEntry* entries;
-    size_t capacity; // size of array
-    size_t length; // how many entries
+    int32_t capacity; // size of array
+    int32_t length; // how many entries
 }HashTable;
 
 // chunk.c
@@ -107,9 +109,9 @@ Block* gen_block(Vector3 world_pos, int blockX, int blockY, int blockZ);
 // hash.c
 HashTable* InitializeTable(uint32_t capacity);
 void DestroyTable(HashTable* hash_table);
-uint32_t Hash(int x, int y, int z, int size);
+int32_t Hash(int x, int y, int z, int size);
 ChunkMesh* CreateChunkEntry(Vector3 pos, HashTable* hash_table);
-Chunk* FetchChunkEntry(Vector3 pos, HashTable* hash_table);
+ChunkMesh* FetchChunkEntry(Vector3 pos, HashTable* hash_table);
 
 
 #endif

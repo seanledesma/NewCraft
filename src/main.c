@@ -4,13 +4,16 @@
 void draw_cube_basic(Vector3 position, Color color, Texture* texture);
 
 
+// TO DO NEXT
+// load (and unload) chunks as the player moves around based on player position
+
 int main(void) {
     const int screenWidth = 1920;
     const int screenHeight = 1080;
     InitWindow(screenWidth, screenHeight, "NewCraft");
 
     Camera camera = { 0 };
-    camera.position = (Vector3) { 0.0f, 1.8f + 8.0f, 20.0f };
+    camera.position = (Vector3) { 0.0f, 1.8f, 0.0f };
     camera.target = (Vector3) { 0.0f, 2.0f, 0.0f };
     camera.up = (Vector3) { 0.0f, 1.0f, 0.0f };
     camera.fovy = 70.0f;
@@ -20,6 +23,33 @@ int main(void) {
 
     Texture texture = LoadTexture("assets/tex_atlas_2.png");
 
+    Vector3 current_chunk_pos;
+    Vector3 closest_chunk_positions[NUM_RENDERED_CHUNKS];
+
+    current_chunk_pos.x = floor((camera.position.x + HALF_CHUNK) / CHUNK_SIZE);
+    current_chunk_pos.y = floor((camera.position.y + HALF_CHUNK) / CHUNK_SIZE);
+    current_chunk_pos.z = floor((camera.position.z + HALF_CHUNK) / CHUNK_SIZE);
+
+    // initialize first 27 chunks around player
+    //Vector3 player_pos = camera.position;
+    //closest_chunk_positions[0] = player_pos;
+    int chunk_counter = 0;
+    for (int x = -1; x < 2; x++) {
+        for (int y = -1; y < 2; y++) {
+            for (int z = -1; z < 2; z++) {
+                closest_chunk_positions[chunk_counter++] = (Vector3) { 
+                    current_chunk_pos.x + (x*CHUNK_SIZE),
+                    current_chunk_pos.y + (y*CHUNK_SIZE),
+                    current_chunk_pos.z + (z*CHUNK_SIZE)
+                 };
+            }
+        }
+    }
+
+
+
+
+
     HashTable* hash_table = InitializeTable(100000);
     //ChunkMesh* chunkmesh = CreateChunkEntry((Vector3) { 0.0f, 0.0f, 0.0f }, hash_table);
     //ChunkMesh* chunkmesh = CreateChunkEntry(camera.position, hash_table);
@@ -28,29 +58,29 @@ int main(void) {
     //ChunkMesh* chunkmesh = gen_chunk_mesh((Vector3) { 0.0f, 0.0f, 0.0f });
     //ChunkMesh* chunkmesh = gen_chunk_mesh((Vector3) { 0.0f, 0.0f, 0.0f });
 
-    //ChunkMesh* chunkmeshes = (ChunkMesh*)calloc(16, sizeof(ChunkMesh));
-    Vector3 positions[9] = {
-        (Vector3) {-16.0f, 0.0f, -16.0f},
-        (Vector3) {-16.0f, 0.0f, 0.0f},
-        (Vector3) {-16.0f, 0.0f, 16.0f},
+    //ChunkMesh* chunkmeshes = (ChunkMesh*)calloc(NUM_RENDERED_CHUNKS, sizeof(ChunkMesh));
+    // Vector3 positions[9] = {
+    //     (Vector3) {-16.0f, 0.0f, -16.0f},
+    //     (Vector3) {-16.0f, 0.0f, 0.0f},
+    //     (Vector3) {-16.0f, 0.0f, 16.0f},
 
-        (Vector3) {0.0f, 0.0f, -16.0f},
-        (Vector3) {0.0f, 0.0f, 0.0f},
-        (Vector3) {0.0f, 0.0f, 16.0f},
+    //     (Vector3) {0.0f, 0.0f, -16.0f},
+    //     (Vector3) {0.0f, 0.0f, 0.0f},
+    //     (Vector3) {0.0f, 0.0f, 16.0f},
 
-        (Vector3) {16.0f, 0.0f, -16.0f},
-        (Vector3) {16.0f, 0.0f, 0.0f},
-        (Vector3) {16.0f, 0.0f, 16.0f},
-    }; 
+    //     (Vector3) {16.0f, 0.0f, -16.0f},
+    //     (Vector3) {16.0f, 0.0f, 0.0f},
+    //     (Vector3) {16.0f, 0.0f, 16.0f},
+    // }; 
     // for(int i = 0; i < 3; i++) {
     //     for (int j = 0; j < 3; j++) {
     //         //positions[i] = (Vector3) { (CHUNK_SIZE * i) / 2, 0.0f, (CHUNK_SIZE * j) / 2 };
     //     }
     // }
 
-    ChunkMesh* chunkmeshes[9];
-    for(int i = 0; i < 9; i++) {
-        chunkmeshes[i] = CreateChunkEntry(positions[i], hash_table);
+    ChunkMesh* chunkmeshes[NUM_RENDERED_CHUNKS];
+    for(int i = 0; i < NUM_RENDERED_CHUNKS; i++) {
+        chunkmeshes[i] = FetchChunkEntry(closest_chunk_positions[i], hash_table);
         UploadMesh(chunkmeshes[i]->mesh, false); 
     }
 
@@ -63,35 +93,72 @@ int main(void) {
 
     Matrix matrix = MatrixTranslate(0.0f, 0.0f, 0.0f);
 
-
+    Vector3 player_base;
+    player_base.x = floor((camera.position.x / CHUNK_SIZE) + HALF_CHUNK);
+    player_base.y = floor((camera.position.y / CHUNK_SIZE) + HALF_CHUNK);
+    player_base.z = floor((camera.position.z / CHUNK_SIZE) + HALF_CHUNK);
+    Vector3 old_base = player_base;
 
     DisableCursor();
     SetTargetFPS(60);
     while(!WindowShouldClose()) {
         UpdateCamera(&camera, cameraMode);
 
-        
+        // player_base.x = floor((camera.position.x / CHUNK_SIZE) + HALF_CHUNK);
+        // player_base.y = floor((camera.position.y / CHUNK_SIZE) + HALF_CHUNK);
+        // player_base.z = floor((camera.position.z / CHUNK_SIZE) + HALF_CHUNK);
+        // if(old_base.x != player_base.x || old_base.y != player_base.y || old_base.z != player_base.z) {
+        //     old_base = player_base;
+        //     int chunk_counter = 0;
+        //     for (int x = -1; x < 2; x++) {
+        //         for (int y = -1; y < 2; y++) {
+        //             for (int z = -1; z < 2; z++) {
+        //                 closest_chunk_positions[chunk_counter++] = (Vector3) { 
+        //                     player_base.x + (x*CHUNK_SIZE),
+        //                     player_base.y + (y*CHUNK_SIZE),
+        //                     player_base.z + (z*CHUNK_SIZE)
+        //                 };
+        //             }
+        //         }
+        //     }
+        //     for(int i = 0; i < NUM_RENDERED_CHUNKS; i++) {
+        //         chunkmeshes[i] = FetchChunkEntry(closest_chunk_positions[i], hash_table);
+        //         UploadMesh(chunkmeshes[i]->mesh, false); 
+        //     }
+        //     //old_base = player_base;
+        // }
+        Vector3 current_chunk_pos;
+        current_chunk_pos.x = floor((camera.position.x + HALF_CHUNK) / CHUNK_SIZE);
+        current_chunk_pos.y = floor((camera.position.y + HALF_CHUNK) / CHUNK_SIZE);
+        current_chunk_pos.z = floor((camera.position.z + HALF_CHUNK) / CHUNK_SIZE);
 
         BeginDrawing();
             
             ClearBackground(LIGHTGRAY);
+
             BeginMode3D(camera);
 
                 //DrawMesh(*(chunkmesh->mesh), material, matrix);
                 //DrawMesh(*(chunkmesh2->mesh), material, matrix);
-                for(int i = 0; i < 9; i++) {
+                for(int i = 0; i < NUM_RENDERED_CHUNKS; i++) {
                     DrawMesh(*chunkmeshes[i]->mesh, material, matrix);
                 }
 
             EndMode3D();
             
+            DrawText(TextFormat("Player position x:%.2f, y:%.2f, z:%.2f", camera.position.x, camera.position.y, camera.position.z), 
+                        140, 10, 20, YELLOW);
+            DrawText(TextFormat("Current Chunk Position x:%.2f, y:%.2f, z:%.2f", 
+                                current_chunk_pos.x, current_chunk_pos.y, current_chunk_pos.z), 
+                        640, 10, 20, YELLOW);
+
             DrawFPS(10, 10);
         EndDrawing();
     }
 
     //UnloadMesh(*(chunkmesh->mesh));
     //UnloadMesh(*(chunkmesh2->mesh));
-    for(int i = 0; i < 9; i++) {
+    for(int i = 0; i < NUM_RENDERED_CHUNKS; i++) {
         UnloadMesh(*chunkmeshes[i]->mesh);
     }
     UnloadTexture(texture);
