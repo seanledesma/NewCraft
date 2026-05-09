@@ -67,6 +67,8 @@ NATIVE_RELEASE_FLAGS := $(NATIVE_COMMON_FLAGS) \
 NATIVE_DEBUG_FLAGS := $(NATIVE_COMMON_FLAGS) \
                       -g3 \
                       -O0 \
+					  -Wall \
+					  -Wextra \
                       -DDEBUG \
                       -fsanitize=address \
                       -fsanitize=undefined \

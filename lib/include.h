@@ -14,6 +14,8 @@
 #define CHUNK_CUBED (CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE)
 #define RENDER_DISTANCE 3
 #define NUM_RENDERED_CHUNKS (RENDER_DISTANCE * RENDER_DISTANCE * RENDER_DISTANCE)
+#define TABLE_CAPACITY 100000
+
 #define BLOCK_AIR 0
 #define BLOCK_GRASS 1
 #define BLOCK_DIRT 2
@@ -90,13 +92,14 @@ typedef struct ChunkMesh {
 } ChunkMesh;
 
 typedef struct TableEntry {
+    bool empty;
     Vector3 key;
-    uint32_t value;
+    int32_t value;
     ChunkMesh* chunk_mesh;
 }TableEntry;
 
 typedef struct HashTable {
-    TableEntry* entries;
+    TableEntry** entries;
     int32_t capacity; // size of array
     int32_t length; // how many entries
 }HashTable;

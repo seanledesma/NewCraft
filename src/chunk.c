@@ -8,7 +8,10 @@ ChunkMesh* gen_chunk_mesh(Vector3 world_pos) {
     ChunkMesh* chunk_mesh = calloc(1, sizeof(ChunkMesh));
     
     chunk_mesh->chunk = (Chunk*)calloc(1,sizeof(Chunk));
-    chunk_mesh->chunk = gen_chunk(world_pos.x, world_pos.y, world_pos.z);
+    int32_t Xpos = (int32_t)floor(world_pos.x);
+    int32_t Ypos = (int32_t)floor(world_pos.y);
+    int32_t Zpos = (int32_t)floor(world_pos.z);
+    chunk_mesh->chunk = gen_chunk(Xpos, Ypos, Zpos);
 
     int num_blocks_in_chunk = CHUNK_CUBED;
     int num_block_vertices = sizeof(chunk_mesh->chunk->blocks[0]->vertices) / sizeof(chunk_mesh->chunk->blocks[0]->vertices[0]);
@@ -59,7 +62,7 @@ ChunkMesh* gen_chunk_mesh(Vector3 world_pos) {
 // takes chunk world position to pass to block gen function. 
 // we create and return a pointer to a chunk strut which now
 // has blocks array full of pointers to blocks created in gen_block.
-Chunk* gen_chunk(int worldX, int worldY, int worldZ) {
+Chunk* gen_chunk(int32_t worldX, int32_t worldY, int32_t worldZ) {
     //Chunk chunk = { 0 };
     Chunk* chunk = (Chunk*)calloc(1,sizeof(Chunk));
 

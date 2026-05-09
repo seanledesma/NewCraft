@@ -33,15 +33,21 @@ int main(void) {
     // initialize first 27 chunks around player
     //Vector3 player_pos = camera.position;
     //closest_chunk_positions[0] = player_pos;
+
+    // this code should be good
     int chunk_counter = 0;
     for (int x = -1; x < 2; x++) {
         for (int y = -1; y < 2; y++) {
             for (int z = -1; z < 2; z++) {
-                closest_chunk_positions[chunk_counter++] = (Vector3) { 
-                    current_chunk_pos.x + (x*CHUNK_SIZE),
-                    current_chunk_pos.y + (y*CHUNK_SIZE),
-                    current_chunk_pos.z + (z*CHUNK_SIZE)
-                 };
+                closest_chunk_positions[chunk_counter] = (Vector3) { 
+                    floor(current_chunk_pos.x + (x*CHUNK_SIZE)),
+                    floor(current_chunk_pos.y + (y*CHUNK_SIZE)),
+                    floor(current_chunk_pos.z + (z*CHUNK_SIZE))
+                };
+                TraceLog(LOG_WARNING, "closest chunk position %d X position: %.2f", chunk_counter, closest_chunk_positions[chunk_counter].x);
+                TraceLog(LOG_WARNING, "closest chunk position %d Y position: %.2f", chunk_counter, closest_chunk_positions[chunk_counter].y);
+                TraceLog(LOG_WARNING, "closest chunk position %d Z position: %.2f", chunk_counter, closest_chunk_positions[chunk_counter].z);
+                chunk_counter += 1;
             }
         }
     }
@@ -50,7 +56,7 @@ int main(void) {
 
 
 
-    HashTable* hash_table = InitializeTable(100000);
+    HashTable* hash_table = InitializeTable(TABLE_CAPACITY);
     //ChunkMesh* chunkmesh = CreateChunkEntry((Vector3) { 0.0f, 0.0f, 0.0f }, hash_table);
     //ChunkMesh* chunkmesh = CreateChunkEntry(camera.position, hash_table);
     //ChunkMesh* chunkmesh2 = CreateChunkEntry((Vector3) { 50.0f, 0.0f, 0.0f }, hash_table);
