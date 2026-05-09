@@ -14,7 +14,7 @@ int main(void) {
 
     Camera camera = { 0 };
     camera.position = (Vector3) { 0.0f, 1.8f, 0.0f };
-    camera.target = (Vector3) { 0.0f, 2.0f, 0.0f };
+    camera.target = (Vector3) { 0.0f, 0.0f, -5.0f };
     camera.up = (Vector3) { 0.0f, 1.0f, 0.0f };
     camera.fovy = 70.0f;
     camera.projection = CAMERA_PERSPECTIVE;
@@ -104,7 +104,7 @@ int main(void) {
     // player_base.y = floor((camera.position.y / CHUNK_SIZE) + HALF_CHUNK);
     // player_base.z = floor((camera.position.z / CHUNK_SIZE) + HALF_CHUNK);
     // Vector3 old_base = player_base;
-
+    int test_counter = 0;
     DisableCursor();
     SetTargetFPS(60);
     while(!WindowShouldClose()) {
@@ -157,6 +157,8 @@ int main(void) {
             DrawText(TextFormat("Current Chunk Position x:%.2f, y:%.2f, z:%.2f", 
                                 current_chunk_pos.x, current_chunk_pos.y, current_chunk_pos.z), 
                         640, 10, 20, YELLOW);
+            DrawText(TextFormat("counter: %d", test_counter), 10, 50, 12, YELLOW);
+            test_counter++;
 
             DrawFPS(10, 10);
         EndDrawing();

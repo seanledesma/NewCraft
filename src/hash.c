@@ -74,6 +74,7 @@ ChunkMesh* CreateChunkEntry(Vector3 pos, HashTable* hash_table) {
         hash_table->entries[index] = table_entry;
         TraceLog(LOG_WARNING, "current x key: %.2f", hash_table->entries[index]->key.x);
         TraceLog(LOG_WARNING, "found spot at index: %d", index);
+        TraceLog(LOG_WARNING, "making sure new index works: %.2f", hash_table->entries[index]->chunk_mesh->chunk->blocks[0]->pos.x);
         return hash_table->entries[index]->chunk_mesh;
     } else {
         TraceLog(LOG_ERROR, "not supposed to get here, check create chunk entry");

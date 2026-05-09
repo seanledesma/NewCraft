@@ -106,13 +106,13 @@ typedef struct HashTable {
 
 // chunk.c
 ChunkMesh* gen_chunk_mesh(Vector3 world_pos);
-Chunk* gen_chunk(int worldX, int worldY, int worldZ);
+Chunk* gen_chunk(float worldX, float worldY, float worldZ);
 Block* gen_block(Vector3 world_pos, int blockX, int blockY, int blockZ);
 
 // hash.c
 HashTable* InitializeTable(uint32_t capacity);
 void DestroyTable(HashTable* hash_table);
-int32_t Hash(int x, int y, int z, int size);
+int32_t Hash(int32_t x, int32_t y, int32_t z, int32_t size);
 ChunkMesh* CreateChunkEntry(Vector3 pos, HashTable* hash_table);
 ChunkMesh* FetchChunkEntry(Vector3 pos, HashTable* hash_table);
 

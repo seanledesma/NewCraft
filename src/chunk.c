@@ -63,7 +63,7 @@ ChunkMesh* gen_chunk_mesh(Vector3 world_pos) {
 // takes chunk world position to pass to block gen function. 
 // we create and return a pointer to a chunk strut which now
 // has blocks array full of pointers to blocks created in gen_block.
-Chunk* gen_chunk(int worldX, int worldY, int worldZ) {
+Chunk* gen_chunk(float worldX, float worldY, float worldZ) {
     //Chunk chunk = { 0 };
     Chunk* chunk = (Chunk*)calloc(1,sizeof(Chunk));
 
@@ -90,7 +90,7 @@ Chunk* gen_chunk(int worldX, int worldY, int worldZ) {
             }
         }
     }
-
+    TraceLog(LOG_WARNING, "hit gen chunk");
     return chunk;
 }
 
