@@ -21,6 +21,9 @@ HashTable* InitializeTable(uint32_t capacity) {
             TraceLog(LOG_ERROR, "null pointer in Initialize Table for loop");
         }
         hash_table->entries[i]->empty = true;
+        hash_table->entries[i]->key.x = 1.234f;
+        hash_table->entries[i]->key.y = 1.234f;
+        hash_table->entries[i]->key.z = 1.234f;
     }
     return hash_table;
 }
@@ -52,48 +55,74 @@ int32_t Hash(int32_t x, int32_t y, int32_t z, int32_t size) {
 
 //create / add chunk to table
 ChunkMesh* CreateChunkEntry(Vector3 pos, HashTable* hash_table) {
-    hash_table->length += 1;
+    TraceLog(LOG_WARNING, "receiving x coord: %.2f", pos.x);
+    //hash_table->length += 1;
     TableEntry* table_entry = (TableEntry*)calloc(1, sizeof(TableEntry));
     table_entry->chunk_mesh = gen_chunk_mesh(pos);
     table_entry->key = pos;
     table_entry->empty = false;
-    //table_entry->value = Hash(pos.x, pos.y, pos.z, hash_table->capacity);
-    int32_t Xpos = (int32_t)floor(pos.x);
-    int32_t Ypos = (int32_t)floor(pos.y);
-    int32_t Zpos = (int32_t)floor(pos.z);
-    int32_t size = (int32_t)floor(hash_table->length);
-    //TraceLog(LOG_WARNING, "hashing coords x:%.2f, y:%.2f, z:%.2f", Xpos, Ypos, Zpos);
+
     TraceLog(LOG_WARNING, "hashing coords x:%.2f, y:%.2f, z:%.2f", pos.x, pos.y, pos.z);
-    //table_entry->value = Hash(Xpos, Ypos, Zpos, size);
+
     table_entry->value = Hash(pos.x, pos.y, pos.z, TABLE_CAPACITY/5);
 
-    //then add to table
     int32_t index = table_entry->value; 
+    //TraceLog(LOG_WARNING, "current x key before: %.2f", hash_table->entries[index]->key.x);
+    while(hash_table->entries[index]->key.x != 1.234f) index++;
+    //first see if that spot is taken
+    if(hash_table->entries[index]->key.x == 1.234f) {
+        hash_table->entries[index] = table_entry;
+        TraceLog(LOG_WARNING, "current x key: %.2f", hash_table->entries[index]->key.x);
+        TraceLog(LOG_WARNING, "found spot at index: %d", index);
+        return hash_table->entries[index]->chunk_mesh;
+    } else {
+        TraceLog(LOG_ERROR, "not supposed to get here, check create chunk entry");
+    }
+
+    //if not empty, find empty spot
+    //while(hash_table->entries[index]->key.x != 1.234f) index++;
+
+    //hopefully, we found an empty spot
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
     //is index empty? if so, add entry
     //if (hash_table->entries[index]->empty == true) {
-    if(hash_table->entries[index] == NULL) {
-        TraceLog(LOG_WARNING, "got here tho");
-        //memcpy(&hash_table->entries[index], &table_entry, sizeof(TableEntry)); // why am i copying? just point to what i've got?
+    // if(hash_table->entries[index] == NULL) {
+    //     TraceLog(LOG_WARNING, "got here tho");
+    //     //memcpy(&hash_table->entries[index], &table_entry, sizeof(TableEntry)); // why am i copying? just point to what i've got?
         
-        hash_table->entries[index] = table_entry;
-        TraceLog(LOG_WARNING, "index was empty in create chunk entry");
-        table_entry->empty = false;
-        return hash_table->entries[index]->chunk_mesh;
-        //return table_entry->chunk_mesh;
-    } else if (hash_table->entries[index]->empty == false) {
-        while(hash_table->entries[index]->empty == false) {
-            // overflow protection
-            if (hash_table->capacity >= index + 1) {
-                index++;
-            } else {
-                TraceLog(LOG_ERROR, "Could not find empty spot in hash table, hash.c CreateChunkEntry");
-            }
-        }
-        //memcpy(&hash_table->entries[index], table_entry, sizeof(TableEntry));
-        hash_table->entries[index] = table_entry;
-        table_entry->empty = false;
-        return table_entry->chunk_mesh;
-    }
+    //     hash_table->entries[index] = table_entry;
+    //     TraceLog(LOG_WARNING, "index was empty in create chunk entry");
+    //     table_entry->empty = false;
+    //     return hash_table->entries[index]->chunk_mesh;
+    //     //return table_entry->chunk_mesh;
+    // } else if (hash_table->entries[index]->empty == false) {
+    //     while(hash_table->entries[index]->empty == false) {
+    //         // overflow protection
+    //         if (hash_table->capacity >= index + 1) {
+    //             index++;
+    //         } else {
+    //             TraceLog(LOG_ERROR, "Could not find empty spot in hash table, hash.c CreateChunkEntry");
+    //         }
+    //     }
+    //     //memcpy(&hash_table->entries[index], table_entry, sizeof(TableEntry));
+    //     hash_table->entries[index] = table_entry;
+    //     table_entry->empty = false;
+    //     return table_entry->chunk_mesh;
+    // }
 
 
 
@@ -105,6 +134,7 @@ ChunkMesh* CreateChunkEntry(Vector3 pos, HashTable* hash_table) {
     //     //hash_table->entries[index] = table_entry;
     //     memcpy(&hash_table->entries[index], &table_entry, sizeof(TableEntry)); //keep eye on this
     // }
+    TraceLog(LOG_ERROR, "something went wrong in create chunk entry");
     return table_entry->chunk_mesh;
 }
 
@@ -115,39 +145,64 @@ void RemoveChunkEntry() {
 
 //fetch chunk from table
 ChunkMesh* FetchChunkEntry(Vector3 pos, HashTable* hash_table) {
-    int32_t Xpos = (int32_t)floor(pos.x);
-    int32_t Ypos = (int32_t)floor(pos.y);
-    int32_t Zpos = (int32_t)floor(pos.z);
-    int32_t size = (int32_t)floor(hash_table->length);
-    //TraceLog(LOG_WARNING, "hashing coords x:%.2f, y:%.2f, z:%.2f", Xpos, Ypos, Zpos);
     TraceLog(LOG_WARNING, "hashing coords in fetch x:%.2f, y:%.2f, z:%.2f", pos.x, pos.y, pos.z);
-    //int32_t index = Hash(Xpos, Ypos, Zpos, size);
     int32_t index = Hash(pos.x, pos.y, pos.z, TABLE_CAPACITY/5);
 
-    if (hash_table->entries[index] == NULL) {
-        TraceLog(LOG_WARNING, "fetch null chunk at x:%.2f, y:%.2f, z:%.2f", pos.x, pos.y, pos.z);
-        ChunkMesh* chunk_mesh = CreateChunkEntry(pos, hash_table);
-        return hash_table->entries[index]->chunk_mesh;
-    }
-
-    //is there already a chunk at index? if no, create one
-    if (hash_table->entries[index]->empty == true) {
-        TraceLog(LOG_WARNING, "fetch empty chunk at x:%.2f, y:%.2f, z:%.2f", pos.x, pos.y, pos.z);
-        ChunkMesh* chunk_mesh = CreateChunkEntry(pos, hash_table);
-        // hash_table->entries[index].chunk_mesh = chunk_mesh;
-        // hash_table->entries[index].empty = false;
-        // hash_table->entries[index].key = pos;
-        return hash_table->entries[index]->chunk_mesh;
-    // and if it's full, is it our chunk?
-    } else if (hash_table->entries[index]->empty != true) {
-        while ((int32_t)floor(hash_table->entries[index]->key.x) != Xpos 
-            && (int32_t)floor(hash_table->entries[index]->key.y) != Ypos
-                && (int32_t)floor(hash_table->entries[index]->key.z) != Zpos) {
-            index++;
+    while(true) {
+            
+        if(hash_table->entries[index]->key.x == pos.x &&
+            hash_table->entries[index]->key.y == pos.y &&
+            hash_table->entries[index]->key.z == pos.z) return hash_table->entries[index]->chunk_mesh;
+        
+        if(hash_table->entries[index]->key.x == 1.234f) {
+            TraceLog(LOG_WARNING, "sending x coord: %.2f", pos.x);
+            return CreateChunkEntry(pos, hash_table);
         }
-        TraceLog(LOG_WARNING, "made it here");
-        return hash_table->entries[index]->chunk_mesh;
+        
+        if(index+1 >= TABLE_CAPACITY) {
+            TraceLog(LOG_ERROR, "Hit table capacity in fetch");
+        }
+        index++;
+        //TraceLog(LOG_WARNING, "index: %d", index);
     }
+    //assuming we found our guy
+    // if(hash_table->entries[index]->key.x == pos.x &&
+    //     hash_table->entries[index]->key.y == pos.y &&
+    //     hash_table->entries[index]->key.z == pos.z) return hash_table->entries[index]->chunk_mesh;
+
+
+    
+
+
+
+
+
+
+
+    // if (hash_table->entries[index] == NULL) {
+    //     TraceLog(LOG_WARNING, "fetch null chunk at x:%.2f, y:%.2f, z:%.2f", pos.x, pos.y, pos.z);
+    //     ChunkMesh* chunk_mesh = CreateChunkEntry(pos, hash_table);
+    //     return hash_table->entries[index]->chunk_mesh;
+    // }
+
+    // //is there already a chunk at index? if no, create one
+    // if (hash_table->entries[index]->empty == true) {
+    //     TraceLog(LOG_WARNING, "fetch empty chunk at x:%.2f, y:%.2f, z:%.2f", pos.x, pos.y, pos.z);
+    //     ChunkMesh* chunk_mesh = CreateChunkEntry(pos, hash_table);
+    //     // hash_table->entries[index].chunk_mesh = chunk_mesh;
+    //     // hash_table->entries[index].empty = false;
+    //     // hash_table->entries[index].key = pos;
+    //     return hash_table->entries[index]->chunk_mesh;
+    // // and if it's full, is it our chunk?
+    // } else if (hash_table->entries[index]->empty != true) {
+    //     while ((int32_t)floor(hash_table->entries[index]->key.x) != Xpos 
+    //         && (int32_t)floor(hash_table->entries[index]->key.y) != Ypos
+    //             && (int32_t)floor(hash_table->entries[index]->key.z) != Zpos) {
+    //         index++;
+    //     }
+    //     TraceLog(LOG_WARNING, "made it here");
+    //     return hash_table->entries[index]->chunk_mesh;
+    // }
 
     TraceLog(LOG_ERROR, "Check hash.c fetch chunk entry function");
     return hash_table->entries[index]->chunk_mesh;

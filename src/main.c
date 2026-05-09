@@ -23,12 +23,12 @@ int main(void) {
 
     Texture texture = LoadTexture("assets/tex_atlas_2.png");
 
-    Vector3 current_chunk_pos;
+    Vector3 current_chunk_pos = { 0.0f, 0.0f, 0.0f };
     Vector3 closest_chunk_positions[NUM_RENDERED_CHUNKS];
 
-    current_chunk_pos.x = floor((camera.position.x + HALF_CHUNK) / CHUNK_SIZE);
-    current_chunk_pos.y = floor((camera.position.y + HALF_CHUNK) / CHUNK_SIZE);
-    current_chunk_pos.z = floor((camera.position.z + HALF_CHUNK) / CHUNK_SIZE);
+    // current_chunk_pos.x = floor((camera.position.x + HALF_CHUNK) / CHUNK_SIZE);
+    // current_chunk_pos.y = floor((camera.position.y + HALF_CHUNK) / CHUNK_SIZE);
+    // current_chunk_pos.z = floor((camera.position.z + HALF_CHUNK) / CHUNK_SIZE);
 
     // initialize first 27 chunks around player
     //Vector3 player_pos = camera.position;
@@ -40,9 +40,9 @@ int main(void) {
         for (int y = -1; y < 2; y++) {
             for (int z = -1; z < 2; z++) {
                 closest_chunk_positions[chunk_counter] = (Vector3) { 
-                    floor(current_chunk_pos.x + (x*CHUNK_SIZE)),
-                    floor(current_chunk_pos.y + (y*CHUNK_SIZE)),
-                    floor(current_chunk_pos.z + (z*CHUNK_SIZE))
+                    current_chunk_pos.x + (x*CHUNK_SIZE),
+                    current_chunk_pos.y + (y*CHUNK_SIZE),
+                    current_chunk_pos.z + (z*CHUNK_SIZE)
                 };
                 TraceLog(LOG_WARNING, "closest chunk position %d X position: %.2f", chunk_counter, closest_chunk_positions[chunk_counter].x);
                 TraceLog(LOG_WARNING, "closest chunk position %d Y position: %.2f", chunk_counter, closest_chunk_positions[chunk_counter].y);
@@ -99,11 +99,11 @@ int main(void) {
 
     Matrix matrix = MatrixTranslate(0.0f, 0.0f, 0.0f);
 
-    Vector3 player_base;
-    player_base.x = floor((camera.position.x / CHUNK_SIZE) + HALF_CHUNK);
-    player_base.y = floor((camera.position.y / CHUNK_SIZE) + HALF_CHUNK);
-    player_base.z = floor((camera.position.z / CHUNK_SIZE) + HALF_CHUNK);
-    Vector3 old_base = player_base;
+    // Vector3 player_base;
+    // player_base.x = floor((camera.position.x / CHUNK_SIZE) + HALF_CHUNK);
+    // player_base.y = floor((camera.position.y / CHUNK_SIZE) + HALF_CHUNK);
+    // player_base.z = floor((camera.position.z / CHUNK_SIZE) + HALF_CHUNK);
+    // Vector3 old_base = player_base;
 
     DisableCursor();
     SetTargetFPS(60);
@@ -133,10 +133,10 @@ int main(void) {
         //     }
         //     //old_base = player_base;
         // }
-        Vector3 current_chunk_pos;
-        current_chunk_pos.x = floor((camera.position.x + HALF_CHUNK) / CHUNK_SIZE);
-        current_chunk_pos.y = floor((camera.position.y + HALF_CHUNK) / CHUNK_SIZE);
-        current_chunk_pos.z = floor((camera.position.z + HALF_CHUNK) / CHUNK_SIZE);
+        // Vector3 current_chunk_pos;
+        // current_chunk_pos.x = floor((camera.position.x + HALF_CHUNK) / CHUNK_SIZE);
+        // current_chunk_pos.y = floor((camera.position.y + HALF_CHUNK) / CHUNK_SIZE);
+        // current_chunk_pos.z = floor((camera.position.z + HALF_CHUNK) / CHUNK_SIZE);
 
         BeginDrawing();
             
