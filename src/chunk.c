@@ -90,7 +90,7 @@ Chunk* gen_chunk(float worldX, float worldY, float worldZ) {
             }
         }
     }
-    TraceLog(LOG_WARNING, "hit gen chunk");
+    //TraceLog(LOG_WARNING, "hit gen chunk");
     return chunk;
 }
 
@@ -107,15 +107,41 @@ Block* gen_block(Vector3 world_pos, int blockX, int blockY, int blockZ) {
     block->pos.y = world_pos.y - HALF_CHUNK + blockY;
     block->pos.z = world_pos.z - HALF_CHUNK + blockZ;
 
-    //some basic culling
-    if(blockX == 0 || blockY == 0 || blockZ == 0) {
-        block->block_type = BLOCK_MAGMA;
-    }else if (blockX == CHUNK_SIZE-1 || blockY == CHUNK_SIZE-1 || blockZ == CHUNK_SIZE-1) {
-        block->block_type = BLOCK_MAGMA;
-    } else {
+
+    block->block_type = DecideBlockType(block->pos);
+    
+    if (block->block_type == BLOCK_AIR) return block;
+
+    if(IsBlockVisible(block->pos, blockX, blockY, blockZ) == false) {
         block->block_type = BLOCK_AIR;
         return block;
     }
+
+    // if you see all magma, something went wrong
+    float u_min = MAGMA_TEX_COORD_U_MIN;
+    float u_max = MAGMA_TEX_COORD_U_MAX;
+    float v_min = MAGMA_TEX_COORD_V_MIN;
+    float v_max = MAGMA_TEX_COORD_V_MAX;
+
+    if(block->block_type == BLOCK_GRASS) {
+        u_min = GRASS_LIGHT_TEX_COORD_U_MIN;
+        u_max = GRASS_LIGHT_TEX_COORD_U_MAX;
+        v_min = GRASS_LIGHT_TEX_COORD_V_MIN;
+        v_max = GRASS_LIGHT_TEX_COORD_V_MAX;
+    }
+    if(block->block_type == BLOCK_DIRT) {
+        u_min = DIRT_DARK_TEX_COORD_U_MIN;
+        u_max = DIRT_DARK_TEX_COORD_U_MAX;
+        v_min = DIRT_DARK_TEX_COORD_V_MIN;
+        v_max = DIRT_DARK_TEX_COORD_V_MAX;
+    }
+    if(block->block_type == BLOCK_STONE) {
+        u_min = STONE_TEX_COORD_U_MIN;
+        u_max = STONE_TEX_COORD_U_MAX;
+        v_min = STONE_TEX_COORD_V_MIN;
+        v_max = STONE_TEX_COORD_V_MAX;
+    }
+
 
     float x = block->pos.x;
     float y = block->pos.y;
@@ -181,10 +207,10 @@ Block* gen_block(Vector3 world_pos, int blockX, int blockY, int blockZ) {
         x+size, y+size, z-size,
     };
 
-    float u_min = MAGMA_TEX_COORD_U_MIN;
-    float u_max = MAGMA_TEX_COORD_U_MAX;
-    float v_min = MAGMA_TEX_COORD_V_MIN;
-    float v_max = MAGMA_TEX_COORD_V_MAX;
+    // float u_min = MAGMA_TEX_COORD_U_MIN;
+    // float u_max = MAGMA_TEX_COORD_U_MAX;
+    // float v_min = MAGMA_TEX_COORD_V_MIN;
+    // float v_max = MAGMA_TEX_COORD_V_MAX;
     // float u_min = DIRT_LIGHT_TEX_COORD_U_MIN;
     // float u_max = DIRT_LIGHT_TEX_COORD_U_MAX;
     // float v_min = DIRT_LIGHT_TEX_COORD_V_MIN;

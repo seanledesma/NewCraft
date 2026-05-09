@@ -22,6 +22,7 @@
 #define BLOCK_STONE 3
 #define BLOCK_LAVA 4
 #define BLOCK_MAGMA 5
+#define BLOCK_UNKNOWN 6
 
 #define DIRT_TEX_COORD_U_MIN 0.05f
 #define DIRT_TEX_COORD_U_MAX 0.18f
@@ -31,6 +32,12 @@
 #define DIRT_LIGHT_TEX_COORD_U_MAX 0.38f
 #define DIRT_LIGHT_TEX_COORD_V_MIN 0.22f
 #define DIRT_LIGHT_TEX_COORD_V_MAX 0.38f
+
+#define DIRT_DARK_TEX_COORD_U_MIN 0.62f
+#define DIRT_DARK_TEX_COORD_U_MAX 0.78f
+#define DIRT_DARK_TEX_COORD_V_MIN 0.82f
+#define DIRT_DARK_TEX_COORD_V_MAX 0.98f
+
 #define GRASS_TEX_COORD_U_MIN 0.22f
 #define GRASS_TEX_COORD_U_MAX 0.38f
 #define GRASS_TEX_COORD_V_MIN 0.42f
@@ -39,6 +46,12 @@
 #define GRASS_LIGHT_TEX_COORD_U_MAX 0.58f
 #define GRASS_LIGHT_TEX_COORD_V_MIN 0.42f
 #define GRASS_LIGHT_TEX_COORD_V_MAX 0.58f
+
+#define STONE_TEX_COORD_U_MIN 0.22f
+#define STONE_TEX_COORD_U_MAX 0.38f
+#define STONE_TEX_COORD_V_MIN 0.82f
+#define STONE_TEX_COORD_V_MAX 0.98f
+
 #define LAVA_TEX_COORD_U_MIN 0.82f
 #define LAVA_TEX_COORD_U_MAX 0.98f
 #define LAVA_TEX_COORD_V_MIN 0.42f
@@ -48,17 +61,6 @@
 #define MAGMA_TEX_COORD_U_MAX 0.58f
 #define MAGMA_TEX_COORD_V_MIN 0.82f
 #define MAGMA_TEX_COORD_V_MAX 0.98f
-
-
-/*
-*   TO DO
-*   - Get texture atlas to work on one block
-*   - Get meshing to work for entire chunk
-*   - Atlas working for entire chunk
-*   - Then chunking system
-*/
-
-
 
 typedef struct Block {
     int block_type;
@@ -116,5 +118,8 @@ int32_t Hash(int32_t x, int32_t y, int32_t z, int32_t size);
 ChunkMesh* CreateChunkEntry(Vector3 pos, HashTable* hash_table);
 ChunkMesh* FetchChunkEntry(Vector3 pos, HashTable* hash_table);
 
+//world.c
+int DecideBlockType(Vector3 block_pos);
+bool IsBlockVisible(Vector3 block_pos, int blockX, int blockY, int blockZ);
 
 #endif
