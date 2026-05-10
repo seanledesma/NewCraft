@@ -16,6 +16,8 @@
 #define NUM_RENDERED_CHUNKS (RENDER_DISTANCE * RENDER_DISTANCE * RENDER_DISTANCE)
 #define TABLE_CAPACITY 100000
 
+#define PLAYER_HEIGHT 1.8f
+
 #define BLOCK_AIR 0
 #define BLOCK_GRASS 1
 #define BLOCK_DIRT 2
@@ -46,6 +48,11 @@
 #define GRASS_LIGHT_TEX_COORD_U_MAX 0.58f
 #define GRASS_LIGHT_TEX_COORD_V_MIN 0.42f
 #define GRASS_LIGHT_TEX_COORD_V_MAX 0.58f
+
+// #define STONE_TEX_COORD_U_MIN 0.22f
+// #define STONE_TEX_COORD_U_MAX 0.38f
+// #define STONE_TEX_COORD_V_MIN 0.82f
+// #define STONE_TEX_COORD_V_MAX 0.98f
 
 #define STONE_TEX_COORD_U_MIN 0.22f
 #define STONE_TEX_COORD_U_MAX 0.38f
@@ -91,6 +98,7 @@ typedef struct Chunk {
 typedef struct ChunkMesh {
     Mesh* mesh;
     Chunk* chunk;
+    bool new;
 } ChunkMesh;
 
 typedef struct TableEntry {

@@ -41,8 +41,11 @@ int32_t Hash(int32_t x, int32_t y, int32_t z, int32_t size) {
     if(z<0) z = z*(-1);
     if(x == 0 && y == 0 && z == 0) {
         TraceLog(LOG_WARNING, "Hash division by zero");
+        x++;
+        y++;
+        z++;
     }
-    int32_t value = ((x * 73856093) ^ (y * 19349663) ^ (z * 83492791)) % size; 
+    int32_t value = ((x * 19) ^ (y * 59) ^ (z * 97)) % size; 
     //TraceLog(LOG_WARNING, "Hash algo returned: %d", value);
     return value;
 }
@@ -64,6 +67,7 @@ ChunkMesh* CreateChunkEntry(Vector3 pos, HashTable* hash_table) {
     if(hash_table->entries[index]->key.x == 1.234f) {
         hash_table->entries[index] = table_entry;
         TraceLog(LOG_WARNING, "found spot at index: %d", index);
+        table_entry->chunk_mesh->new = true;
         return hash_table->entries[index]->chunk_mesh;
     } else {
         TraceLog(LOG_ERROR, "not supposed to get here, check create chunk entry");
@@ -88,7 +92,12 @@ ChunkMesh* FetchChunkEntry(Vector3 pos, HashTable* hash_table) {
             
         if(hash_table->entries[index]->key.x == pos.x &&
             hash_table->entries[index]->key.y == pos.y &&
-            hash_table->entries[index]->key.z == pos.z) return hash_table->entries[index]->chunk_mesh;
+            hash_table->entries[index]->key.z == pos.z) { 
+            
+            TraceLog(LOG_WARNING, "Found previously created chunk entry");
+            hash_table->entries[index]->chunk_mesh->new = false;
+            return hash_table->entries[index]->chunk_mesh;
+        }
         
         if(hash_table->entries[index]->key.x == 1.234f) {
             return CreateChunkEntry(pos, hash_table);

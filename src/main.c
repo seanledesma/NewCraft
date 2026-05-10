@@ -6,7 +6,9 @@ void draw_cube_basic(Vector3 position, Color color, Texture* texture);
 
 // TO DO NEXT
 // load (and unload) chunks as the player moves around based on player position
-// face culling
+// i'd like to have an initial array of uploaded chunks when player loads in, 1 in every direction
+// then as the player goes about, we (slowly) add in mroe chunks
+// i do NOT want to load chunks when player steps over a certain boundary
 
 int main(void) {
     const int screenWidth = 1920;
@@ -14,7 +16,7 @@ int main(void) {
     InitWindow(screenWidth, screenHeight, "NewCraft");
 
     Camera camera = { 0 };
-    camera.position = (Vector3) { 0.0f, -4.0f, 0.0f };
+    camera.position = (Vector3) { 0.0f, 1.8f, 0.0f };
     camera.target = (Vector3) { 0.0f, 0.0f, -5.0f };
     camera.up = (Vector3) { 0.0f, 1.0f, 0.0f };
     camera.fovy = 70.0f;
@@ -28,38 +30,47 @@ int main(void) {
 
     Matrix matrix = MatrixTranslate(0.0f, 0.0f, 0.0f);
 
-    Vector3 current_chunk_pos = { 0.0f, 0.0f, 0.0f };
-    Vector3 closest_chunk_positions[NUM_RENDERED_CHUNKS];
+    // Vector3 current_chunk_pos = { 0.0f, 0.0f, 0.0f };
+    // Vector3 closest_chunk_positions[NUM_RENDERED_CHUNKS];
 
-    // current_chunk_pos.x = floor((camera.position.x + HALF_CHUNK) / CHUNK_SIZE);
-    // current_chunk_pos.y = floor((camera.position.y + HALF_CHUNK) / CHUNK_SIZE);
-    // current_chunk_pos.z = floor((camera.position.z + HALF_CHUNK) / CHUNK_SIZE);
+    // // current_chunk_pos.x = floor((camera.position.x + HALF_CHUNK) / CHUNK_SIZE);
+    // // current_chunk_pos.y = floor((camera.position.y + HALF_CHUNK) / CHUNK_SIZE);
+    // // current_chunk_pos.z = floor((camera.position.z + HALF_CHUNK) / CHUNK_SIZE);
 
-    // initialize first 27 chunks around player
-    int chunk_counter = 0;
-    for (int x = -1; x < 2; x++) {
-        for (int y = -1; y < 2; y++) {
-            for (int z = -1; z < 2; z++) {
-                closest_chunk_positions[chunk_counter] = (Vector3) { 
-                    current_chunk_pos.x + (x*CHUNK_SIZE),
-                    current_chunk_pos.y + (y*CHUNK_SIZE),
-                    current_chunk_pos.z + (z*CHUNK_SIZE)
-                };
-                // TraceLog(LOG_WARNING, "closest chunk position %d X position: %.2f", chunk_counter, closest_chunk_positions[chunk_counter].x);
-                // TraceLog(LOG_WARNING, "closest chunk position %d Y position: %.2f", chunk_counter, closest_chunk_positions[chunk_counter].y);
-                // TraceLog(LOG_WARNING, "closest chunk position %d Z position: %.2f", chunk_counter, closest_chunk_positions[chunk_counter].z);
-                chunk_counter += 1;
-            }
-        }
-    }
+    // // initialize first 27 chunks around player
+    // int chunk_counter = 0;
+    // for (int x = -1; x < 2; x++) {
+    //     for (int y = -1; y < 2; y++) {
+    //         for (int z = -1; z < 2; z++) {
+    //             closest_chunk_positions[chunk_counter] = (Vector3) { 
+    //                 current_chunk_pos.x + (x*CHUNK_SIZE),
+    //                 current_chunk_pos.y + (y*CHUNK_SIZE),
+    //                 current_chunk_pos.z + (z*CHUNK_SIZE)
+    //             };
+    //             // TraceLog(LOG_WARNING, "closest chunk position %d X position: %.2f", chunk_counter, closest_chunk_positions[chunk_counter].x);
+    //             // TraceLog(LOG_WARNING, "closest chunk position %d Y position: %.2f", chunk_counter, closest_chunk_positions[chunk_counter].y);
+    //             // TraceLog(LOG_WARNING, "closest chunk position %d Z position: %.2f", chunk_counter, closest_chunk_positions[chunk_counter].z);
+    //             chunk_counter += 1;
+    //         }
+    //     }
+    // }
 
     HashTable* hash_table = InitializeTable(TABLE_CAPACITY);
+    int Xpos = floor((camera.position.x + 8) / 16) * 16;
+    int Ypos = floor(((camera.position.y - PLAYER_HEIGHT) + 8) / 16) * 16;
+    int Zpos = floor((camera.position.z + 8) / 16) * 16;
+    ChunkMesh* current_chunk = FetchChunkEntry((Vector3) { (float)Xpos, (float)Ypos, (float)Zpos }, hash_table); 
+    UploadMesh(current_chunk->mesh, false);
 
-    ChunkMesh* chunkmeshes[NUM_RENDERED_CHUNKS];
-    for(int i = 0; i < NUM_RENDERED_CHUNKS; i++) {
-        chunkmeshes[i] = FetchChunkEntry(closest_chunk_positions[i], hash_table);
-        UploadMesh(chunkmeshes[i]->mesh, false); 
-    }
+    float oldX = (float) Xpos;
+    float oldY = (float) Ypos;
+    float oldZ = (float) Zpos;
+
+    // ChunkMesh* closest_meshes[NUM_RENDERED_CHUNKS];
+    // for(int i = 0; i < NUM_RENDERED_CHUNKS; i++) {
+    //     closest_meshes[i] = FetchChunkEntry(closest_chunk_positions[i], hash_table);
+    //     UploadMesh(closest_meshes[i]->mesh, false); 
+    // }
 
 
 
@@ -68,6 +79,10 @@ int main(void) {
     // player_base.y = floor((camera.position.y / CHUNK_SIZE) + HALF_CHUNK);
     // player_base.z = floor((camera.position.z / CHUNK_SIZE) + HALF_CHUNK);
     // Vector3 old_base = player_base;
+
+    ChunkMesh* chunkmeshes[100];
+    chunkmeshes[0] = current_chunk;
+    int chunkcounter = 1;
 
     int test_counter = 0;
     DisableCursor();
@@ -93,8 +108,8 @@ int main(void) {
         //         }
         //     }
         //     for(int i = 0; i < NUM_RENDERED_CHUNKS; i++) {
-        //         chunkmeshes[i] = FetchChunkEntry(closest_chunk_positions[i], hash_table);
-        //         UploadMesh(chunkmeshes[i]->mesh, false); 
+        //         closest_meshes[i] = FetchChunkEntry(closest_chunk_positions[i], hash_table);
+        //         UploadMesh(closest_meshes[i]->mesh, false); 
         //     }
         //     //old_base = player_base;
         // }
@@ -103,23 +118,56 @@ int main(void) {
         // current_chunk_pos.y = floor((camera.position.y + HALF_CHUNK) / CHUNK_SIZE);
         // current_chunk_pos.z = floor((camera.position.z + HALF_CHUNK) / CHUNK_SIZE);
 
+        if(camera.position.x > oldX + HALF_CHUNK || camera.position.x <= oldX - HALF_CHUNK
+            || camera.position.y > oldY + HALF_CHUNK || camera.position.y <= oldY - HALF_CHUNK
+            || camera.position.z > oldZ + HALF_CHUNK || camera.position.z <= oldZ - HALF_CHUNK) {
+            //UnloadMesh(*current_chunk->mesh);
+            Xpos = floor((camera.position.x + 8) / 16) * 16;
+            Ypos = floor(((camera.position.y - PLAYER_HEIGHT) + 8) / 16) * 16;
+            Zpos = floor((camera.position.z + 8) / 16) * 16;
+            current_chunk = FetchChunkEntry((Vector3) { (float)Xpos, (float)Ypos, (float)Zpos }, hash_table); 
+            if (current_chunk->new == true) {
+                TraceLog(LOG_WARNING, "uploading new mesh");
+                UploadMesh(current_chunk->mesh, false);
+                chunkmeshes[chunkcounter] = current_chunk;
+            }
+            oldX = (float) Xpos;
+            oldY = (float) Ypos;
+            oldZ = (float) Zpos;
+        }
+        /*
+        soo... do I even want to continuously unload and reupload meshes? I mean, passing data
+        to the gpu over and over is costly, would be better just to keep that info in gpu memory.
+        then I could selectively draw, i'd just have to save previous chunk meshes and bring them
+        back to draw somehow...
+        I should only be uploading NEW meshes...
+        */
+
         BeginDrawing();
             
             ClearBackground(LIGHTGRAY);
 
             BeginMode3D(camera);
 
-                for(int i = 0; i < NUM_RENDERED_CHUNKS; i++) {
-                    DrawMesh(*chunkmeshes[i]->mesh, material, matrix);
-                }
+                // for(int i = 0; i < NUM_RENDERED_CHUNKS; i++) {
+                //     DrawMesh(*closest_meshes[i]->mesh, material, matrix);
+                // }
+                DrawMesh(*current_chunk->mesh, material, matrix);
+
+                
+                // for(int i = 0; i < chunkcounter; i++) {
+                //     if(chunkmeshes[chunkcounter]->chunk->world_pos == current_chunk->chunk->world_pos) {
+                //         DrawMesh(*chunkmeshes[chunkcounter]->mesh, material, matrix);
+                //     }
+                // }
 
             EndMode3D();
             
             DrawText(TextFormat("Player position x:%.2f, y:%.2f, z:%.2f", camera.position.x, camera.position.y, camera.position.z), 
                         140, 10, 20, YELLOW);
-            DrawText(TextFormat("Current Chunk Position x:%.2f, y:%.2f, z:%.2f", 
-                                current_chunk_pos.x, current_chunk_pos.y, current_chunk_pos.z), 
-                        640, 10, 20, YELLOW);
+            // DrawText(TextFormat("Current Chunk Position x:%.2f, y:%.2f, z:%.2f", 
+            //                     current_chunk_pos.x, current_chunk_pos.y, current_chunk_pos.z), 
+            //             640, 10, 20, YELLOW);
             DrawText(TextFormat("counter: %d", test_counter), 10, 50, 12, YELLOW);
             test_counter++;
 
@@ -127,9 +175,10 @@ int main(void) {
         EndDrawing();
     }
 
-    for(int i = 0; i < NUM_RENDERED_CHUNKS; i++) {
-        UnloadMesh(*chunkmeshes[i]->mesh);
-    }
+    // for(int i = 0; i < NUM_RENDERED_CHUNKS; i++) {
+    //     UnloadMesh(*closest_meshes[i]->mesh);
+    // }
+    UnloadMesh(*current_chunk->mesh);
     UnloadTexture(texture);
     DestroyTable(hash_table);
     CloseWindow();

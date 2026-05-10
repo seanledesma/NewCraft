@@ -12,6 +12,16 @@ ChunkMesh* gen_chunk_mesh(Vector3 world_pos) {
     // int32_t Ypos = (int32_t)floor(world_pos.y);
     // int32_t Zpos = (int32_t)floor(world_pos.z);
     //chunk_mesh->chunk = gen_chunk(Xpos, Ypos, Zpos);
+
+    // i should make sure all new chunks are on multiples of sixteen
+    // int Xpos = floor((world_pos.x + 8) / 16) * 16;
+    // int Ypos = floor(((world_pos.y - PLAYER_HEIGHT) + 8) / 16) * 16;
+    // int Zpos = floor((world_pos.z + 8) / 16) * 16;
+
+    TraceLog(LOG_WARNING, "gen chunk with world y: %.2f", world_pos.y);
+    //int32_t Ypos = (int32_t)floor(world_pos.y);
+    //TraceLog(LOG_WARNING, "gen chunk with world y after floor(): %d", Ypos);
+    
     chunk_mesh->chunk = gen_chunk(world_pos.x, world_pos.y, world_pos.z);
 
     int num_blocks_in_chunk = CHUNK_CUBED;
@@ -103,9 +113,9 @@ Chunk* gen_chunk(float worldX, float worldY, float worldZ) {
 // data generated here.
 Block* gen_block(Vector3 world_pos, int blockX, int blockY, int blockZ) {
     Block* block = (Block*)calloc(1, sizeof(Block));
-    block->pos.x = world_pos.x - HALF_CHUNK + blockX;
+    block->pos.x = world_pos.x - HALF_CHUNK + blockX + 0.5f; //have to add 0.5 so it lines up.. for reasons..
     block->pos.y = world_pos.y - HALF_CHUNK + blockY;
-    block->pos.z = world_pos.z - HALF_CHUNK + blockZ;
+    block->pos.z = world_pos.z - HALF_CHUNK + blockZ + 0.5f;
 
 
     block->block_type = DecideBlockType(block->pos);
