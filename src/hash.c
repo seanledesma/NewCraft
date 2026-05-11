@@ -52,7 +52,7 @@ int32_t Hash(int32_t x, int32_t y, int32_t z, int32_t size) {
 
 //create / add chunk to table
 ChunkMesh* CreateChunkEntry(Vector3 pos, HashTable* hash_table) {
-    //hash_table->length += 1;
+    hash_table->length += 1;
     TableEntry* table_entry = (TableEntry*)calloc(1, sizeof(TableEntry));
     table_entry->chunk_mesh = gen_chunk_mesh(pos);
     table_entry->key = pos;

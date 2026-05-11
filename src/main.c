@@ -5,14 +5,14 @@ void draw_cube_basic(Vector3 position, Color color, Texture* texture);
 
 
 // TO DO NEXT
-// load (and unload) chunks as the player moves around based on player position
+// load (and unload) chunks as the player moves around based on player position DONE
 // i'd like to have an initial array of uploaded chunks when player loads in, 1 in every direction
 // then as the player goes about, we (slowly) add in mroe chunks
 // i do NOT want to load chunks when player steps over a certain boundary
 
 int main(void) {
-    const int screenWidth = 1920;
-    const int screenHeight = 1080;
+    const int screenWidth = 2560;
+    const int screenHeight = 1440;
     InitWindow(screenWidth, screenHeight, "NewCraft");
 
     Camera camera = { 0 };
@@ -118,6 +118,7 @@ int main(void) {
         // current_chunk_pos.y = floor((camera.position.y + HALF_CHUNK) / CHUNK_SIZE);
         // current_chunk_pos.z = floor((camera.position.z + HALF_CHUNK) / CHUNK_SIZE);
 
+        // this should be JUST for tracking current chunk...
         if(camera.position.x > oldX + HALF_CHUNK || camera.position.x <= oldX - HALF_CHUNK
             || camera.position.y > oldY + HALF_CHUNK || camera.position.y <= oldY - HALF_CHUNK
             || camera.position.z > oldZ + HALF_CHUNK || camera.position.z <= oldZ - HALF_CHUNK) {
@@ -129,7 +130,11 @@ int main(void) {
             if (current_chunk->new == true) {
                 TraceLog(LOG_WARNING, "uploading new mesh");
                 UploadMesh(current_chunk->mesh, false);
-                chunkmeshes[chunkcounter] = current_chunk;
+                if(chunkcounter <= hash_table->length) {
+                    chunkmeshes[chunkcounter] = current_chunk;
+                    chunkcounter++;
+                }
+                
             }
             oldX = (float) Xpos;
             oldY = (float) Ypos;
@@ -160,6 +165,10 @@ int main(void) {
                 //         DrawMesh(*chunkmeshes[chunkcounter]->mesh, material, matrix);
                 //     }
                 // }
+
+                for (int i = 0; i < chunkcounter; i++) {
+                    DrawMesh(*chunkmeshes[i]->mesh, material, matrix);
+                }
 
             EndMode3D();
             
