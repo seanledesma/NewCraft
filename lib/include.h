@@ -4,6 +4,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h>
 
 
 #ifndef INCLUDE_H
