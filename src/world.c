@@ -45,6 +45,24 @@ bool IsBlockVisible(Vector3 block_pos, int blockX, int blockY, int blockZ) {
     return false;
 }
 
-ChunkMesh* GenWorld(HashTable* hash_table) {
-    
+MegaChunk* GenWorld(Vector3 relative_pos, HashTable* hash_table) {
+    MegaChunk* mega_chunk = (MegaChunk*)calloc(1, sizeof(MegaChunk));
+    int megachunk_counter = 0;
+    for (int x = 0; x < MEGA_CHUNK_SIZE; x++) {
+        //create all the conceptual chunks in mega chunk
+        for (int y = 0; y < MEGA_CHUNK_SIZE; y++) {
+            for (int z = 0; z < MEGA_CHUNK_SIZE; z++) {
+
+                ChunkMesh* chunkmesh = (ChunkMesh*)calloc(1, sizeof(chunkmesh));
+                chunkmesh = FetchChunkEntry((Vector3){x,y,z}, hash_table);
+                mega_chunk->chunkmeshes[megachunk_counter] = chunkmesh;
+            }
+        }
+    }
+
+    return mega_chunk;
+}
+
+void InitializeWorld() {
+
 }

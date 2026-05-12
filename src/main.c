@@ -87,6 +87,58 @@ int main(void) {
     int renderX = 1;
     int renderY = 1;
     int renderZ = 1;
+    int mega_chunk_counter = 0;
+
+    Vector3 mega_chunk_relative_positions[] = {
+        // home mega chunk
+        (Vector3){0.0f, 0.0f, 0.0f},
+        // left and right mega chunk (facing towards -Z)
+        (Vector3){-1.0f, 0.0f, 0.0f},
+        (Vector3){1.0f, 0.0f, 0.0f},
+        //front and back
+        (Vector3){0.0f, 0.0f, -1.0f},
+        (Vector3){0.0f, 0.0f, 1.0f},
+        //top and bottom
+        (Vector3){0.0f, 1.0f, 0.0f},
+        (Vector3){0.0f, -1.0f, 0.0f},
+
+        // up left and right mega chunk (facing towards -Z)
+        (Vector3){-1.0f, 1.0f, 0.0f},
+        (Vector3){1.0f, 1.0f, 0.0f},
+        // down left and right mega chunk (facing towards -Z)
+        (Vector3){-1.0f, -1.0f, 0.0f},
+        (Vector3){1.0f, -1.0f, 0.0f},
+        //up front and back
+        (Vector3){0.0f, 1.0f, -1.0f},
+        (Vector3){0.0f, 1.0f, 1.0f},
+        //down front and back
+        (Vector3){0.0f, -1.0f, -1.0f},
+        (Vector3){0.0f, -1.0f, 1.0f},
+
+        //continues diagonally..
+        (Vector3){-1.0f, 0.0f, -1.0f},
+        (Vector3){1.0f, 0.0f, -1.0f},
+
+        (Vector3){-1.0f, 0.0f, 1.0f},
+        (Vector3){1.0f, 0.0f, 1.0f},
+
+        (Vector3){-1.0f, 1.0f, -1.0f},
+        (Vector3){1.0f, 1.0f, -1.0f},
+
+        (Vector3){-1.0f, 1.0f, 1.0f},
+        (Vector3){1.0f, 1.0f, 1.0f},
+
+        (Vector3){-1.0f, -1.0f, -1.0f},
+        (Vector3){1.0f, -1.0f, -1.0f},
+
+        (Vector3){-1.0f, -1.0f, 1.0f},
+        (Vector3){1.0f, -1.0f, 1.0f},
+    };
+
+    // i don't need this right now but will want to do this later
+    //mega_chunk_relative_positions[0] = current_chunk->chunk->world_pos; 
+
+    MegaChunk* megachunks[MEGA_CHUNKS_MAX];
 
     DisableCursor();
     SetTargetFPS(60);
@@ -131,8 +183,8 @@ int main(void) {
             Zpos = floor((camera.position.z + 8) / 16) * 16;
             current_chunk = FetchChunkEntry((Vector3) { (float)Xpos, (float)Ypos, (float)Zpos }, hash_table); 
             if (current_chunk->new == true) {
-                TraceLog(LOG_WARNING, "uploading new mesh");
-                UploadMesh(current_chunk->mesh, false);
+                //TraceLog(LOG_WARNING, "uploading new mesh");
+                //UploadMesh(current_chunk->mesh, false);
                 // if(chunkcounter <= hash_table->length) {
                 //     chunkmeshes[chunkcounter] = current_chunk;
                 //     chunkcounter++;
@@ -148,134 +200,14 @@ int main(void) {
             renderZ = 1;
         }
 
-        /*
-        alright, I want to SLOWLY add chunks over several frames, so the user doesn't notice
-        it as badly when they walk around / cross chunk boundaries.
-
-        i'm thinking i'll use the test counter i already have to say, maybe every tenth frame,
-        take sometime to gen the next chunk, and to go pretty far.
-        */
-
-        // slowly load the rest of the world around current chunk
-        if(chunkcounter < hash_table->length) {
-            if (test_counter % 20 == 0) {
-
-                // if(renderY <= RENDER_DISTANCE_Y) {
-                //     renderY++;
-                // } else {
-                //     renderY = 0;
-                // }
-                // if(renderZ <= RENDER_DISTANCE_Z) {
-                //     renderZ++;
-                // } else {
-                //     renderZ = 0;
-                // }
-
-                ChunkMesh* temp_chunkmesh_pos = FetchChunkEntry(
-                    (Vector3) { 
-                        current_chunk->chunk->world_pos.x + (renderX * CHUNK_SIZE),
-                        current_chunk->chunk->world_pos.y + (0),
-                        current_chunk->chunk->world_pos.z + (0) },
-                    hash_table);
-                if (temp_chunkmesh_pos->new) {
-                    chunkmeshes[chunkcounter] = temp_chunkmesh_pos;
-                    UploadMesh(chunkmeshes[chunkcounter]->mesh, false);
-                    chunkcounter++;
-                } else {
-                    //free(temp_chunkmesh_pos); DON'T DO THIS
+        if(mega_chunk_counter < MEGA_CHUNKS_MAX) {
+            //working on mega-chunk idea
+            if(test_counter % 100 == 0) {
+                megachunks[mega_chunk_counter] = GenWorld(mega_chunk_relative_positions[mega_chunk_counter], hash_table);
+                for (int i = 0; i < MEGA_CHUNK_SIZE; i++) {
+                    UploadMesh(megachunks[mega_chunk_counter]->chunkmeshes[i]->mesh, false);
                 }
-
-                ChunkMesh* temp_chunkmesh_neg = FetchChunkEntry(
-                    (Vector3) { 
-                        current_chunk->chunk->world_pos.x + (-renderX * CHUNK_SIZE),
-                        current_chunk->chunk->world_pos.y + (0),
-                        current_chunk->chunk->world_pos.z + (0) },
-                    hash_table);
-                if (temp_chunkmesh_neg->new) {
-                    chunkmeshes[chunkcounter] = temp_chunkmesh_neg;
-                    UploadMesh(chunkmeshes[chunkcounter]->mesh, false);
-                    chunkcounter++;
-                } else {
-                    //free(temp_chunkmesh_neg);
-                }
-
-
-                if(renderX <= RENDER_DISTANCE_X) {
-                    renderX++;
-                } else {
-                    renderX = 1;
-                }
-            }
-
-            if (test_counter % 30 == 0) {
-                ChunkMesh* temp_chunkmesh_pos = FetchChunkEntry(
-                    (Vector3) { 
-                        current_chunk->chunk->world_pos.x + (0),
-                        current_chunk->chunk->world_pos.y + (renderY * CHUNK_SIZE),
-                        current_chunk->chunk->world_pos.z + (0) },
-                    hash_table);
-                if (temp_chunkmesh_pos->new) {
-                    chunkmeshes[chunkcounter] = temp_chunkmesh_pos;
-                    UploadMesh(chunkmeshes[chunkcounter]->mesh, false);
-                    chunkcounter++;
-                }
-
-                ChunkMesh* temp_chunkmesh_neg = FetchChunkEntry(
-                    (Vector3) { 
-                        current_chunk->chunk->world_pos.x + (0),
-                        current_chunk->chunk->world_pos.y + (-renderY * CHUNK_SIZE),
-                        current_chunk->chunk->world_pos.z + (0) },
-                    hash_table);
-                if (temp_chunkmesh_neg->new) {
-                    chunkmeshes[chunkcounter] = temp_chunkmesh_neg;
-                    UploadMesh(chunkmeshes[chunkcounter]->mesh, false);
-                    chunkcounter++;
-                }
-
-
-                if(renderY <= RENDER_DISTANCE_Y) {
-                    renderY++;
-                } else {
-                    renderY = 1;
-                }
-            }
-
-            if (test_counter % 40 == 0) {
-                ChunkMesh* temp_chunkmesh_pos = FetchChunkEntry(
-                    (Vector3) { 
-                        current_chunk->chunk->world_pos.x + (0),
-                        current_chunk->chunk->world_pos.y + (0),
-                        current_chunk->chunk->world_pos.z + (renderZ * CHUNK_SIZE) },
-                    hash_table);
-                if (temp_chunkmesh_pos->new) {
-                    chunkmeshes[chunkcounter] = temp_chunkmesh_pos;
-                    UploadMesh(chunkmeshes[chunkcounter]->mesh, false);
-                    chunkcounter++;
-                }
-
-                ChunkMesh* temp_chunkmesh_neg = FetchChunkEntry(
-                    (Vector3) { 
-                        current_chunk->chunk->world_pos.x + (0),
-                        current_chunk->chunk->world_pos.y + (0),
-                        current_chunk->chunk->world_pos.z + (-renderZ * CHUNK_SIZE) },
-                    hash_table);
-                if (temp_chunkmesh_neg->new) {
-                    chunkmeshes[chunkcounter] = temp_chunkmesh_neg;
-                    UploadMesh(chunkmeshes[chunkcounter]->mesh, false);
-                    chunkcounter++;
-                }
-
-                if(renderZ <= RENDER_DISTANCE_Z) {
-                    renderZ++;
-                } else {
-                    renderZ = 1;
-                }
-            }
-
-
-            // diagonal now
-            if (test_counter % 50 == 0) {
-                
+                mega_chunk_counter++;
             }
         }
 
@@ -289,7 +221,7 @@ int main(void) {
                 // for(int i = 0; i < NUM_RENDERED_CHUNKS; i++) {
                 //     DrawMesh(*closest_meshes[i]->mesh, material, matrix);
                 // }
-                DrawMesh(*current_chunk->mesh, material, matrix);
+                //DrawMesh(*current_chunk->mesh, material, matrix);
 
                 
                 // for(int i = 0; i < chunkcounter; i++) {
@@ -298,8 +230,22 @@ int main(void) {
                 //     }
                 // }
 
-                for (int i = 0; i < chunkcounter; i++) {
-                    DrawMesh(*chunkmeshes[i]->mesh, material, matrix);
+                // for (int i = 0; i < chunkcounter; i++) {
+                //     DrawMesh(*chunkmeshes[i]->mesh, material, matrix);
+                // }
+
+                // for (int i = 0; i < MEGA_CHUNKS_MAX; i++) {
+                //     for (int j = 0; j < MEGA_CHUNK_SIZE; j++) {
+                //         for (int k = 0; k < CHUNK_SIZE; k++) {
+                //             DrawMesh()
+                //         }
+                //     }
+                // }
+
+                for (int i = 0; i < MEGA_CHUNKS_MAX; i++) {
+                    for (int j = 0; j < MEGA_CHUNK_SIZE; j++) {
+                        DrawMesh(*megachunks[i]->chunkmeshes[j]->mesh, material, matrix);
+                    }
                 }
 
             EndMode3D();
@@ -321,6 +267,8 @@ int main(void) {
     // }
     UnloadMesh(*current_chunk->mesh);
     UnloadTexture(texture);
+    free(chunkmeshes);
+    free(megachunks);
     DestroyTable(hash_table);
     CloseWindow();
 

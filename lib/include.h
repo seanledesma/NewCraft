@@ -19,6 +19,9 @@
 #define NUM_RENDERED_CHUNKS (RENDER_DISTANCE * RENDER_DISTANCE * RENDER_DISTANCE)
 #define TABLE_CAPACITY 100000
 
+#define MEGA_CHUNKS_MAX 27
+#define MEGA_CHUNK_SIZE 27
+
 #define PLAYER_HEIGHT 1.8f
 
 #define BLOCK_AIR 0
@@ -117,6 +120,11 @@ typedef struct HashTable {
     int32_t length; // how many entries
 }HashTable;
 
+typedef struct MegaChunk {
+    ChunkMesh* chunkmeshes[3*3*3];
+    Vector3 center_pos;
+}MegaChunk;
+
 // chunk.c
 ChunkMesh* gen_chunk_mesh(Vector3 world_pos);
 Chunk* gen_chunk(float worldX, float worldY, float worldZ);
@@ -132,6 +140,7 @@ ChunkMesh* FetchChunkEntry(Vector3 pos, HashTable* hash_table);
 //world.c
 int DecideBlockType(Vector3 block_pos);
 bool IsBlockVisible(Vector3 block_pos, int blockX, int blockY, int blockZ);
-ChunkMesh* GenWorld(HashTable* hash_table);
+MegaChunk* GenWorld(Vector3 relative_position, HashTable* hash_table);
+void InitializeWorld();
 
 #endif
