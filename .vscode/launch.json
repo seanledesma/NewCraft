@@ -13,7 +13,7 @@
             "environment": [],
             "externalConsole": false,
             "MIMode": "gdb",
-            "miDebuggerPath": "C:/Users/Sean/Downloads/w64devkit/bin/gdb.exe",
+            "miDebuggerPath": "C:/MyPrograms/w64devkit/bin/gdb.exe",
             "preLaunchTask": "build debug",
             "setupCommands": [
                 {

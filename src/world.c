@@ -44,3 +44,7 @@ bool IsBlockVisible(Vector3 block_pos, int blockX, int blockY, int blockZ) {
 
     return false;
 }
+
+ChunkMesh* GenWorld(HashTable* hash_table) {
+    
+}

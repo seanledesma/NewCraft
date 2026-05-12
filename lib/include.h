@@ -13,7 +13,9 @@
 #define CHUNK_SIZE 16
 #define HALF_CHUNK CHUNK_SIZE/2
 #define CHUNK_CUBED (CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE)
-#define RENDER_DISTANCE 3
+#define RENDER_DISTANCE_X 5
+#define RENDER_DISTANCE_Y 3
+#define RENDER_DISTANCE_Z 5
 #define NUM_RENDERED_CHUNKS (RENDER_DISTANCE * RENDER_DISTANCE * RENDER_DISTANCE)
 #define TABLE_CAPACITY 100000
 
@@ -130,5 +132,6 @@ ChunkMesh* FetchChunkEntry(Vector3 pos, HashTable* hash_table);
 //world.c
 int DecideBlockType(Vector3 block_pos);
 bool IsBlockVisible(Vector3 block_pos, int blockX, int blockY, int blockZ);
+ChunkMesh* GenWorld(HashTable* hash_table);
 
 #endif

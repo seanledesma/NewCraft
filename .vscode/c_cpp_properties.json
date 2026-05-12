@@ -8,7 +8,7 @@
                 "${workspaceFolder}/lib/win64"
             ],
             "defines": [],
-            "compilerPath": "C:/Users/Sean/Downloads/w64devkit/bin/gcc.exe",
+            "compilerPath": "C:/MyPrograms/w64devkit/bin/gcc.exe",
             "cStandard": "c99",
             "intelliSenseMode": "windows-gcc-x64"
         }
