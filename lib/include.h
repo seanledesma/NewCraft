@@ -76,28 +76,32 @@
 #define MAGMA_TEX_COORD_V_MAX 0.98f
 
 typedef struct Block {
-    int block_type;
-    Vector3 pos;
-    float tex_coord_u_min;
-    float tex_coord_u_max;
-    float tex_coord_v_min;
-    float tex_coord__v_max;
-    float vertices[36*3];
-    float texcoords[36*2];
-    float normals[36*3];
-    float vertexCount;
-    float triangleCount;
+    // int block_type;
+    // Vector3 pos;
+    // float tex_coord_u_min;
+    // float tex_coord_u_max;
+    // float tex_coord_v_min;
+    // float tex_coord__v_max;
+    // float vertices[36*3];
+    // float texcoords[36*2];
+    // float normals[36*3];
+    // float vertexCount;
+    // float triangleCount;
+
+    int8_t block_type;
 
 } Block;
 
 typedef struct Chunk {
     Vector3 world_pos;
-    float total_vertices[CHUNK_CUBED * 36 * 3];
-    float total_texcoords[CHUNK_CUBED * 36 * 2];
-    float total_normals[CHUNK_CUBED * 36 * 3];
-    int total_vertex_count;
-    int total_triangle_count;
-    Block* blocks[CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE];
+    // float total_vertices[CHUNK_CUBED * 36 * 3];
+    // float total_texcoords[CHUNK_CUBED * 36 * 2];
+    // float total_normals[CHUNK_CUBED * 36 * 3];
+    // int total_vertex_count;
+    // int total_triangle_count;
+    //Block* blocks[CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE];
+
+    Block blocks[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE];
 
 } Chunk;
 
@@ -127,8 +131,8 @@ typedef struct MegaChunk {
 
 // chunk.c
 ChunkMesh* gen_chunk_mesh(Vector3 world_pos);
-Chunk* gen_chunk(float worldX, float worldY, float worldZ);
-Block* gen_block(Vector3 world_pos, int blockX, int blockY, int blockZ);
+Chunk* gen_chunk(Vector3 world_pos, Mesh* mesh);
+Block gen_block(Vector3 world_pos, int blockX, int blockY, int blockZ, Mesh* mesh, int counter);
 
 // hash.c
 HashTable* InitializeTable(uint32_t capacity);
