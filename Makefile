@@ -101,10 +101,12 @@ ifeq ($(PLATFORM),Windows)
 else
     NATIVE_DEBUG_FLAGS := $(NATIVE_COMMON_FLAGS) \
                           -g3 \
+                          -glldb \
                           -O0 \
                           -DDEBUG \
                           -fsanitize=address \
                           -fsanitize=undefined \
+                          -fsanitize-undefined-trap-on-error \
                           -fno-omit-frame-pointer \
                           -fstack-protector-strong
 endif

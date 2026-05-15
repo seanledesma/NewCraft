@@ -21,16 +21,17 @@
 
 #define MEGA_CHUNKS_MAX 27
 #define MEGA_CHUNK_SIZE 27
+#define DISTANCE_BETWEEN_MEGA_CHUNKS 48
 
 #define PLAYER_HEIGHT 1.8f
 
-#define BLOCK_AIR 0
-#define BLOCK_GRASS 1
-#define BLOCK_DIRT 2
-#define BLOCK_STONE 3
-#define BLOCK_LAVA 4
-#define BLOCK_MAGMA 5
-#define BLOCK_UNKNOWN 6
+#define BLOCK_AIR (int8_t)0
+#define BLOCK_GRASS (int8_t)1
+#define BLOCK_DIRT (int8_t)2
+#define BLOCK_STONE (int8_t)3
+#define BLOCK_LAVA (int8_t)4
+#define BLOCK_MAGMA (int8_t)5
+#define BLOCK_UNKNOWN (int8_t)6
 
 #define DIRT_TEX_COORD_U_MIN 0.05f
 #define DIRT_TEX_COORD_U_MAX 0.18f
@@ -101,7 +102,8 @@ typedef struct Chunk {
     // int total_triangle_count;
     //Block* blocks[CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE];
 
-    Block blocks[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE];
+    //Block blocks[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE];
+    Block blocks[CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE];
 
 } Chunk;
 
@@ -142,9 +144,9 @@ ChunkMesh* CreateChunkEntry(Vector3 pos, HashTable* hash_table);
 ChunkMesh* FetchChunkEntry(Vector3 pos, HashTable* hash_table);
 
 //world.c
-int DecideBlockType(Vector3 block_pos);
+int8_t DecideBlockType(Vector3 block_pos);
 bool IsBlockVisible(Vector3 block_pos, int blockX, int blockY, int blockZ);
-MegaChunk* GenWorld(Vector3 relative_position, HashTable* hash_table);
+MegaChunk* GenMegaChunk(Vector3 megachunk_world_pos, HashTable* hash_table);
 void InitializeWorld();
 
 #endif

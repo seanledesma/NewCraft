@@ -26,9 +26,9 @@ ChunkMesh* gen_chunk_mesh(Vector3 world_pos) {
 
     int num_blocks_in_chunk = CHUNK_CUBED;
 
-    int num_block_vertices = CHUNK_CUBED * 36 * 3;
-    int num_block_texcoords = CHUNK_CUBED * 36 * 2;
-    int num_block_normals = CHUNK_CUBED * 36 * 3;
+    int num_block_vertices = 36 * 3;
+    int num_block_texcoords = 36 * 2;
+    int num_block_normals = 36 * 3;
 
     int num_chunk_vertices = num_block_vertices * num_blocks_in_chunk;
     int num_chunk_texcoords = num_block_texcoords * num_blocks_in_chunk;
@@ -71,7 +71,7 @@ Chunk* gen_chunk(Vector3 world_pos, Mesh* mesh) {
             for (int k = 0; k < CHUNK_SIZE; k++) {
                 //Block* block = gen_block(chunk.world_pos, i, j, k);
                 //Block block = (Block*)calloc(1, sizeof(Block));
-                chunk->blocks[i][j][k] = gen_block(chunk->world_pos, i, j, k, mesh, block_counter);
+                chunk->blocks[block_counter] = gen_block(world_pos, i, j, k, mesh, block_counter);
 
                 //chunk->total_vertex_count += 36;
                 //chunk->total_triangle_count += 12;
@@ -103,12 +103,13 @@ Block gen_block(Vector3 world_pos, int blockX, int blockY, int blockZ, Mesh* mes
     Block block = {0};
     block.block_type = DecideBlockType(blockpos);
     
-    if (block.block_type == BLOCK_AIR) return block;
+    //if (block.block_type == BLOCK_AIR) return block;
 
-    if(IsBlockVisible(blockpos, blockX, blockY, blockZ) == false) {
-        block.block_type = BLOCK_AIR;
-        return block;
-    }
+    // if(IsBlockVisible(blockpos, blockX, blockY, blockZ) == false) {
+    //     block.block_type = BLOCK_AIR;
+    //     return block;
+    // }
+
 
     // if you see all magma, something went wrong
     float u_min = MAGMA_TEX_COORD_U_MIN;
@@ -134,6 +135,12 @@ Block gen_block(Vector3 world_pos, int blockX, int blockY, int blockZ, Mesh* mes
         v_min = STONE_TEX_COORD_V_MIN;
         v_max = STONE_TEX_COORD_V_MAX;
     }
+    // if(block.block_type == BLOCK_AIR) {
+    //     u_min = 0;
+    //     u_max = 0;
+    //     v_min = 0;
+    //     v_max = 0;
+    // }
 
 
     float x = blockpos.x;
@@ -339,17 +346,23 @@ Block gen_block(Vector3 world_pos, int blockX, int blockY, int blockZ, Mesh* mes
 
     // memcpy(mesh->normals + norm_count, normals, sizeof(normals));
 
-    for (int i = 0; i < num_vertices; i++) {
-        mesh->vertices[vert_count + i] = vertices[i];
-    }
+    // for (int i = 0; i < num_vertices; i++) {
+    //     mesh->vertices[vert_count + i] = vertices[i];
+    // }
         
-    for (int i = 0; i < num_vertices; i++) {
-        mesh->texcoords[tex_count + i] = texcoords[i];
-    }
+    // for (int i = 0; i < num_texcoords; i++) {
+    //     mesh->texcoords[tex_count + i] = texcoords[i];
+    // }
         
-    for (int i = 0; i < num_vertices; i++) {
-        mesh->normals[norm_count + i] = normals[i];
-    }
+    // for (int i = 0; i < num_normals; i++) {
+    //     mesh->normals[norm_count + i] = normals[i];
+    // }
+
+    memcpy(mesh->vertices + vert_count, vertices, 36*3*sizeof(float));
+    
+    memcpy(mesh->texcoords + tex_count, texcoords, 36*2*sizeof(float));
+
+    memcpy(mesh->normals + norm_count, normals, 36*3*sizeof(float));
 
     mesh->vertexCount += 36;
     mesh->triangleCount += 12;

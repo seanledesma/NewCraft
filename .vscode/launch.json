@@ -1,9 +1,18 @@
 {
     "version": "0.2.0",
     "configurations": [
+        {
+            "name": "Debug Game (macOS)",
+            "type": "lldb",
+            "request": "launch",
+            "program": "${workspaceFolder}/bin/game_debug",
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "preLaunchTask": "build debug",
+        },
         
         {
-            "name": "Debug Game",
+            "name": "Debug Game (Windows)",
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/bin/game_debug.exe",
@@ -22,17 +31,6 @@
                     "ignoreFailures": true
                 }
             ]
-        },
-        {
-            "name": "Debug Game (macOS)",
-            "type": "cppdbg",
-            "request": "launch",
-            "program": "${workspaceFolder}/bin/game_debug",
-            "args": [],
-            "stopAtEntry": false,
-            "cwd": "${workspaceFolder}",
-            "MIMode": "lldb",
-            "preLaunchTask": "build debug"
         }
     ]
 }

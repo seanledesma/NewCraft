@@ -56,15 +56,15 @@ int main(void) {
     // }
 
     HashTable* hash_table = InitializeTable(TABLE_CAPACITY);
-    int Xpos = floor((camera.position.x + 8) / 16) * 16;
-    int Ypos = floor(((camera.position.y - PLAYER_HEIGHT) + 8) / 16) * 16;
-    int Zpos = floor((camera.position.z + 8) / 16) * 16;
-    ChunkMesh* current_chunk = FetchChunkEntry((Vector3) { (float)Xpos, (float)Ypos, (float)Zpos }, hash_table); 
-    UploadMesh(current_chunk->mesh, false);
+    // int Xpos = floor((camera.position.x + 8) / 16) * 16;
+    // int Ypos = floor(((camera.position.y - PLAYER_HEIGHT) + 8) / 16) * 16;
+    // int Zpos = floor((camera.position.z + 8) / 16) * 16;
+    // ChunkMesh* current_chunk = FetchChunkEntry((Vector3) { (float)Xpos, (float)Ypos, (float)Zpos }, hash_table); 
+    // UploadMesh(current_chunk->mesh, false);
 
-    float oldX = (float) Xpos;
-    float oldY = (float) Ypos;
-    float oldZ = (float) Zpos;
+    // float oldX = (float) Xpos;
+    // float oldY = (float) Ypos;
+    // float oldZ = (float) Zpos;
 
     // ChunkMesh* closest_meshes[NUM_RENDERED_CHUNKS];
     // for(int i = 0; i < NUM_RENDERED_CHUNKS; i++) {
@@ -81,7 +81,7 @@ int main(void) {
     // Vector3 old_base = player_base;
 
     ChunkMesh* chunkmeshes[hash_table->capacity];
-    chunkmeshes[0] = current_chunk;
+    //chunkmeshes[0] = current_chunk;
     int chunkcounter = 1;
     int test_counter = 0;
     int renderX = 1;
@@ -140,6 +140,14 @@ int main(void) {
 
     MegaChunk* megachunks[MEGA_CHUNKS_MAX];
 
+    megachunks[0] = GenMegaChunk(mega_chunk_relative_positions[0], hash_table);
+    //megachunks[1] = GenMegaChunk(mega_chunk_relative_positions[1], hash_table);
+    // for (int i = 0; i < MEGA_CHUNK_SIZE; i++) {
+    //     UploadMesh(megachunks[0]->chunkmeshes[i]->mesh, false);
+    // }
+    UploadMesh(megachunks[0]->chunkmeshes[0]->mesh, false);
+    UploadMesh(megachunks[0]->chunkmeshes[1]->mesh, false);
+
     DisableCursor();
     SetTargetFPS(60);
     while(!WindowShouldClose()) {
@@ -174,42 +182,42 @@ int main(void) {
         // current_chunk_pos.z = floor((camera.position.z + HALF_CHUNK) / CHUNK_SIZE);
 
         // this should be JUST for tracking current chunk...
-        if(camera.position.x > oldX + HALF_CHUNK || camera.position.x <= oldX - HALF_CHUNK
-            || camera.position.y > oldY + HALF_CHUNK || camera.position.y <= oldY - HALF_CHUNK
-            || camera.position.z > oldZ + HALF_CHUNK || camera.position.z <= oldZ - HALF_CHUNK) {
-            //UnloadMesh(*current_chunk->mesh);
-            Xpos = floor((camera.position.x + 8) / 16) * 16;
-            Ypos = floor(((camera.position.y - PLAYER_HEIGHT) + 8) / 16) * 16;
-            Zpos = floor((camera.position.z + 8) / 16) * 16;
-            current_chunk = FetchChunkEntry((Vector3) { (float)Xpos, (float)Ypos, (float)Zpos }, hash_table); 
-            if (current_chunk->new == true) {
-                //TraceLog(LOG_WARNING, "uploading new mesh");
-                //UploadMesh(current_chunk->mesh, false);
-                // if(chunkcounter <= hash_table->length) {
-                //     chunkmeshes[chunkcounter] = current_chunk;
-                //     chunkcounter++;
-                // }
-            }
-            oldX = (float) Xpos;
-            oldY = (float) Ypos;
-            oldZ = (float) Zpos;
+        // if(camera.position.x > oldX + HALF_CHUNK || camera.position.x <= oldX - HALF_CHUNK
+        //     || camera.position.y > oldY + HALF_CHUNK || camera.position.y <= oldY - HALF_CHUNK
+        //     || camera.position.z > oldZ + HALF_CHUNK || camera.position.z <= oldZ - HALF_CHUNK) {
+        //     //UnloadMesh(*current_chunk->mesh);
+        //     Xpos = floor((camera.position.x + 8) / 16) * 16;
+        //     Ypos = floor(((camera.position.y - PLAYER_HEIGHT) + 8) / 16) * 16;
+        //     Zpos = floor((camera.position.z + 8) / 16) * 16;
+        //     current_chunk = FetchChunkEntry((Vector3) { (float)Xpos, (float)Ypos, (float)Zpos }, hash_table); 
+        //     if (current_chunk->new == true) {
+        //         //TraceLog(LOG_WARNING, "uploading new mesh");
+        //         //UploadMesh(current_chunk->mesh, false);
+        //         // if(chunkcounter <= hash_table->length) {
+        //         //     chunkmeshes[chunkcounter] = current_chunk;
+        //         //     chunkcounter++;
+        //         // }
+        //     }
+        //     oldX = (float) Xpos;
+        //     oldY = (float) Ypos;
+        //     oldZ = (float) Zpos;
 
-            //also... set up renderX,Y,Z
-            renderX = 1;
-            renderY = 1;
-            renderZ = 1;
-        }
+        //     //also... set up renderX,Y,Z
+        //     renderX = 1;
+        //     renderY = 1;
+        //     renderZ = 1;
+        // }
 
-        if(mega_chunk_counter < MEGA_CHUNKS_MAX) {
-            //working on mega-chunk idea
-            if(test_counter % 100 == 0) {
-                megachunks[mega_chunk_counter] = GenWorld(mega_chunk_relative_positions[mega_chunk_counter], hash_table);
-                for (int i = 0; i < MEGA_CHUNK_SIZE; i++) {
-                    UploadMesh(megachunks[mega_chunk_counter]->chunkmeshes[i]->mesh, false);
-                }
-                mega_chunk_counter++;
-            }
-        }
+        // if(mega_chunk_counter < MEGA_CHUNKS_MAX) {
+        //     //working on mega-chunk idea
+        //     if(test_counter % 1000 == 0) {
+        //         megachunks[mega_chunk_counter] = GenWorld(mega_chunk_relative_positions[mega_chunk_counter], hash_table);
+        //         for (int i = 0; i < MEGA_CHUNK_SIZE; i++) {
+        //             UploadMesh(megachunks[mega_chunk_counter]->chunkmeshes[i]->mesh, false);
+        //         }
+        //         mega_chunk_counter++;
+        //     }
+        // }
 
 
         BeginDrawing();
@@ -242,11 +250,18 @@ int main(void) {
                 //     }
                 // }
 
-                for (int i = 0; i < MEGA_CHUNKS_MAX; i++) {
-                    for (int j = 0; j < MEGA_CHUNK_SIZE; j++) {
-                        DrawMesh(*megachunks[i]->chunkmeshes[j]->mesh, material, matrix);
-                    }
-                }
+                // for (int i = 0; i < MEGA_CHUNKS_MAX; i++) {
+                //     for (int j = 0; j < MEGA_CHUNK_SIZE; j++) {
+                //         DrawMesh(*megachunks[i]->chunkmeshes[j]->mesh, material, matrix);
+                //     }
+                // }
+
+                // for (int j = 0; j < MEGA_CHUNK_SIZE; j++) {
+                //     DrawMesh(*megachunks[0]->chunkmeshes[j]->mesh, material, matrix);
+                // }
+
+                DrawMesh(*megachunks[0]->chunkmeshes[0]->mesh, material, matrix);
+                DrawMesh(*megachunks[0]->chunkmeshes[1]->mesh, material, matrix);
 
             EndMode3D();
             
@@ -265,10 +280,10 @@ int main(void) {
     // for(int i = 0; i < NUM_RENDERED_CHUNKS; i++) {
     //     UnloadMesh(*closest_meshes[i]->mesh);
     // }
-    UnloadMesh(*current_chunk->mesh);
+    //UnloadMesh(*current_chunk->mesh);
     UnloadTexture(texture);
-    free(chunkmeshes);
-    free(megachunks);
+    //free(chunkmeshes);
+    //free(megachunks);
     DestroyTable(hash_table);
     CloseWindow();
 
