@@ -16,7 +16,7 @@ int main(void) {
     InitWindow(screenWidth, screenHeight, "NewCraft");
 
     Camera camera = { 0 };
-    camera.position = (Vector3) { 0.0f, 1.8f, 0.0f };
+    camera.position = (Vector3) { 0.0f, -11.8f, 0.0f };
     camera.target = (Vector3) { 0.0f, 0.0f, -5.0f };
     camera.up = (Vector3) { 0.0f, 1.0f, 0.0f };
     camera.fovy = 70.0f;
@@ -139,14 +139,23 @@ int main(void) {
     //mega_chunk_relative_positions[0] = current_chunk->chunk->world_pos; 
 
     MegaChunk* megachunks[MEGA_CHUNKS_MAX];
+    while(mega_chunk_counter < MEGA_CHUNKS_MAX) {
+        //working on mega-chunk idea
+        megachunks[mega_chunk_counter] = GenMegaChunk(mega_chunk_relative_positions[mega_chunk_counter], hash_table);
+        for (int i = 0; i < MEGA_CHUNK_SIZE; i++) {
+            UploadMesh(megachunks[mega_chunk_counter]->chunkmeshes[i]->mesh, false);
+        }
+        mega_chunk_counter++;
+        
+    }
 
     megachunks[0] = GenMegaChunk(mega_chunk_relative_positions[0], hash_table);
     //megachunks[1] = GenMegaChunk(mega_chunk_relative_positions[1], hash_table);
-    // for (int i = 0; i < MEGA_CHUNK_SIZE; i++) {
-    //     UploadMesh(megachunks[0]->chunkmeshes[i]->mesh, false);
-    // }
-    UploadMesh(megachunks[0]->chunkmeshes[0]->mesh, false);
-    UploadMesh(megachunks[0]->chunkmeshes[1]->mesh, false);
+    for (int i = 0; i < MEGA_CHUNK_SIZE; i++) {
+        UploadMesh(megachunks[0]->chunkmeshes[i]->mesh, false);
+    }
+    // UploadMesh(megachunks[0]->chunkmeshes[0]->mesh, false);
+    // UploadMesh(megachunks[0]->chunkmeshes[1]->mesh, false);
 
     DisableCursor();
     SetTargetFPS(60);
@@ -250,18 +259,18 @@ int main(void) {
                 //     }
                 // }
 
-                // for (int i = 0; i < MEGA_CHUNKS_MAX; i++) {
-                //     for (int j = 0; j < MEGA_CHUNK_SIZE; j++) {
-                //         DrawMesh(*megachunks[i]->chunkmeshes[j]->mesh, material, matrix);
-                //     }
-                // }
+                for (int i = 0; i < MEGA_CHUNKS_MAX; i++) {
+                    for (int j = 0; j < MEGA_CHUNK_SIZE; j++) {
+                        DrawMesh(*megachunks[i]->chunkmeshes[j]->mesh, material, matrix);
+                    }
+                }
 
                 // for (int j = 0; j < MEGA_CHUNK_SIZE; j++) {
                 //     DrawMesh(*megachunks[0]->chunkmeshes[j]->mesh, material, matrix);
                 // }
 
-                DrawMesh(*megachunks[0]->chunkmeshes[0]->mesh, material, matrix);
-                DrawMesh(*megachunks[0]->chunkmeshes[1]->mesh, material, matrix);
+                // DrawMesh(*megachunks[0]->chunkmeshes[0]->mesh, material, matrix);
+                // DrawMesh(*megachunks[0]->chunkmeshes[1]->mesh, material, matrix);
 
             EndMode3D();
             

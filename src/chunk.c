@@ -136,18 +136,17 @@ Block gen_block(Vector3 world_pos, int blockX, int blockY, int blockZ, Mesh* mes
     Block block = {0};
     block.block_type = DecideBlockType(blockpos);
     
+
+    if(IsBlockVisible(blockpos, blockX, blockY, blockZ) == false) {
+        block.block_type = BLOCK_AIR;
+    }
+
     if (block.block_type == BLOCK_AIR) {
         //bruh
         mesh->vertexCount += 36;
         mesh->triangleCount += 12;
         return block;
     }
-
-    // if(IsBlockVisible(blockpos, blockX, blockY, blockZ) == false) {
-    //     block.block_type = BLOCK_AIR;
-    //     return block;
-    // }
-
 
     // if you see all magma, something went wrong
     float u_min = MAGMA_TEX_COORD_U_MIN;

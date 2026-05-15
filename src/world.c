@@ -19,10 +19,9 @@ bool IsBlockVisible(Vector3 block_pos, int blockX, int blockY, int blockZ) {
     //some basic culling
     if(blockX == 0 || blockY == 0 || blockZ == 0) {
         return true;
-    }else if (blockX == CHUNK_SIZE-1 + 0.5f || blockY == CHUNK_SIZE-1 || blockZ == CHUNK_SIZE-1+0.5f) {
+    }else if (blockX == CHUNK_SIZE-1 || blockY == CHUNK_SIZE-1 || blockZ == CHUNK_SIZE-1) {
         return true;
     }
-    //SOMETHING HERE WRONG
 
     // check to see if neighbors are air
     // i could keep a record... of the entire world.. an array of bools...
@@ -50,9 +49,12 @@ bool IsBlockVisible(Vector3 block_pos, int blockX, int blockY, int blockZ) {
     //return false;
 }
 
-MegaChunk* GenMegaChunk(Vector3 megachunk_world_pos, HashTable* hash_table) {
-    MegaChunk* mega_chunk = (MegaChunk*)calloc(1, sizeof(MegaChunk));
+MegaChunk* GenMegaChunk(Vector3 megachunk_relative_pos, HashTable* hash_table) {
+    MegaChunk* mega_chunk = (MegaChunk*)MemAlloc(sizeof(MegaChunk));
     int megachunk_counter = 0;
+
+    Vector3 megachunk_world_pos = (Vector3) { megachunk_relative_pos.x * 48, megachunk_relative_pos.y * 48, megachunk_relative_pos.z * 48 };
+
     Vector3 chunk_relative_positions[] = {
         // home mega chunk
         (Vector3){0.0f, 0.0f, 0.0f},
