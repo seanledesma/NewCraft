@@ -35,21 +35,54 @@ ChunkMesh* gen_chunk_mesh(Vector3 world_pos) {
     int num_chunk_normals = num_block_normals * num_blocks_in_chunk;
 
     //put it all together in a chunk mesh
-    chunk_mesh->mesh = (Mesh*)calloc(1,sizeof(Mesh));
+    chunk_mesh->mesh = (Mesh*)MemAlloc(sizeof(Mesh));
 
-    chunk_mesh->mesh->vertices = (float *)calloc(1, num_chunk_vertices * sizeof(float));
+    chunk_mesh->mesh->vertices = (float *)MemAlloc(num_chunk_vertices * sizeof(float));
     //memcpy(chunk_mesh->mesh->vertices, chunk_mesh->chunk->total_vertices, num_chunk_vertices * sizeof(float));
     
-    chunk_mesh->mesh->texcoords = (float *)calloc(1, num_chunk_texcoords * sizeof(float));
+    chunk_mesh->mesh->texcoords = (float *)MemAlloc(num_chunk_texcoords * sizeof(float));
     //memcpy(chunk_mesh->mesh->texcoords, chunk_mesh->chunk->total_texcoords, num_chunk_texcoords * sizeof(float));
 
-    chunk_mesh->mesh->normals = (float *)calloc(1, num_chunk_normals * sizeof(float));
+    chunk_mesh->mesh->normals = (float *)MemAlloc(num_chunk_normals * sizeof(float));
     //memcpy(chunk_mesh->mesh->normals, chunk_mesh->chunk->total_normals, num_chunk_normals * sizeof(float));
 
     // chunk_mesh->mesh->vertexCount = chunk_mesh->chunk->total_vertex_count;
     // chunk_mesh->mesh->triangleCount = chunk_mesh->chunk->total_triangle_count;
 
     chunk_mesh->chunk = gen_chunk(world_pos, chunk_mesh->mesh);
+
+    Mesh* temp_mesh = (Mesh*)MemAlloc(sizeof(Mesh));
+
+    int total_vertex_count = chunk_mesh->mesh->vertexCount * 3;
+    int total_tex_coords = (total_vertex_count / 3) * 2;
+    int total_normal_count = total_vertex_count;
+
+    temp_mesh->vertices = (float *)MemRealloc(chunk_mesh->mesh->vertices, total_vertex_count * sizeof(float));
+    
+    if (temp_mesh->vertices == NULL) {
+        TraceLog(LOG_ERROR, "temp mesh in gen_chunk_mesh is NULL");
+    } else {
+        chunk_mesh->mesh->vertices = temp_mesh->vertices;
+    }
+
+    // now tex coords
+    
+    temp_mesh->texcoords = (float *)MemRealloc(chunk_mesh->mesh->texcoords, total_tex_coords * sizeof(float));
+    
+    if (temp_mesh->texcoords == NULL) {
+        TraceLog(LOG_ERROR, "temp mesh in gen_chunk_mesh is NULL");
+    } else {
+        chunk_mesh->mesh->texcoords = temp_mesh->texcoords;
+    }
+
+    temp_mesh->normals = (float *)MemRealloc(chunk_mesh->mesh->normals, total_normal_count * sizeof(float));
+    
+    if (temp_mesh->normals == NULL) {
+        TraceLog(LOG_ERROR, "temp mesh in gen_chunk_mesh is NULL");
+    } else {
+        chunk_mesh->mesh->normals = temp_mesh->normals;
+    }
+
 
     return chunk_mesh;
 }
@@ -103,7 +136,12 @@ Block gen_block(Vector3 world_pos, int blockX, int blockY, int blockZ, Mesh* mes
     Block block = {0};
     block.block_type = DecideBlockType(blockpos);
     
-    //if (block.block_type == BLOCK_AIR) return block;
+    if (block.block_type == BLOCK_AIR) {
+        //bruh
+        mesh->vertexCount += 36;
+        mesh->triangleCount += 12;
+        return block;
+    }
 
     // if(IsBlockVisible(blockpos, blockX, blockY, blockZ) == false) {
     //     block.block_type = BLOCK_AIR;

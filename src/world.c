@@ -1,7 +1,7 @@
 #include "include.h"
 
 int8_t DecideBlockType(Vector3 block_pos) {
-    if(block_pos.y > 0.0f) return BLOCK_AIR;
+    //if(block_pos.y > 0.0f) return BLOCK_AIR;
 
     if(block_pos.y == 0.0f) return BLOCK_GRASS;
 
@@ -11,7 +11,7 @@ int8_t DecideBlockType(Vector3 block_pos) {
 
     //return BLOCK_STONE;
 
-    return BLOCK_UNKNOWN;
+    return BLOCK_AIR;
 }
 
 bool IsBlockVisible(Vector3 block_pos, int blockX, int blockY, int blockZ) {
@@ -46,7 +46,7 @@ bool IsBlockVisible(Vector3 block_pos, int blockX, int blockY, int blockZ) {
     // if (DecideBlockType((Vector3) { block_pos.x, block_pos.y, block_pos.z + 1 }) == BLOCK_UNKNOWN) return true;
     // if (DecideBlockType((Vector3) { block_pos.x, block_pos.y, block_pos.z - 1}) == BLOCK_UNKNOWN) return true;
 
-    return true;
+    return false;
     //return false;
 }
 
