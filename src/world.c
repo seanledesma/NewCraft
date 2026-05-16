@@ -148,6 +148,8 @@ bool IsBlockVisible(Vector3 chunk_pos, Vector3 block_pos, int blockX, int blockY
     //     }
     // }
 
+    
+
     // check to see if neighbors are air
     if (DecideBlockType((Vector3) { block_pos.x + 1, block_pos.y, block_pos.z }) == BLOCK_AIR) return true;
     if (DecideBlockType((Vector3) { block_pos.x - 1, block_pos.y, block_pos.z }) == BLOCK_AIR) return true;
