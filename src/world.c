@@ -1,5 +1,51 @@
 #include "include.h"
 
+Vector3 relative_positions[] = {
+    // home mega chunk
+    (Vector3){0.0f, 0.0f, 0.0f},
+    // left and right mega chunk (facing towards -Z)
+    (Vector3){-1.0f, 0.0f, 0.0f},
+    (Vector3){1.0f, 0.0f, 0.0f},
+    //front and back
+    (Vector3){0.0f, 0.0f, -1.0f},
+    (Vector3){0.0f, 0.0f, 1.0f},
+    //top and bottom
+    (Vector3){0.0f, 1.0f, 0.0f},
+    (Vector3){0.0f, -1.0f, 0.0f},
+
+    // up left and right mega chunk (facing towards -Z)
+    (Vector3){-1.0f, 1.0f, 0.0f},
+    (Vector3){1.0f, 1.0f, 0.0f},
+    // down left and right mega chunk (facing towards -Z)
+    (Vector3){-1.0f, -1.0f, 0.0f},
+    (Vector3){1.0f, -1.0f, 0.0f},
+    //up front and back
+    (Vector3){0.0f, 1.0f, -1.0f},
+    (Vector3){0.0f, 1.0f, 1.0f},
+    //down front and back
+    (Vector3){0.0f, -1.0f, -1.0f},
+    (Vector3){0.0f, -1.0f, 1.0f},
+
+    //continues diagonally..
+    (Vector3){-1.0f, 0.0f, -1.0f},
+    (Vector3){1.0f, 0.0f, -1.0f},
+
+    (Vector3){-1.0f, 0.0f, 1.0f},
+    (Vector3){1.0f, 0.0f, 1.0f},
+
+    (Vector3){-1.0f, 1.0f, -1.0f},
+    (Vector3){1.0f, 1.0f, -1.0f},
+
+    (Vector3){-1.0f, 1.0f, 1.0f},
+    (Vector3){1.0f, 1.0f, 1.0f},
+
+    (Vector3){-1.0f, -1.0f, -1.0f},
+    (Vector3){1.0f, -1.0f, -1.0f},
+
+    (Vector3){-1.0f, -1.0f, 1.0f},
+    (Vector3){1.0f, -1.0f, 1.0f},
+};
+
 int8_t DecideBlockType(Vector3 block_pos) {
     //if(block_pos.y > 0.0f) return BLOCK_AIR;
 
@@ -14,23 +60,95 @@ int8_t DecideBlockType(Vector3 block_pos) {
     return BLOCK_AIR;
 }
 
-bool IsBlockVisible(Vector3 block_pos, int blockX, int blockY, int blockZ) {
+bool IsBlockVisible(Vector3 chunk_pos, Vector3 block_pos, int blockX, int blockY, int blockZ, HashTable* hash_table) {
 
-    //some basic culling
-    if(blockX == 0 || blockY == 0 || blockZ == 0) {
-        return true;
-    }else if (blockX == CHUNK_SIZE-1 || blockY == CHUNK_SIZE-1 || blockZ == CHUNK_SIZE-1) {
-        return true;
-    }
+    //some basic culling around chunk border
+    // if(blockX == 0 && blockY == 0 && blockZ == 0) {
+    //     return true;
+    // }
+    
+    // if(blockX == 0) {
+    //     // check x - 1
+    //     if (DoesChunkEntryExist((Vector3) { chunk_pos.x - CHUNK_SIZE, chunk_pos.y, chunk_pos.z }, hash_table) == true) {
+    //         //TraceLog(LOG_WARNING, "did we at least get here");
+    //         ChunkMesh* temp_chunk_mesh = (ChunkMesh*)MemAlloc(sizeof(ChunkMesh));
+    //         temp_chunk_mesh = FetchChunkEntry((Vector3) { chunk_pos.x - CHUNK_SIZE, chunk_pos.y, chunk_pos.z }, hash_table);
+    //         if(temp_chunk_mesh->chunk->blocks[CHUNK_SIZE-1][blockY][blockZ].block_type == BLOCK_AIR) {
+    //             TraceLog(LOG_WARNING, "returning true for IsBlockVisible, found other chunk / block is air");
+    //             return true;
+    //         }
+    //     } else {
+    //         //TraceLog(LOG_WARNING, "hi");
+    //         return false;
+    //     }
+    // }
+
+    // if(blockY == 0) {
+    //     // check y - 1
+    //     if (DoesChunkEntryExist((Vector3) { chunk_pos.x, chunk_pos.y - CHUNK_SIZE, chunk_pos.z }, hash_table) == true) {
+    //         ChunkMesh* temp_chunk_mesh = (ChunkMesh*)MemAlloc(sizeof(ChunkMesh));
+    //         temp_chunk_mesh = FetchChunkEntry((Vector3) { chunk_pos.x, chunk_pos.y - CHUNK_SIZE, chunk_pos.z }, hash_table);
+    //         if(temp_chunk_mesh->chunk->blocks[blockX][CHUNK_SIZE-1][blockZ].block_type == BLOCK_AIR) {
+    //             return true;
+    //         }
+    //     } else {
+    //         return false;
+    //     }
+    // }
+
+    // if(blockZ == 0) {
+    //     // check z - 1
+    //     if (DoesChunkEntryExist((Vector3) { chunk_pos.x, chunk_pos.y, chunk_pos.z - CHUNK_SIZE }, hash_table) == true) {
+    //         ChunkMesh* temp_chunk_mesh = (ChunkMesh*)MemAlloc(sizeof(ChunkMesh));
+    //         temp_chunk_mesh = FetchChunkEntry((Vector3) { chunk_pos.x, chunk_pos.y, chunk_pos.z - CHUNK_SIZE }, hash_table);
+    //         if(temp_chunk_mesh->chunk->blocks[blockX][blockY][CHUNK_SIZE-1].block_type == BLOCK_AIR) {
+    //             return true;
+    //         }
+    //     } else {
+    //         return false;
+    //     }
+    // }
+    //     // need to check neighboring chunk here
+    //     //ChunkMesh* temp_chunk_mesh = (ChunkMesh*)MemAlloc(sizeof(ChunkMesh));
+    // //if (blockX == CHUNK_SIZE-1 || blockY == CHUNK_SIZE-1 || blockZ == CHUNK_SIZE-1) {
+    
+    // if (blockX == CHUNK_SIZE-1) {
+    //     if (DoesChunkEntryExist((Vector3) { chunk_pos.x + CHUNK_SIZE, chunk_pos.y, chunk_pos.z }, hash_table) == true) {
+    //         ChunkMesh* temp_chunk_mesh = (ChunkMesh*)MemAlloc(sizeof(ChunkMesh));
+    //         temp_chunk_mesh = FetchChunkEntry((Vector3) { chunk_pos.x + CHUNK_SIZE, chunk_pos.y, chunk_pos.z }, hash_table);
+    //         if(temp_chunk_mesh->chunk->blocks[0][blockY][blockZ].block_type == BLOCK_AIR) {
+    //             return true;
+    //         }
+    //     } else {
+    //         return false;
+    //     }
+    // }
+
+    // if (blockY == CHUNK_SIZE-1) {
+    //     if (DoesChunkEntryExist((Vector3) { chunk_pos.x, chunk_pos.y + CHUNK_SIZE, chunk_pos.z }, hash_table) == true) {
+    //         ChunkMesh* temp_chunk_mesh = (ChunkMesh*)MemAlloc(sizeof(ChunkMesh));
+    //         temp_chunk_mesh = FetchChunkEntry((Vector3) { chunk_pos.x, chunk_pos.y + CHUNK_SIZE, chunk_pos.z }, hash_table);
+    //         if(temp_chunk_mesh->chunk->blocks[blockX][0][blockZ].block_type == BLOCK_AIR) {
+    //             return true;
+    //         }
+    //     } else {
+    //         return false;
+    //     }
+    // }
+
+    // if (blockZ == CHUNK_SIZE-1) {
+    //     if (DoesChunkEntryExist((Vector3) { chunk_pos.x, chunk_pos.y, chunk_pos.z + CHUNK_SIZE }, hash_table) == true) {
+    //         ChunkMesh* temp_chunk_mesh = (ChunkMesh*)MemAlloc(sizeof(ChunkMesh));
+    //         temp_chunk_mesh = FetchChunkEntry((Vector3) { chunk_pos.x, chunk_pos.y, chunk_pos.z + CHUNK_SIZE }, hash_table);
+    //         if(temp_chunk_mesh->chunk->blocks[blockX][blockY][0].block_type == BLOCK_AIR) {
+    //             return true;
+    //         }
+    //     } else {
+    //         return false;
+    //     }
+    // }
 
     // check to see if neighbors are air
-    // i could keep a record... of the entire world.. an array of bools...
-    // that way i could determine block visibility even if the blocks neighbor is outside the chunk...
-    // but that would be impossible to procedurally generate. could not be infinite
-    // so i'll check if neighbors are air, and if it's an edge block.
-    // i'll face cull the edge blocks later
-    // but i need access the the rest of the blocks in the chunk to check...
-    // so i'll run the neighbor blocks through DecideBlockType
     if (DecideBlockType((Vector3) { block_pos.x + 1, block_pos.y, block_pos.z }) == BLOCK_AIR) return true;
     if (DecideBlockType((Vector3) { block_pos.x - 1, block_pos.y, block_pos.z }) == BLOCK_AIR) return true;
     if (DecideBlockType((Vector3) { block_pos.x, block_pos.y + 1, block_pos.z }) == BLOCK_AIR) return true;
@@ -38,15 +156,12 @@ bool IsBlockVisible(Vector3 block_pos, int blockX, int blockY, int blockZ) {
     if (DecideBlockType((Vector3) { block_pos.x, block_pos.y, block_pos.z + 1 }) == BLOCK_AIR) return true;
     if (DecideBlockType((Vector3) { block_pos.x, block_pos.y, block_pos.z - 1}) == BLOCK_AIR) return true;
 
-    // if (DecideBlockType((Vector3) { block_pos.x + 1, block_pos.y, block_pos.z }) == BLOCK_UNKNOWN) return true;
-    // if (DecideBlockType((Vector3) { block_pos.x - 1, block_pos.y, block_pos.z }) == BLOCK_UNKNOWN) return true;
-    // if (DecideBlockType((Vector3) { block_pos.x, block_pos.y + 1, block_pos.z }) == BLOCK_UNKNOWN) return true;
-    // if (DecideBlockType((Vector3) { block_pos.x, block_pos.y - 1, block_pos.z }) == BLOCK_UNKNOWN) return true;
-    // if (DecideBlockType((Vector3) { block_pos.x, block_pos.y, block_pos.z + 1 }) == BLOCK_UNKNOWN) return true;
-    // if (DecideBlockType((Vector3) { block_pos.x, block_pos.y, block_pos.z - 1}) == BLOCK_UNKNOWN) return true;
+    /*
+        one problem remains, what if the block I'm checking is in another chunk? I need to be able to tell
+        if there is a chunk next door and if so is the neighbor block air or not.
+    */
 
     return false;
-    //return false;
 }
 
 MegaChunk* GenMegaChunk(Vector3 megachunk_relative_pos, HashTable* hash_table) {
@@ -55,51 +170,6 @@ MegaChunk* GenMegaChunk(Vector3 megachunk_relative_pos, HashTable* hash_table) {
 
     Vector3 megachunk_world_pos = (Vector3) { megachunk_relative_pos.x * 48, megachunk_relative_pos.y * 48, megachunk_relative_pos.z * 48 };
 
-    Vector3 chunk_relative_positions[] = {
-        // home mega chunk
-        (Vector3){0.0f, 0.0f, 0.0f},
-        // left and right mega chunk (facing towards -Z)
-        (Vector3){-1.0f, 0.0f, 0.0f},
-        (Vector3){1.0f, 0.0f, 0.0f},
-        //front and back
-        (Vector3){0.0f, 0.0f, -1.0f},
-        (Vector3){0.0f, 0.0f, 1.0f},
-        //top and bottom
-        (Vector3){0.0f, 1.0f, 0.0f},
-        (Vector3){0.0f, -1.0f, 0.0f},
-
-        // up left and right mega chunk (facing towards -Z)
-        (Vector3){-1.0f, 1.0f, 0.0f},
-        (Vector3){1.0f, 1.0f, 0.0f},
-        // down left and right mega chunk (facing towards -Z)
-        (Vector3){-1.0f, -1.0f, 0.0f},
-        (Vector3){1.0f, -1.0f, 0.0f},
-        //up front and back
-        (Vector3){0.0f, 1.0f, -1.0f},
-        (Vector3){0.0f, 1.0f, 1.0f},
-        //down front and back
-        (Vector3){0.0f, -1.0f, -1.0f},
-        (Vector3){0.0f, -1.0f, 1.0f},
-
-        //continues diagonally..
-        (Vector3){-1.0f, 0.0f, -1.0f},
-        (Vector3){1.0f, 0.0f, -1.0f},
-
-        (Vector3){-1.0f, 0.0f, 1.0f},
-        (Vector3){1.0f, 0.0f, 1.0f},
-
-        (Vector3){-1.0f, 1.0f, -1.0f},
-        (Vector3){1.0f, 1.0f, -1.0f},
-
-        (Vector3){-1.0f, 1.0f, 1.0f},
-        (Vector3){1.0f, 1.0f, 1.0f},
-
-        (Vector3){-1.0f, -1.0f, -1.0f},
-        (Vector3){1.0f, -1.0f, -1.0f},
-
-        (Vector3){-1.0f, -1.0f, 1.0f},
-        (Vector3){1.0f, -1.0f, 1.0f},
-    };
     float chunk_world_X = 0.0f;
     float chunk_world_Y = 0.0f;
     float chunk_world_Z = 0.0f;
@@ -113,9 +183,9 @@ MegaChunk* GenMegaChunk(Vector3 megachunk_relative_pos, HashTable* hash_table) {
                 // float chunk_world_Y = megachunk_world_pos.y + (relative_pos.y * 16);
                 // float chunk_world_Z = megachunk_world_pos.z + (relative_pos.z * 16);
 
-                chunk_world_X = megachunk_world_pos.x + (chunk_relative_positions[x].x * 16);
-                chunk_world_Y = megachunk_world_pos.y + (chunk_relative_positions[x].y * 16);
-                chunk_world_Z = megachunk_world_pos.z + (chunk_relative_positions[x].z * 16);
+                chunk_world_X = megachunk_world_pos.x + (relative_positions[x].x * 16);
+                chunk_world_Y = megachunk_world_pos.y + (relative_positions[x].y * 16);
+                chunk_world_Z = megachunk_world_pos.z + (relative_positions[x].z * 16);
 
                 chunkmesh = FetchChunkEntry((Vector3){ chunk_world_X, chunk_world_Y, chunk_world_Z }, hash_table);
                 mega_chunk->chunkmeshes[megachunk_counter] = chunkmesh;

@@ -40,7 +40,7 @@ int32_t Hash(int32_t x, int32_t y, int32_t z, int32_t size) {
     if(y<0) y = y*(-1);
     if(z<0) z = z*(-1);
     if(x == 0 && y == 0 && z == 0) {
-        TraceLog(LOG_WARNING, "Hash division by zero");
+        //TraceLog(LOG_WARNING, "Hash division by zero");
         x++;
         y++;
         z++;
@@ -54,7 +54,7 @@ int32_t Hash(int32_t x, int32_t y, int32_t z, int32_t size) {
 ChunkMesh* CreateChunkEntry(Vector3 pos, HashTable* hash_table) {
     hash_table->length += 1;
     TableEntry* table_entry = (TableEntry*)calloc(1, sizeof(TableEntry));
-    table_entry->chunk_mesh = gen_chunk_mesh(pos);
+    table_entry->chunk_mesh = gen_chunk_mesh(pos, hash_table);
     table_entry->key = pos;
     table_entry->empty = false;
 
@@ -94,7 +94,7 @@ ChunkMesh* FetchChunkEntry(Vector3 pos, HashTable* hash_table) {
             hash_table->entries[index]->key.y == pos.y &&
             hash_table->entries[index]->key.z == pos.z) { 
             
-            TraceLog(LOG_WARNING, "Found previously created chunk entry");
+            //TraceLog(LOG_WARNING, "Found previously created chunk entry");
             hash_table->entries[index]->chunk_mesh->new = false;
             return hash_table->entries[index]->chunk_mesh;
         }
@@ -114,3 +114,22 @@ ChunkMesh* FetchChunkEntry(Vector3 pos, HashTable* hash_table) {
     return hash_table->entries[index]->chunk_mesh;
 }
 
+bool DoesChunkEntryExist(Vector3 pos, HashTable* hash_table) {
+    int index = Hash(pos.x, pos.y, pos.z, TABLE_CAPACITY/5);
+
+    while (true) {
+        if (hash_table->entries[index]->key.x == 1.234f) {
+            return false;
+        }
+        if(hash_table->entries[index]->key.x == pos.x &&
+        hash_table->entries[index]->key.y == pos.y &&
+        hash_table->entries[index]->key.z == pos.z) {
+            return true;
+        }
+        if(index+1 >= TABLE_CAPACITY) {
+            return false;
+        }
+        index++;
+    }
+    return false;
+}

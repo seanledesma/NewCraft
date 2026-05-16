@@ -102,8 +102,8 @@ typedef struct Chunk {
     // int total_triangle_count;
     //Block* blocks[CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE];
 
-    //Block blocks[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE];
-    Block blocks[CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE];
+    Block blocks[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE];
+    //Block blocks[CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE];
 
 } Chunk;
 
@@ -131,10 +131,12 @@ typedef struct MegaChunk {
     Vector3 center_pos;
 }MegaChunk;
 
+extern Vector3 relative_positions[];
+
 // chunk.c
-ChunkMesh* gen_chunk_mesh(Vector3 world_pos);
-Chunk* gen_chunk(Vector3 world_pos, Mesh* mesh);
-Block gen_block(Vector3 world_pos, int blockX, int blockY, int blockZ, Mesh* mesh, int counter);
+ChunkMesh* gen_chunk_mesh(Vector3 world_pos, HashTable* hash_table);
+Chunk* gen_chunk(Vector3 world_pos, Mesh* mesh, HashTable* hash_table);
+Block gen_block(Vector3 world_pos, int blockX, int blockY, int blockZ, Mesh* mesh, int counter, HashTable* hash_table);
 
 // hash.c
 HashTable* InitializeTable(uint32_t capacity);
@@ -142,10 +144,11 @@ void DestroyTable(HashTable* hash_table);
 int32_t Hash(int32_t x, int32_t y, int32_t z, int32_t size);
 ChunkMesh* CreateChunkEntry(Vector3 pos, HashTable* hash_table);
 ChunkMesh* FetchChunkEntry(Vector3 pos, HashTable* hash_table);
+bool DoesChunkEntryExist(Vector3 pos, HashTable* hash_table);
 
 //world.c
 int8_t DecideBlockType(Vector3 block_pos);
-bool IsBlockVisible(Vector3 block_pos, int blockX, int blockY, int blockZ);
+bool IsBlockVisible(Vector3 chunk_pos, Vector3 block_pos, int blockX, int blockY, int blockZ, HashTable* hash_table);
 MegaChunk* GenMegaChunk(Vector3 megachunk_world_pos, HashTable* hash_table);
 void InitializeWorld();
 

@@ -3,7 +3,7 @@
 // here we create and return a chunk_mesh pointer which has two nested pointers,
 // one to what is returned by gen_chunk and the other to the mesh we create in this 
 // function using the pointer to the chunk returned by gen_chunk.
-ChunkMesh* gen_chunk_mesh(Vector3 world_pos) {
+ChunkMesh* gen_chunk_mesh(Vector3 world_pos, HashTable* hash_table) {
 
     ChunkMesh* chunk_mesh = calloc(1, sizeof(ChunkMesh));
     
@@ -49,7 +49,7 @@ ChunkMesh* gen_chunk_mesh(Vector3 world_pos) {
     // chunk_mesh->mesh->vertexCount = chunk_mesh->chunk->total_vertex_count;
     // chunk_mesh->mesh->triangleCount = chunk_mesh->chunk->total_triangle_count;
 
-    chunk_mesh->chunk = gen_chunk(world_pos, chunk_mesh->mesh);
+    chunk_mesh->chunk = gen_chunk(world_pos, chunk_mesh->mesh, hash_table);
 
     Mesh* temp_mesh = (Mesh*)MemAlloc(sizeof(Mesh));
 
@@ -90,7 +90,7 @@ ChunkMesh* gen_chunk_mesh(Vector3 world_pos) {
 // takes chunk world position to pass to block gen function. 
 // we create and return a pointer to a chunk strut which now
 // has blocks array full of pointers to blocks created in gen_block.
-Chunk* gen_chunk(Vector3 world_pos, Mesh* mesh) {
+Chunk* gen_chunk(Vector3 world_pos, Mesh* mesh, HashTable* hash_table) {
     //Chunk chunk = { 0 };
     Chunk* chunk = (Chunk*)calloc(1,sizeof(Chunk));
 
@@ -104,7 +104,8 @@ Chunk* gen_chunk(Vector3 world_pos, Mesh* mesh) {
             for (int k = 0; k < CHUNK_SIZE; k++) {
                 //Block* block = gen_block(chunk.world_pos, i, j, k);
                 //Block block = (Block*)calloc(1, sizeof(Block));
-                chunk->blocks[block_counter] = gen_block(world_pos, i, j, k, mesh, block_counter);
+                //chunk->blocks[block_counter] = gen_block(world_pos, i, j, k, mesh, block_counter, hash_table);
+                chunk->blocks[i][j][k] = gen_block(world_pos, i, j, k, mesh, block_counter, hash_table);
 
                 //chunk->total_vertex_count += 36;
                 //chunk->total_triangle_count += 12;
@@ -126,7 +127,7 @@ Chunk* gen_chunk(Vector3 world_pos, Mesh* mesh) {
 // tex coords were not too hard, just upside down due to difference between
 // png and opengl. This is the lowest it goes, we return a pointer to the 
 // data generated here.
-Block gen_block(Vector3 world_pos, int blockX, int blockY, int blockZ, Mesh* mesh, int counter) {
+Block gen_block(Vector3 world_pos, int blockX, int blockY, int blockZ, Mesh* mesh, int counter, HashTable* hash_table) {
     //Block* block = (Block*)calloc(1, sizeof(Block));
     float posX = world_pos.x - HALF_CHUNK + blockX + 0.5f; //have to add 0.5 so it lines up.. for reasons..
     float posY = world_pos.y - HALF_CHUNK + blockY;
@@ -137,7 +138,7 @@ Block gen_block(Vector3 world_pos, int blockX, int blockY, int blockZ, Mesh* mes
     block.block_type = DecideBlockType(blockpos);
     
 
-    if(IsBlockVisible(blockpos, blockX, blockY, blockZ) == false) {
+    if(IsBlockVisible(world_pos, blockpos, blockX, blockY, blockZ, hash_table) == false) {
         block.block_type = BLOCK_AIR;
     }
 
