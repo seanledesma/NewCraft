@@ -154,7 +154,7 @@ bool DoesChunkEntryExist(Vector3 pos, HashTable* hash_table);
 
 //world.c
 void InitWorld();
-int8_t DecideBlockType(Vector3 block_pos);
+int8_t DecideBlockType(Vector3 block_world_pos);
 bool IsBlockVisible(Vector3 chunk_pos, Vector3 block_pos, int blockX, int blockY, int blockZ, HashTable* hash_table);
 MegaChunk* GenMegaChunk(Vector3 megachunk_world_pos, HashTable* hash_table);
 
