@@ -44,6 +44,7 @@ SOURCES := $(SRC_DIR)/main.c \
            $(SRC_DIR)/chunk.c \
            $(SRC_DIR)/hash.c \
            $(SRC_DIR)/world.c \
+		   $(SRC_DIR)/mesh.c \
 
 # Include directories
 INCLUDES := -I$(SRC_DIR) -I$(LIB_DIR) -I$(RAYLIB_DIR)

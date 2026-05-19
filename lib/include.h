@@ -82,6 +82,8 @@
 #define MAGMA_TEX_COORD_V_MIN 0.82f
 #define MAGMA_TEX_COORD_V_MAX 0.98f
 
+extern Vector3 relative_positions[];
+
 typedef struct Block {
     // int block_type;
     // Vector3 pos;
@@ -137,12 +139,10 @@ typedef struct MegaChunk {
     Vector3 center_pos;
 }MegaChunk;
 
-extern Vector3 relative_positions[];
-
 // chunk.c
 ChunkMesh* gen_chunk_mesh(Vector3 world_pos, HashTable* hash_table);
-Chunk* gen_chunk(Vector3 world_pos, Mesh* mesh, HashTable* hash_table);
-Block gen_block(Vector3 world_pos, int blockX, int blockY, int blockZ, Mesh* mesh, int counter, HashTable* hash_table);
+Chunk* gen_chunk(Vector3 world_pos, HashTable* hash_table);
+Block gen_block(Vector3 world_pos, int blockX, int blockY, int blockZ, int counter, HashTable* hash_table);
 
 // hash.c
 HashTable* InitializeTable(uint32_t capacity);
@@ -157,5 +157,8 @@ void InitWorld();
 int8_t DecideBlockType(Vector3 block_world_pos);
 bool IsBlockVisible(Vector3 chunk_pos, Vector3 block_pos, int blockX, int blockY, int blockZ, HashTable* hash_table);
 MegaChunk* GenMegaChunk(Vector3 megachunk_world_pos, HashTable* hash_table);
+
+//mesh.c
+void GenMeshChunk(Mesh* mesh, Chunk* chunk);
 
 #endif

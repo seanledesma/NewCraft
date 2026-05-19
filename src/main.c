@@ -66,14 +66,32 @@ int main(void) {
     // }
 
     // load one mega chunk
-    megachunks[0] = GenMegaChunk(relative_positions[0], hash_table);
-    for (int i = 0; i < MEGA_CHUNK_SIZE; i++) {
-        UploadMesh(megachunks[0]->chunkmeshes[i]->mesh, false);
-    }
+    // megachunks[0] = GenMegaChunk(relative_positions[0], hash_table);
+    // for (int i = 0; i < MEGA_CHUNK_SIZE; i++) {
+    //     UploadMesh(megachunks[0]->chunkmeshes[i]->mesh, false);
+    // }
 
 
     // UploadMesh(megachunks[0]->chunkmeshes[0]->mesh, false);
     // UploadMesh(megachunks[0]->chunkmeshes[1]->mesh, false);
+
+    //first, virtually create all chunkmeshes 
+    for (int i = 0; i < 27; i++) {
+        Vector3 chunk_pos = (Vector3) { relative_positions[i].x * CHUNK_SIZE,
+                                        relative_positions[i].y * CHUNK_SIZE,
+                                        relative_positions[i].z * CHUNK_SIZE };
+
+        chunkmeshes[i] = FetchChunkEntry(chunk_pos, hash_table);
+    }
+    //next, create all the meshes for each chunkmeash
+    for (int i = 0; i < 27; i++) {
+        GenMeshChunk(chunkmeshes[i]->mesh, chunkmeshes[i]->chunk);
+        UploadMesh(chunkmeshes[i]->mesh, false);
+    }
+
+    // chunkmeshes[0] = FetchChunkEntry(relative_positions[0], hash_table);
+    // GenMeshChunk(chunkmeshes[0]->mesh, chunkmeshes[0]->chunk);
+    // UploadMesh(chunkmeshes[0]->mesh, false);
 
     DisableCursor();
     SetTargetFPS(60);
@@ -105,9 +123,15 @@ int main(void) {
                 // }
 
                 // draw just one mega chunk
-                for (int j = 0; j < MEGA_CHUNK_SIZE; j++) {
-                    DrawMesh(*megachunks[0]->chunkmeshes[j]->mesh, material, matrix);
+                // for (int j = 0; j < MEGA_CHUNK_SIZE; j++) {
+                //     DrawMesh(*megachunks[0]->chunkmeshes[j]->mesh, material, matrix);
+                // }
+
+                for(int i = 0; i < 27; i++) {
+                    DrawMesh(*chunkmeshes[i]->mesh, material, matrix);
                 }
+
+                //DrawMesh(*chunkmeshes[0]->mesh, material, matrix);
 
                 // DrawMesh(*megachunks[0]->chunkmeshes[0]->mesh, material, matrix);
                 // DrawMesh(*megachunks[0]->chunkmeshes[1]->mesh, material, matrix);
@@ -134,9 +158,15 @@ int main(void) {
     // }
 
     // to unload just one mega chunk
-    for (int j = 0; j < MEGA_CHUNK_SIZE; j++) {
-        UnloadMesh(*megachunks[0]->chunkmeshes[j]->mesh);
+    // for (int j = 0; j < MEGA_CHUNK_SIZE; j++) {
+    //     UnloadMesh(*megachunks[0]->chunkmeshes[j]->mesh);
+    // }
+
+    for (int i = 0; i < 27; i++) {
+        UnloadMesh(*chunkmeshes[i]->mesh);
     }
+
+    //UnloadMesh(*chunkmeshes[0]->mesh);
 
     UnloadTexture(texture);
     //free(chunkmeshes);
