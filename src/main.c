@@ -83,9 +83,9 @@ int main(void) {
 
         chunkmeshes[i] = FetchChunkEntry(chunk_pos, hash_table);
     }
-    //next, create all the meshes for each chunkmeash
+    //next, create all the meshes for each chunkmesh
     for (int i = 0; i < 27; i++) {
-        GenMeshChunk(chunkmeshes[i]->mesh, chunkmeshes[i]->chunk);
+        GenMeshChunk(chunkmeshes[i]->mesh, chunkmeshes[i]->chunk, hash_table);
         UploadMesh(chunkmeshes[i]->mesh, false);
     }
 

@@ -159,6 +159,6 @@ bool IsBlockVisible(Vector3 chunk_pos, Vector3 block_pos, int blockX, int blockY
 MegaChunk* GenMegaChunk(Vector3 megachunk_world_pos, HashTable* hash_table);
 
 //mesh.c
-void GenMeshChunk(Mesh* mesh, Chunk* chunk);
+void GenMeshChunk(Mesh* mesh, Chunk* chunk, HashTable* hash_table);
 
 #endif
