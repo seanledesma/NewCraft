@@ -2,6 +2,8 @@
 #include "rlgl.h"
 #include "raymath.h"
 
+
+
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
@@ -9,6 +11,10 @@
 
 #ifndef INCLUDE_H
 #define INCLUDE_H
+
+// #define FNL_IMPL
+// #include "FastNoiseLite.h"
+//extern fnl_state noise;
 
 #define CHUNK_SIZE 16
 #define HALF_CHUNK CHUNK_SIZE/2
@@ -147,9 +153,9 @@ ChunkMesh* FetchChunkEntry(Vector3 pos, HashTable* hash_table);
 bool DoesChunkEntryExist(Vector3 pos, HashTable* hash_table);
 
 //world.c
+void InitWorld();
 int8_t DecideBlockType(Vector3 block_pos);
 bool IsBlockVisible(Vector3 chunk_pos, Vector3 block_pos, int blockX, int blockY, int blockZ, HashTable* hash_table);
 MegaChunk* GenMegaChunk(Vector3 megachunk_world_pos, HashTable* hash_table);
-void InitializeWorld();
 
 #endif

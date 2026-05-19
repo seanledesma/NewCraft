@@ -1,4 +1,7 @@
 #include "include.h"
+#define FNL_IMPL
+#include "FastNoiseLite.h"
+fnl_state noise;
 
 Vector3 relative_positions[] = {
     // home mega chunk
@@ -46,26 +49,50 @@ Vector3 relative_positions[] = {
     (Vector3){1.0f, -1.0f, 1.0f},
 };
 
+//fnl_state noise;
+
+void InitWorld() {
+    //setup noise
+
+    noise = fnlCreateState();
+    noise.seed = 1234;
+    //noise.noise_type = FNL_NOISE_OPENSIMPLEX2;
+    //noise.noise_type = FNL_NOISE_PERLIN;
+    noise.noise_type = FNL_NOISE_OPENSIMPLEX2S;
+    noise.frequency = 0.03f;
+}
+
 int8_t DecideBlockType(Vector3 block_pos) {
-    //if(block_pos.y > 0.0f) return BLOCK_AIR;
+    //if(block_pos.y > 0.0f) return BLOCK_AIR
 
-    if(block_pos.y == 0.0f) return BLOCK_GRASS;
+    // fnl_state noise = fnlCreateState();
+    // noise.noise_type = FNL_NOISE_OPENSIMPLEX2;
 
-    if(block_pos.y > -10.0f && block_pos.y < 0.0f) return BLOCK_DIRT;
+    //will return a value between -1 and 1 !!
+    float height = fnlGetNoise2D(&noise, block_pos.x, block_pos.z);
+    height *= 5;
+    height = floor(height);
 
-    if(block_pos.y <= -10.0f) return BLOCK_STONE;
+    if (block_pos.y > height) return BLOCK_AIR;
 
-    //return BLOCK_STONE;
+    if (block_pos.y == height) return BLOCK_GRASS;
 
-    return BLOCK_AIR;
+    if (block_pos.y < height && block_pos.y >= -5.0f) return BLOCK_DIRT;
+
+    if (block_pos.y < -5.0) return BLOCK_STONE;
+
+    //something went wrong
+    return BLOCK_MAGMA;
 }
 
 bool IsBlockVisible(Vector3 chunk_pos, Vector3 block_pos, int blockX, int blockY, int blockZ, HashTable* hash_table) {
-
+    return true;
     //some basic culling around chunk border
-    // if(blockX == 0 && blockY == 0 && blockZ == 0) {
-    //     return true;
-    // }
+    if(blockX == 0 || blockY == 0 || blockZ == 0) {
+        return true;
+    }else if (blockX == CHUNK_SIZE-1 + 0.5f || blockY == CHUNK_SIZE-1 || blockZ == CHUNK_SIZE-1+0.5f) {
+        return true;
+    }
     
     // if(blockX == 0) {
     //     // check x - 1
@@ -200,6 +227,3 @@ MegaChunk* GenMegaChunk(Vector3 megachunk_relative_pos, HashTable* hash_table) {
     return mega_chunk;
 }
 
-void InitializeWorld() {
-
-}

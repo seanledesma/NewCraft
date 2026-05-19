@@ -1,5 +1,7 @@
 #include "include.h"
 
+//fnl_state noise;
+
 
 void draw_cube_basic(Vector3 position, Color color, Texture* texture);
 
@@ -16,13 +18,18 @@ int main(void) {
     InitWindow(screenWidth, screenHeight, "NewCraft");
 
     Camera camera = { 0 };
-    camera.position = (Vector3) { 0.0f, -11.8f, 0.0f };
+    camera.position = (Vector3) { 0.0f, 1.8f, 0.0f };
     camera.target = (Vector3) { 0.0f, 0.0f, -5.0f };
     camera.up = (Vector3) { 0.0f, 1.0f, 0.0f };
     camera.fovy = 70.0f;
     camera.projection = CAMERA_PERSPECTIVE;
 
     int cameraMode = CAMERA_FIRST_PERSON;
+
+
+    // fnl_state noise = fnlCreateState();
+    // noise.noise_type = FNL_NOISE_OPENSIMPLEX2;
+    InitWorld();
 
     Texture texture = LoadTexture("assets/tex_atlas_2.png");
     Material material = LoadMaterialDefault();
@@ -49,23 +56,21 @@ int main(void) {
     MegaChunk* megachunks[MEGA_CHUNKS_MAX];
 
     //load 27 megachunks in one go
-    while(mega_chunk_counter < MEGA_CHUNKS_MAX) {
-        //working on mega-chunk idea
-        megachunks[mega_chunk_counter] = GenMegaChunk(relative_positions[mega_chunk_counter], hash_table);
-        for (int i = 0; i < MEGA_CHUNK_SIZE; i++) {
-            UploadMesh(megachunks[mega_chunk_counter]->chunkmeshes[i]->mesh, false);
-        }
-        mega_chunk_counter++;
-    }
-
-    // load one mega chunk
-    // megachunks[0] = GenMegaChunk(relative_positions[0], hash_table);
-    // for (int i = 0; i < MEGA_CHUNK_SIZE; i++) {
-    //     UploadMesh(megachunks[0]->chunkmeshes[i]->mesh, false);
+    // while(mega_chunk_counter < MEGA_CHUNKS_MAX) {
+    //     //working on mega-chunk idea
+    //     megachunks[mega_chunk_counter] = GenMegaChunk(relative_positions[mega_chunk_counter], hash_table);
+    //     for (int i = 0; i < MEGA_CHUNK_SIZE; i++) {
+    //         UploadMesh(megachunks[mega_chunk_counter]->chunkmeshes[i]->mesh, false);
+    //     }
+    //     mega_chunk_counter++;
     // }
 
-    //megachunks[0] = GenMegaChunk(mega_chunk_relative_positions[0], hash_table);
-    //megachunks[1] = GenMegaChunk(mega_chunk_relative_positions[1], hash_table);
+    // load one mega chunk
+    megachunks[0] = GenMegaChunk(relative_positions[0], hash_table);
+    for (int i = 0; i < MEGA_CHUNK_SIZE; i++) {
+        UploadMesh(megachunks[0]->chunkmeshes[i]->mesh, false);
+    }
+
 
     // UploadMesh(megachunks[0]->chunkmeshes[0]->mesh, false);
     // UploadMesh(megachunks[0]->chunkmeshes[1]->mesh, false);
@@ -93,16 +98,16 @@ int main(void) {
 
             BeginMode3D(camera);
 
-                for (int i = 0; i < MEGA_CHUNKS_MAX; i++) {
-                    for (int j = 0; j < MEGA_CHUNK_SIZE; j++) {
-                        DrawMesh(*megachunks[i]->chunkmeshes[j]->mesh, material, matrix);
-                    }
-                }
+                // for (int i = 0; i < MEGA_CHUNKS_MAX; i++) {
+                //     for (int j = 0; j < MEGA_CHUNK_SIZE; j++) {
+                //         DrawMesh(*megachunks[i]->chunkmeshes[j]->mesh, material, matrix);
+                //     }
+                // }
 
                 // draw just one mega chunk
-                // for (int j = 0; j < MEGA_CHUNK_SIZE; j++) {
-                //     DrawMesh(*megachunks[0]->chunkmeshes[j]->mesh, material, matrix);
-                // }
+                for (int j = 0; j < MEGA_CHUNK_SIZE; j++) {
+                    DrawMesh(*megachunks[0]->chunkmeshes[j]->mesh, material, matrix);
+                }
 
                 // DrawMesh(*megachunks[0]->chunkmeshes[0]->mesh, material, matrix);
                 // DrawMesh(*megachunks[0]->chunkmeshes[1]->mesh, material, matrix);
@@ -122,16 +127,16 @@ int main(void) {
     }
 
     // with multiple megachunks
-    for (int i = 0; i < MEGA_CHUNKS_MAX; i++) {
-        for (int j = 0; j < MEGA_CHUNK_SIZE; j++) {
-            UnloadMesh(*megachunks[i]->chunkmeshes[j]->mesh);
-        }
-    }
+    // for (int i = 0; i < MEGA_CHUNKS_MAX; i++) {
+    //     for (int j = 0; j < MEGA_CHUNK_SIZE; j++) {
+    //         UnloadMesh(*megachunks[i]->chunkmeshes[j]->mesh);
+    //     }
+    // }
 
     // to unload just one mega chunk
-    // for (int j = 0; j < MEGA_CHUNK_SIZE; j++) {
-    //     UnloadMesh(*megachunks[0]->chunkmeshes[j]->mesh);
-    // }
+    for (int j = 0; j < MEGA_CHUNK_SIZE; j++) {
+        UnloadMesh(*megachunks[0]->chunkmeshes[j]->mesh);
+    }
 
     UnloadTexture(texture);
     //free(chunkmeshes);
