@@ -244,6 +244,19 @@ bool IsBlockVisible(Vector3 chunk_pos, Vector3 block_pos, int blockX, int blockY
     //     return true;
     // }
 
+    if (blockX == 0 && blockZ == 0) {
+        return true;
+    }
+    if (blockX == 0 && blockZ == CHUNK_SIZE-1) {
+        return true;
+    }
+    if (blockX == CHUNK_SIZE-1 && blockZ == 0) {
+        return true;
+    }
+    if (blockX == CHUNK_SIZE-1 && blockZ == CHUNK_SIZE-1) {
+        return true;
+    }
+
     /*
     the whole idea here is to see first if the adjacent chunk exists, and if it does, check 
     the specific block that is next to the block we are dealing with. 
@@ -263,17 +276,18 @@ bool IsBlockVisible(Vector3 chunk_pos, Vector3 block_pos, int blockX, int blockY
             if (DecideBlockType((Vector3) { posX, posY, posZ }) == BLOCK_AIR) {
                 return true;
             } else {
+                //we just checked if the block west of current block was air, and it wasn't. that doesn't mean
+                //that this block isn't visible, we still need to check the other faces.
+                if (DecideBlockType((Vector3) { block_pos.x + 1, block_pos.y, block_pos.z }) == BLOCK_AIR) return true;
+                //if (DecideBlockType((Vector3) { block_pos.x - 1, block_pos.y, block_pos.z }) == BLOCK_AIR) return true;
+                if (DecideBlockType((Vector3) { block_pos.x, block_pos.y + 1, block_pos.z }) == BLOCK_AIR) return true;
+                if (DecideBlockType((Vector3) { block_pos.x, block_pos.y - 1, block_pos.z }) == BLOCK_AIR) return true;
+                if (DecideBlockType((Vector3) { block_pos.x, block_pos.y, block_pos.z + 1 }) == BLOCK_AIR) return true;
+                if (DecideBlockType((Vector3) { block_pos.x, block_pos.y, block_pos.z - 1}) == BLOCK_AIR) return true;
+
                 return false;
             }
-
-            // if(temp_chunk_mesh->chunk->blocks[CHUNK_SIZE-1][blockY][blockZ].block_type == BLOCK_AIR) {
-            //     //TraceLog(LOG_WARNING, "returning true for IsBlockVisible, found other chunk / block is air");
-            //     return true;
-            // } else {
-            //     return false;
-            // }
         } else {
-            //TraceLog(LOG_WARNING, "hi");
             return true;
         }
     }
@@ -283,8 +297,6 @@ bool IsBlockVisible(Vector3 chunk_pos, Vector3 block_pos, int blockX, int blockY
             ChunkMesh* temp_chunk_mesh = (ChunkMesh*)MemAlloc(sizeof(ChunkMesh));
             temp_chunk_mesh = FetchChunkEntry((Vector3) { chunk_pos.x + CHUNK_SIZE, chunk_pos.y, chunk_pos.z }, hash_table);
             
-            
-            
             // decide block type expects a world coord
             float posX = temp_chunk_mesh->chunk->world_pos.x - HALF_CHUNK + 0.5f; 
             float posY = temp_chunk_mesh->chunk->world_pos.y - HALF_CHUNK + blockY;
@@ -293,81 +305,71 @@ bool IsBlockVisible(Vector3 chunk_pos, Vector3 block_pos, int blockX, int blockY
             if (DecideBlockType((Vector3) { posX, posY, posZ }) == BLOCK_AIR) {
                 return true;
             } else {
+                //if (DecideBlockType((Vector3) { block_pos.x + 1, block_pos.y, block_pos.z }) == BLOCK_AIR) return true;
+                if (DecideBlockType((Vector3) { block_pos.x - 1, block_pos.y, block_pos.z }) == BLOCK_AIR) return true;
+                if (DecideBlockType((Vector3) { block_pos.x, block_pos.y + 1, block_pos.z }) == BLOCK_AIR) return true;
+                if (DecideBlockType((Vector3) { block_pos.x, block_pos.y - 1, block_pos.z }) == BLOCK_AIR) return true;
+                if (DecideBlockType((Vector3) { block_pos.x, block_pos.y, block_pos.z + 1 }) == BLOCK_AIR) return true;
+                if (DecideBlockType((Vector3) { block_pos.x, block_pos.y, block_pos.z - 1}) == BLOCK_AIR) return true;
                 return false;
             }
-            
-            
-            
-            
-            
-            // if(temp_chunk_mesh->chunk->blocks[0][blockY][blockZ].block_type == BLOCK_AIR) {
-            //     return true;
-            // } else {
-            //     return false;
-            // }
         } else {
             return true;
         }
     }
 
-    // if(blockZ == 0) {
-    //     // check z - 1
-    //     if (DoesChunkEntryExist((Vector3) { chunk_pos.x, chunk_pos.y, chunk_pos.z - CHUNK_SIZE }, hash_table) == true) {
-    //         ChunkMesh* temp_chunk_mesh = (ChunkMesh*)MemAlloc(sizeof(ChunkMesh));
-    //         temp_chunk_mesh = FetchChunkEntry((Vector3) { chunk_pos.x, chunk_pos.y, chunk_pos.z - CHUNK_SIZE }, hash_table);
+    if(blockZ == 0) {
+        // check z - 1
+        if (DoesChunkEntryExist((Vector3) { chunk_pos.x, chunk_pos.y, chunk_pos.z - CHUNK_SIZE }, hash_table) == true) {
+            ChunkMesh* temp_chunk_mesh = (ChunkMesh*)MemAlloc(sizeof(ChunkMesh));
+            temp_chunk_mesh = FetchChunkEntry((Vector3) { chunk_pos.x, chunk_pos.y, chunk_pos.z - CHUNK_SIZE }, hash_table);
 
 
-    //         float posX = temp_chunk_mesh->chunk->world_pos.x + HALF_CHUNK + blockX + 0.5f;
-    //         float posY = temp_chunk_mesh->chunk->world_pos.y - HALF_CHUNK + blockY;
-    //         float posZ = temp_chunk_mesh->chunk->world_pos.z - HALF_CHUNK - 0.5f;
+            float posX = temp_chunk_mesh->chunk->world_pos.x + HALF_CHUNK + blockX + 0.5f;
+            float posY = temp_chunk_mesh->chunk->world_pos.y - HALF_CHUNK + blockY;
+            float posZ = temp_chunk_mesh->chunk->world_pos.z - HALF_CHUNK - 0.5f;
 
-    //         if (DecideBlockType((Vector3) { posX, posY, posZ }) == BLOCK_AIR) {
-    //             return true;
-    //         } else {
-    //             return false;
-    //         }
+            if (DecideBlockType((Vector3) { posX, posY, posZ }) == BLOCK_AIR) {
+                return true;
+            } else {
+                if (DecideBlockType((Vector3) { block_pos.x + 1, block_pos.y, block_pos.z }) == BLOCK_AIR) return true;
+                if (DecideBlockType((Vector3) { block_pos.x - 1, block_pos.y, block_pos.z }) == BLOCK_AIR) return true;
+                if (DecideBlockType((Vector3) { block_pos.x, block_pos.y + 1, block_pos.z }) == BLOCK_AIR) return true;
+                if (DecideBlockType((Vector3) { block_pos.x, block_pos.y - 1, block_pos.z }) == BLOCK_AIR) return true;
+                if (DecideBlockType((Vector3) { block_pos.x, block_pos.y, block_pos.z + 1 }) == BLOCK_AIR) return true;
+                //if (DecideBlockType((Vector3) { block_pos.x, block_pos.y, block_pos.z - 1}) == BLOCK_AIR) return true;
+                return false;
+            }
+        } else {
+            return true;
+        }
+    }
 
-
-
-
-    //         // if(temp_chunk_mesh->chunk->blocks[blockX][blockY][CHUNK_SIZE-1].block_type == BLOCK_AIR) {
-    //         //     return true;
-    //         // } else {
-    //         //     return false;
-    //         // }
-    //     } else {
-    //         return true;
-    //     }
-    // }
-
-    // if (blockZ == CHUNK_SIZE-1) {
-    //     if (DoesChunkEntryExist((Vector3) { chunk_pos.x, chunk_pos.y, chunk_pos.z + CHUNK_SIZE }, hash_table) == true) {
-    //         ChunkMesh* temp_chunk_mesh = (ChunkMesh*)MemAlloc(sizeof(ChunkMesh));
-    //         temp_chunk_mesh = FetchChunkEntry((Vector3) { chunk_pos.x, chunk_pos.y, chunk_pos.z + CHUNK_SIZE }, hash_table);
+    if (blockZ == CHUNK_SIZE-1) {
+        if (DoesChunkEntryExist((Vector3) { chunk_pos.x, chunk_pos.y, chunk_pos.z + CHUNK_SIZE }, hash_table) == true) {
+            ChunkMesh* temp_chunk_mesh = (ChunkMesh*)MemAlloc(sizeof(ChunkMesh));
+            temp_chunk_mesh = FetchChunkEntry((Vector3) { chunk_pos.x, chunk_pos.y, chunk_pos.z + CHUNK_SIZE }, hash_table);
 
 
-    //         float posX = temp_chunk_mesh->chunk->world_pos.x - HALF_CHUNK + blockX + 0.5f; 
-    //         float posY = temp_chunk_mesh->chunk->world_pos.y - HALF_CHUNK + blockY;
-    //         float posZ = temp_chunk_mesh->chunk->world_pos.z - HALF_CHUNK + 0.05f;
+            float posX = temp_chunk_mesh->chunk->world_pos.x - HALF_CHUNK + blockX + 0.5f; 
+            float posY = temp_chunk_mesh->chunk->world_pos.y - HALF_CHUNK + blockY;
+            float posZ = temp_chunk_mesh->chunk->world_pos.z - HALF_CHUNK + 0.05f;
 
-    //         if (DecideBlockType((Vector3) { posX, posY, posZ }) == BLOCK_AIR) {
-    //             return true;
-    //         } else {
-    //             return false;
-    //         }
-
-
-
-
-    //         // if(temp_chunk_mesh->chunk->blocks[blockX][blockY][0].block_type == BLOCK_AIR) {
-    //         //     return true;
-    //         // } else {
-    //         //     return false;
-    //         // }
-    //     } else {
-    //         return true;
-    //     }
-    // }
+            if (DecideBlockType((Vector3) { posX, posY, posZ }) == BLOCK_AIR) {
+                return true;
+            } else {
+                if (DecideBlockType((Vector3) { block_pos.x + 1, block_pos.y, block_pos.z }) == BLOCK_AIR) return true;
+                if (DecideBlockType((Vector3) { block_pos.x - 1, block_pos.y, block_pos.z }) == BLOCK_AIR) return true;
+                if (DecideBlockType((Vector3) { block_pos.x, block_pos.y + 1, block_pos.z }) == BLOCK_AIR) return true;
+                if (DecideBlockType((Vector3) { block_pos.x, block_pos.y - 1, block_pos.z }) == BLOCK_AIR) return true;
+                //if (DecideBlockType((Vector3) { block_pos.x, block_pos.y, block_pos.z + 1 }) == BLOCK_AIR) return true;
+                if (DecideBlockType((Vector3) { block_pos.x, block_pos.y, block_pos.z - 1}) == BLOCK_AIR) return true;
+                return false;
+            }
+        } else {
+            return true;
+        }
+    }
 
     // if(blockY == 0) {
     //     // check y - 1

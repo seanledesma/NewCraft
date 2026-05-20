@@ -76,15 +76,23 @@ int main(void) {
     // UploadMesh(megachunks[0]->chunkmeshes[1]->mesh, false);
 
     //first, virtually create all chunkmeshes 
-    for (int i = 0; i < 27; i++) {
-        Vector3 chunk_pos = (Vector3) { relative_positions[i].x * CHUNK_SIZE,
-                                        relative_positions[i].y * CHUNK_SIZE,
-                                        relative_positions[i].z * CHUNK_SIZE };
+    int rel_pos_counter = 0;
+    int mult_factor = 1;
+    for (int i = 0; i < 81; i++) {
+        if(rel_pos_counter == 27) {
+            mult_factor++;
+            rel_pos_counter = 0;
+        }
+        Vector3 chunk_pos = (Vector3) { relative_positions[rel_pos_counter].x * (CHUNK_SIZE * mult_factor),
+                                        relative_positions[rel_pos_counter].y * (CHUNK_SIZE * mult_factor),
+                                        relative_positions[rel_pos_counter].z * (CHUNK_SIZE * mult_factor)};
 
         chunkmeshes[i] = FetchChunkEntry(chunk_pos, hash_table);
+
+        rel_pos_counter++;
     }
     //next, create all the meshes for each chunkmesh
-    for (int i = 0; i < 27; i++) {
+    for (int i = 0; i < 81; i++) {
         GenMeshChunk(chunkmeshes[i]->mesh, chunkmeshes[i]->chunk, hash_table);
         UploadMesh(chunkmeshes[i]->mesh, false);
     }
@@ -127,7 +135,7 @@ int main(void) {
                 //     DrawMesh(*megachunks[0]->chunkmeshes[j]->mesh, material, matrix);
                 // }
 
-                for(int i = 0; i < 27; i++) {
+                for(int i = 0; i < 81; i++) {
                     DrawMesh(*chunkmeshes[i]->mesh, material, matrix);
                 }
 
@@ -162,7 +170,7 @@ int main(void) {
     //     UnloadMesh(*megachunks[0]->chunkmeshes[j]->mesh);
     // }
 
-    for (int i = 0; i < 27; i++) {
+    for (int i = 0; i < 81; i++) {
         UnloadMesh(*chunkmeshes[i]->mesh);
     }
 

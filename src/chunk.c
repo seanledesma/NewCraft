@@ -9,7 +9,7 @@ ChunkMesh* gen_chunk_mesh(Vector3 world_pos, HashTable* hash_table) {
     
     chunk_mesh->chunk = (Chunk*)calloc(1,sizeof(Chunk));
 
-    TraceLog(LOG_WARNING, "gen chunk with world y: %.2f", world_pos.y);
+    //TraceLog(LOG_WARNING, "gen chunk with world y: %.2f", world_pos.y);
 
     int num_blocks_in_chunk = CHUNK_CUBED;
 
@@ -107,7 +107,7 @@ Chunk* gen_chunk(Vector3 world_pos, HashTable* hash_table) {
             }
         }
     }
-    TraceLog(LOG_WARNING, "hit gen chunk");
+    //TraceLog(LOG_WARNING, "hit gen chunk");
     return chunk;
 }
 

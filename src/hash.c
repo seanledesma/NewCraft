@@ -66,7 +66,7 @@ ChunkMesh* CreateChunkEntry(Vector3 pos, HashTable* hash_table) {
     //first see if that spot is taken
     if(hash_table->entries[index]->key.x == 1.234f) {
         hash_table->entries[index] = table_entry;
-        TraceLog(LOG_WARNING, "found spot at index: %d", index);
+        //TraceLog(LOG_WARNING, "found spot at index: %d", index);
         table_entry->chunk_mesh->new = true;
         return hash_table->entries[index]->chunk_mesh;
     } else {
