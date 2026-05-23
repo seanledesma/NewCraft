@@ -45,6 +45,7 @@ SOURCES := $(SRC_DIR)/main.c \
            $(SRC_DIR)/hash.c \
            $(SRC_DIR)/world.c \
 		   $(SRC_DIR)/mesh.c \
+		   $(SRC_DIR)/player.c \
 
 # Include directories
 INCLUDES := -I$(SRC_DIR) -I$(LIB_DIR) -I$(RAYLIB_DIR)
@@ -105,11 +106,13 @@ else
                           -glldb \
                           -O0 \
                           -DDEBUG \
+						  -fwrapv \
                           -fsanitize=address \
                           -fsanitize=undefined \
-                          -fsanitize-undefined-trap-on-error \
                           -fno-omit-frame-pointer \
-                          -fstack-protector-strong
+                          -fstack-protector-strong \
+						  -fsanitize-recover=signed-integer-overflow 
+						  #-fsanitize-undefined-trap-on-error 
 endif
 
 # ============================================================================

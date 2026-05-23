@@ -487,6 +487,7 @@ static const int PRIME_X = 501125321;
 static const int PRIME_Y = 1136930381;
 static const int PRIME_Z = 1720413743;
 
+__attribute__((no_sanitize("integer")))
 static inline int _fnlHash2D(int seed, int xPrimed, int yPrimed)
 {
     int hash = seed ^ xPrimed ^ yPrimed;

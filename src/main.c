@@ -13,12 +13,16 @@ void draw_cube_basic(Vector3 position, Color color, Texture* texture);
 // i do NOT want to load chunks when player steps over a certain boundary
 
 int main(void) {
-    const int screenWidth = 2560;
-    const int screenHeight = 1440;
+    // const int screenWidth = 2560;
+    // const int screenHeight = 1440;
+    const int screenWidth = GetMonitorWidth(0);
+    const int screenHeight = GetMonitorHeight(0);
+    SetConfigFlags(FLAG_WINDOW_UNDECORATED);
+    SetConfigFlags(FLAG_WINDOW_HIGHDPI);
     InitWindow(screenWidth, screenHeight, "NewCraft");
 
     Camera camera = { 0 };
-    camera.position = (Vector3) { 0.0f, -11.8f, 0.0f };
+    camera.position = (Vector3) { 0.0f, 11.8f, 0.0f };
     camera.target = (Vector3) { 0.0f, 0.0f, -5.0f };
     camera.up = (Vector3) { 0.0f, 1.0f, 0.0f };
     camera.fovy = 70.0f;
@@ -76,23 +80,40 @@ int main(void) {
     // UploadMesh(megachunks[0]->chunkmeshes[1]->mesh, false);
 
     //first, virtually create all chunkmeshes 
-    int rel_pos_counter = 0;
-    int mult_factor = 1;
-    for (int i = 0; i < 81; i++) {
-        if(rel_pos_counter == 27) {
-            mult_factor++;
-            rel_pos_counter = 0;
+    // int rel_pos_counter = 0;
+    // int mult_factor = 1;
+    // for (int i = 0; i < 81; i++) {
+    //     if(rel_pos_counter == 27) {
+    //         mult_factor++;
+    //         rel_pos_counter = 0;
+    //     }
+    //     Vector3 chunk_pos = (Vector3) { relative_positions[rel_pos_counter].x * (CHUNK_SIZE * mult_factor),
+    //                                     relative_positions[rel_pos_counter].y * (CHUNK_SIZE * mult_factor),
+    //                                     relative_positions[rel_pos_counter].z * (CHUNK_SIZE * mult_factor)};
+
+    //     chunkmeshes[i] = FetchChunkEntry(chunk_pos, hash_table);
+
+    //     rel_pos_counter++;
+    // }
+
+    // something temporary until i figure out chunk loading sequence + only showing chunks player can see
+    int count = 0;
+    for (int x = -RENDER_DISTANCE_X; x <= RENDER_DISTANCE_X; x++) {
+        for (int y = -RENDER_DISTANCE_Y; y <= RENDER_DISTANCE_Y; y++) {
+            for (int z = -RENDER_DISTANCE_Z; z <= RENDER_DISTANCE_Z; z++) {
+                Vector3 chunk_pos = (Vector3) { x * CHUNK_SIZE, y * CHUNK_SIZE, z * CHUNK_SIZE };
+
+                chunkmeshes[count] = FetchChunkEntry(chunk_pos, hash_table);
+                count += 1;
+            }
         }
-        Vector3 chunk_pos = (Vector3) { relative_positions[rel_pos_counter].x * (CHUNK_SIZE * mult_factor),
-                                        relative_positions[rel_pos_counter].y * (CHUNK_SIZE * mult_factor),
-                                        relative_positions[rel_pos_counter].z * (CHUNK_SIZE * mult_factor)};
-
-        chunkmeshes[i] = FetchChunkEntry(chunk_pos, hash_table);
-
-        rel_pos_counter++;
     }
+
+   //TraceLog(LOG_WARNING, "size of chunkmeshes: %d", (sizeof(chunkmeshes) / sizeof(chunkmeshes[0])));
+
     //next, create all the meshes for each chunkmesh
-    for (int i = 0; i < 81; i++) {
+    for (int i = 0; i < count; i++) {
+        TraceLog(LOG_WARNING, "index no.: %d", i);
         GenMeshChunk(chunkmeshes[i]->mesh, chunkmeshes[i]->chunk, hash_table);
         UploadMesh(chunkmeshes[i]->mesh, false);
     }
@@ -102,7 +123,7 @@ int main(void) {
     // UploadMesh(chunkmeshes[0]->mesh, false);
 
     DisableCursor();
-    SetTargetFPS(60);
+    SetTargetFPS(120);
     while(!WindowShouldClose()) {
         UpdateCamera(&camera, cameraMode);
 
@@ -135,7 +156,7 @@ int main(void) {
                 //     DrawMesh(*megachunks[0]->chunkmeshes[j]->mesh, material, matrix);
                 // }
 
-                for(int i = 0; i < 81; i++) {
+                for(int i = 0; i < count; i++) {
                     DrawMesh(*chunkmeshes[i]->mesh, material, matrix);
                 }
 
@@ -170,7 +191,7 @@ int main(void) {
     //     UnloadMesh(*megachunks[0]->chunkmeshes[j]->mesh);
     // }
 
-    for (int i = 0; i < 81; i++) {
+    for (int i = 0; i < count; i++) {
         UnloadMesh(*chunkmeshes[i]->mesh);
     }
 
