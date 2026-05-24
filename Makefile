@@ -46,6 +46,7 @@ SOURCES := $(SRC_DIR)/main.c \
            $(SRC_DIR)/world.c \
 		   $(SRC_DIR)/mesh.c \
 		   $(SRC_DIR)/player.c \
+		   $(SRC_DIR)/camera.c \
 
 # Include directories
 INCLUDES := -I$(SRC_DIR) -I$(LIB_DIR) -I$(RAYLIB_DIR)

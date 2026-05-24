@@ -13,22 +13,23 @@ void draw_cube_basic(Vector3 position, Color color, Texture* texture);
 // i do NOT want to load chunks when player steps over a certain boundary
 
 int main(void) {
-    // const int screenWidth = 2560;
-    // const int screenHeight = 1440;
-    const int screenWidth = GetMonitorWidth(0);
-    const int screenHeight = GetMonitorHeight(0);
+    const int screenWidth = 2560;
+    const int screenHeight = 1440;
+    //const int screenWidth = GetMonitorWidth(0);
+    //const int screenHeight = GetMonitorHeight(0);
     SetConfigFlags(FLAG_WINDOW_UNDECORATED);
-    SetConfigFlags(FLAG_WINDOW_HIGHDPI);
+    //SetConfigFlags(FLAG_WINDOW_HIGHDPI);
     InitWindow(screenWidth, screenHeight, "NewCraft");
 
     Camera camera = { 0 };
-    camera.position = (Vector3) { 0.0f, 11.8f, 0.0f };
+    camera.position = (Vector3) { 0.0f, -11.8f, 0.0f };
     camera.target = (Vector3) { 0.0f, 0.0f, -5.0f };
     camera.up = (Vector3) { 0.0f, 1.0f, 0.0f };
     camera.fovy = 70.0f;
     camera.projection = CAMERA_PERSPECTIVE;
 
     int cameraMode = CAMERA_FIRST_PERSON;
+
 
 
     // fnl_state noise = fnlCreateState();
@@ -113,7 +114,7 @@ int main(void) {
 
     //next, create all the meshes for each chunkmesh
     for (int i = 0; i < count; i++) {
-        TraceLog(LOG_WARNING, "index no.: %d", i);
+        //TraceLog(LOG_WARNING, "index no.: %d", i);
         GenMeshChunk(chunkmeshes[i]->mesh, chunkmeshes[i]->chunk, hash_table);
         UploadMesh(chunkmeshes[i]->mesh, false);
     }
