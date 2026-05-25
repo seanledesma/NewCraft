@@ -145,6 +145,8 @@ typedef struct MegaChunk {
 ChunkMesh* gen_chunk_mesh(Vector3 world_pos, HashTable* hash_table);
 Chunk* gen_chunk(Vector3 world_pos, HashTable* hash_table);
 Block gen_block(Vector3 world_pos, int blockX, int blockY, int blockZ, int counter, HashTable* hash_table);
+Chunk* GetCurrentChunk(Vector3 player_pos, HashTable* hash_table);
+BoundingBox GetNearbyBlocks(Vector3 player_pos, HashTable* hash_table);
 
 // hash.c
 HashTable* InitializeTable(uint32_t capacity);

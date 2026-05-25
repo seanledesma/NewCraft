@@ -36,53 +36,12 @@ ChunkMesh* gen_chunk_mesh(Vector3 world_pos, HashTable* hash_table) {
     chunk_mesh->chunk = gen_chunk(world_pos, hash_table);
 
     return chunk_mesh;
-
-
-
-
-
-
-    
-    // Mesh* temp_mesh = (Mesh*)MemAlloc(sizeof(Mesh));
-
-    // int total_vertex_count = chunk_mesh->mesh->vertexCount * 3;
-    // int total_tex_coords = (total_vertex_count / 3) * 2;
-    // int total_normal_count = total_vertex_count;
-
-    // temp_mesh->vertices = (float *)MemRealloc(chunk_mesh->mesh->vertices, total_vertex_count * sizeof(float));
-    
-    // if (temp_mesh->vertices == NULL) {
-    //     TraceLog(LOG_ERROR, "temp mesh in gen_chunk_mesh is NULL");
-    // } else {
-    //     chunk_mesh->mesh->vertices = temp_mesh->vertices;
-    // }
-
-    // // now tex coords
-    // temp_mesh->texcoords = (float *)MemRealloc(chunk_mesh->mesh->texcoords, total_tex_coords * sizeof(float));
-    
-    // if (temp_mesh->texcoords == NULL) {
-    //     TraceLog(LOG_ERROR, "temp mesh in gen_chunk_mesh is NULL");
-    // } else {
-    //     chunk_mesh->mesh->texcoords = temp_mesh->texcoords;
-    // }
-
-    // temp_mesh->normals = (float *)MemRealloc(chunk_mesh->mesh->normals, total_normal_count * sizeof(float));
-    
-    // if (temp_mesh->normals == NULL) {
-    //     TraceLog(LOG_ERROR, "temp mesh in gen_chunk_mesh is NULL");
-    // } else {
-    //     chunk_mesh->mesh->normals = temp_mesh->normals;
-    // }
-
-
-    // return chunk_mesh;
 }
 
 // takes chunk world position to pass to block gen function. 
 // we create and return a pointer to a chunk strut which now
 // has blocks array full of pointers to blocks created in gen_block.
 Chunk* gen_chunk(Vector3 world_pos, HashTable* hash_table) {
-    //Chunk chunk = { 0 };
     Chunk* chunk = (Chunk*)calloc(1,sizeof(Chunk));
 
     chunk->world_pos = world_pos;
@@ -93,15 +52,7 @@ Chunk* gen_chunk(Vector3 world_pos, HashTable* hash_table) {
         //create all the conceptual blocks
         for (int j = 0; j < CHUNK_SIZE; j++) {
             for (int k = 0; k < CHUNK_SIZE; k++) {
-                //Block* block = gen_block(chunk.world_pos, i, j, k);
-                //Block block = (Block*)calloc(1, sizeof(Block));
-                //chunk->blocks[block_counter] = gen_block(world_pos, i, j, k, mesh, block_counter, hash_table);
-                chunk->blocks[i][j][k] = gen_block(world_pos, i, j, k, block_counter, hash_table);
-
-                //chunk->total_vertex_count += 36;
-                //chunk->total_triangle_count += 12;
-
-                //chunk->blocks[block_counter] = block;      
+                chunk->blocks[i][j][k] = gen_block(world_pos, i, j, k, block_counter, hash_table);   
                 block_counter++;
 
             }
@@ -119,7 +70,6 @@ Chunk* gen_chunk(Vector3 world_pos, HashTable* hash_table) {
 // png and opengl. This is the lowest it goes, we return a pointer to the 
 // data generated here.
 Block gen_block(Vector3 world_pos, int blockX, int blockY, int blockZ, int counter, HashTable* hash_table) {
-    //Block* block = (Block*)calloc(1, sizeof(Block));
     float posX = world_pos.x - HALF_CHUNK + blockX + 0.5f; //have to add 0.5 so it lines up.. for reasons..
     float posY = world_pos.y - HALF_CHUNK + blockY;
     float posZ = world_pos.z - HALF_CHUNK + blockZ + 0.5f;
@@ -128,12 +78,42 @@ Block gen_block(Vector3 world_pos, int blockX, int blockY, int blockZ, int count
     Block block = {0};
     
     block.block_type = DecideBlockType(blockpos);
-    
-
-    // if(IsBlockVisible(world_pos, blockpos, blockX, blockY, blockZ, hash_table) == false) {
-    //     block.block_type = BLOCK_AIR;
-    // }
-
 
     return block;
+}
+
+Chunk* GetCurrentChunk(Vector3 player_pos, HashTable* hash_table) {
+    ChunkMesh* curr_chunkmesh = (ChunkMesh*)calloc(1,sizeof(ChunkMesh));
+
+    int chunkX = (int)floor((player_pos.x + 8) / 16) * 16;
+    int chunkY = (int)floor(((player_pos.y - PLAYER_HEIGHT) + 8) / 16) * 16;
+    int chunkZ = (int)floor((player_pos.z + 8) / 16) * 16;
+    curr_chunkmesh = FetchChunkEntry((Vector3) {chunkX,chunkY,chunkZ}, hash_table);
+
+    return curr_chunkmesh->chunk;
+}
+
+BoundingBox GetNearbyBlocks(Vector3 player_pos, HashTable* hash_table) {
+    //.. figuring this out
+    // i probably want to figure out nearby blocks up to N, then
+    // put some bounding boxes on them, return an array of those..
+
+    Chunk* curr_chunk = (Chunk*)MemAlloc(sizeof(Chunk));
+    curr_chunk = GetCurrentChunk(player_pos, hash_table);
+
+    //next get the block at players feet
+    int relX = (int)floor((player_pos.x + 8) / 16);
+    int relY = (int)floor(((player_pos.y - PLAYER_HEIGHT) + 8) / 16);
+    int relZ = (int)floor((player_pos.z + 8) / 16);
+
+    Block* curr_block = (Block*)MemAlloc(sizeof(Block));
+    curr_block = &curr_chunk->blocks[relX][relY][relZ];     //??
+
+    BoundingBox box = {
+        (Vector3) {relX, relY + 0.5f, relZ},
+        (Vector3) {relX + 1.0f, relY + 1.5f, relZ + 1.0f}
+    };
+
+    return box;
+
 }

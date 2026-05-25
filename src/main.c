@@ -13,10 +13,12 @@ void draw_cube_basic(Vector3 position, Color color, Texture* texture);
 // i do NOT want to load chunks when player steps over a certain boundary
 
 int main(void) {
-    //const int screenWidth = 2560;
-    //const int screenHeight = 1440;
-    const int screenWidth = GetMonitorWidth(0);
-    const int screenHeight = GetMonitorHeight(0);
+    const int screenWidth = 2560;
+    const int screenHeight = 1440;
+    // const int screenWidth = GetMonitorWidth(0);
+    // const int screenHeight = GetMonitorHeight(0);
+    // const int cross_hair_width = screenWidth * 0.01f;
+    // const int cross_hair_height = screenHeight * 0.01f;
     SetConfigFlags(FLAG_WINDOW_UNDECORATED);
     //SetConfigFlags(FLAG_WINDOW_HIGHDPI);
     InitWindow(screenWidth, screenHeight, "NewCraft");
@@ -98,34 +100,34 @@ int main(void) {
     // }
 
     // something temporary until i figure out chunk loading sequence + only showing chunks player can see
-    int count = 0;
-    for (int x = -RENDER_DISTANCE_X; x <= RENDER_DISTANCE_X; x++) {
-        for (int y = -RENDER_DISTANCE_Y; y <= RENDER_DISTANCE_Y; y++) {
-            for (int z = -RENDER_DISTANCE_Z; z <= RENDER_DISTANCE_Z; z++) {
-                Vector3 chunk_pos = (Vector3) { x * CHUNK_SIZE, y * CHUNK_SIZE, z * CHUNK_SIZE };
+    // int count = 0;
+    // for (int x = -RENDER_DISTANCE_X; x <= RENDER_DISTANCE_X; x++) {
+    //     for (int y = -RENDER_DISTANCE_Y; y <= RENDER_DISTANCE_Y; y++) {
+    //         for (int z = -RENDER_DISTANCE_Z; z <= RENDER_DISTANCE_Z; z++) {
+    //             Vector3 chunk_pos = (Vector3) { x * CHUNK_SIZE, y * CHUNK_SIZE, z * CHUNK_SIZE };
 
-                chunkmeshes[count] = FetchChunkEntry(chunk_pos, hash_table);
-                count += 1;
-            }
-        }
-    }
+    //             chunkmeshes[count] = FetchChunkEntry(chunk_pos, hash_table);
+    //             count += 1;
+    //         }
+    //     }
+    // }
 
-   //TraceLog(LOG_WARNING, "size of chunkmeshes: %d", (sizeof(chunkmeshes) / sizeof(chunkmeshes[0])));
+    //TraceLog(LOG_WARNING, "size of chunkmeshes: %d", (sizeof(chunkmeshes) / sizeof(chunkmeshes[0])));
 
     //next, create all the meshes for each chunkmesh
-    for (int i = 0; i < count; i++) {
-        //TraceLog(LOG_WARNING, "index no.: %d", i);
-        GenMeshChunk(chunkmeshes[i]->mesh, chunkmeshes[i]->chunk, hash_table);
-        UploadMesh(chunkmeshes[i]->mesh, false);
-    }
+    // for (int i = 0; i < count; i++) {
+    //     //TraceLog(LOG_WARNING, "index no.: %d", i);
+    //     GenMeshChunk(chunkmeshes[i]->mesh, chunkmeshes[i]->chunk, hash_table);
+    //     UploadMesh(chunkmeshes[i]->mesh, false);
+    // }
 
-    // chunkmeshes[0] = FetchChunkEntry(relative_positions[0], hash_table);
-    // GenMeshChunk(chunkmeshes[0]->mesh, chunkmeshes[0]->chunk);
-    // UploadMesh(chunkmeshes[0]->mesh, false);
+    chunkmeshes[0] = FetchChunkEntry(relative_positions[0], hash_table);
+    GenMeshChunk(chunkmeshes[0]->mesh, chunkmeshes[0]->chunk, hash_table);
+    UploadMesh(chunkmeshes[0]->mesh, false);
 
-
+    Model model = LoadModelFromMesh(*chunkmeshes[0]->mesh);
     Ray ray = {0};
-    BoundingBox test_box = GetMeshBoundingBox(*chunkmeshes[0]->mesh);
+    RayCollision collision = {0};
 
 
 
@@ -146,24 +148,15 @@ int main(void) {
         //     }
         // }
 
-        RayCollision collision = {0};
-        collision.distance = __FLT_MAX__;
-        collision.hit = false;
+        if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+            ray = GetScreenToWorldRay(GetMousePosition(), camera);
+            //collision = GetRayCollisionMesh(ray, model.meshes[0], model.transform);
 
-        ray = GetScreenToWorldRay(GetMousePosition(), camera);
-
-        //RayCollision hit_info = GetRayCollisionBox(ray, test_box);
-        RayCollision hit_info = GetRayCollisionMesh(ray, *chunkmeshes[0]->mesh, matrix);
-
-
-        if (hit_info.hit)
-        {
-            collision = hit_info;
+            ray.direction = Vector3Normalize(ray.direction);
+            collision = GetRayCollisionMesh(ray, *chunkmeshes[0]->mesh, matrix);
         }
 
-
-
-
+        BoundingBox box = GetNearbyBlocks(camera.position, hash_table);
 
         BeginDrawing();
             
@@ -182,36 +175,20 @@ int main(void) {
                 //     DrawMesh(*megachunks[0]->chunkmeshes[j]->mesh, material, matrix);
                 // }
 
-                for(int i = 0; i < count; i++) {
-                    DrawMesh(*chunkmeshes[i]->mesh, material, matrix);
-                }
+                // for(int i = 0; i < count; i++) {
+                //     DrawMesh(*chunkmeshes[i]->mesh, material, matrix);
+                // }
 
-                //DrawMesh(*chunkmeshes[0]->mesh, material, matrix);
+                DrawMesh(*chunkmeshes[0]->mesh, material, matrix);
+
+                DrawBoundingBox(box, ORANGE);
 
                 // DrawMesh(*megachunks[0]->chunkmeshes[0]->mesh, material, matrix);
                 // DrawMesh(*megachunks[0]->chunkmeshes[1]->mesh, material, matrix);
 
+                if (collision.hit) DrawCube(collision.point, 0.3f, 0.3f, 0.3f, RED);
+
             EndMode3D();
-
-            // EXPERIMENTAL
-            // Draw the mesh bbox if we hit it
-            if (hit_info.hit) DrawBoundingBox(test_box, LIME);
-
-            // If we hit something, draw the cursor at the hit point
-            if (collision.hit)
-            {
-                DrawCube(collision.point, 0.3f, 0.3f, 0.3f, ORANGE);
-                DrawCubeWires(collision.point, 0.3f, 0.3f, 0.3f, RED);
-
-                Vector3 normalEnd;
-                normalEnd.x = collision.point.x + collision.normal.x;
-                normalEnd.y = collision.point.y + collision.normal.y;
-                normalEnd.z = collision.point.z + collision.normal.z;
-
-                DrawLine3D(collision.point, normalEnd, RED);
-            }
-
-            DrawRay(ray, MAROON);
 
             
             DrawText(TextFormat("Player position x:%.2f, y:%.2f, z:%.2f", camera.position.x, camera.position.y, camera.position.z), 
@@ -222,6 +199,10 @@ int main(void) {
             DrawText(TextFormat("counter: %d", test_counter), 10, 50, 12, YELLOW);
             test_counter++;
 
+            if(collision.hit) DrawText("hit!", 900, 10, 50, YELLOW);
+
+            DrawRectangle((screenWidth/2) - 20, (screenHeight / 2), 45, 5, GRAY);
+            DrawRectangle((screenWidth/2), (screenHeight / 2) - 20, 5, 45, GRAY);
             DrawFPS(10, 10);
         EndDrawing();
     }
@@ -238,11 +219,13 @@ int main(void) {
     //     UnloadMesh(*megachunks[0]->chunkmeshes[j]->mesh);
     // }
 
-    for (int i = 0; i < count; i++) {
-        UnloadMesh(*chunkmeshes[i]->mesh);
-    }
+    // for (int i = 0; i < count; i++) {
+    //     UnloadMesh(*chunkmeshes[i]->mesh);
+    // }
 
-    //UnloadMesh(*chunkmeshes[0]->mesh);
+    UnloadMesh(*chunkmeshes[0]->mesh);
+
+    UnloadModel(model);
 
     UnloadTexture(texture);
     //free(chunkmeshes);

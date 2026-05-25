@@ -101,21 +101,30 @@ ifeq ($(PLATFORM),Windows)
                           -O0 \
                           -DDEBUG \
                           -fstack-protector-strong
-else
+else ifeq ($(PLATFORM),macOS)
     NATIVE_DEBUG_FLAGS := $(NATIVE_COMMON_FLAGS) \
                           -g3 \
                           -glldb \
                           -O0 \
                           -DDEBUG \
-						  -fwrapv \
+                          -fwrapv \
                           -fsanitize=address \
                           -fsanitize=undefined \
                           -fno-omit-frame-pointer \
                           -fstack-protector-strong \
-						  -fsanitize-recover=signed-integer-overflow 
-						  #-fsanitize-undefined-trap-on-error 
+                          -fsanitize-recover=signed-integer-overflow
+else
+    NATIVE_DEBUG_FLAGS := $(NATIVE_COMMON_FLAGS) \
+                          -g3 \
+                          -O0 \
+                          -DDEBUG \
+                          -fwrapv \
+                          -fsanitize=address \
+                          -fsanitize=undefined \
+                          -fno-omit-frame-pointer \
+                          -fstack-protector-strong \
+                          -fsanitize-recover=signed-integer-overflow
 endif
-
 # ============================================================================
 # WEB BUILD FLAGS
 # ============================================================================
