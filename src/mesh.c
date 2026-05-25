@@ -12,7 +12,7 @@ void GenMeshChunk(Mesh* mesh, Chunk* chunk, HashTable* hash_table) {
         for (int blockY = 0; blockY < CHUNK_SIZE; blockY++) {
             for (int blockZ = 0; blockZ < CHUNK_SIZE; blockZ++) {
                 float x = chunk->world_pos.x - HALF_CHUNK + blockX + 0.5f;
-                float y = chunk->world_pos.y - HALF_CHUNK + blockY;
+                float y = chunk->world_pos.y - HALF_CHUNK + blockY + 0.5f;
                 float z = chunk->world_pos.z - HALF_CHUNK + blockZ + 0.5f;
                 Vector3 block_world_pos = { x, y, z };
 

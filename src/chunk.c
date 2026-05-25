@@ -102,18 +102,59 @@ BoundingBox GetNearbyBlocks(Vector3 player_pos, HashTable* hash_table) {
     curr_chunk = GetCurrentChunk(player_pos, hash_table);
 
     //next get the block at players feet
-    int relX = (int)floor((player_pos.x + 8) / 16);
-    int relY = (int)floor(((player_pos.y - PLAYER_HEIGHT) + 8) / 16);
-    int relZ = (int)floor((player_pos.z + 8) / 16);
+    // int relX = (int)floor((player_pos.x + 8) / 16);
+    // int relY = (int)floor(((player_pos.y - PLAYER_HEIGHT) + 8) / 16);
+    // int relZ = (int)floor((player_pos.z + 8) / 16);
+
+    // if(player_pos.x != 0.0f && player_pos.y - PLAYER_HEIGHT != 0 && player_pos.z !=0) {
+
+    // }
+
+    // listen... best way to do this is to translate player pos / chunk world pos to a relative
+    // block right below player, then translate that to real world coords, pass to box
+        
+    int relX = (int)floor(curr_chunk->world_pos.x / player_pos.x);
+    int relY = floor(curr_chunk->world_pos.y / (player_pos.y - PLAYER_HEIGHT));
+    int relZ = floor(curr_chunk->world_pos.z / player_pos.z);
+    if(player_pos.x == 0.0f) relX = 8;
+    if(player_pos.y - PLAYER_HEIGHT == 0.0f) relY = 8;
+    if(player_pos.z == 0.0f) relZ = 8;
 
     Block* curr_block = (Block*)MemAlloc(sizeof(Block));
     curr_block = &curr_chunk->blocks[relX][relY][relZ];     //??
 
+
+    //i would say... the chunk and the player pos have something in common. 
+    //we know that 8,8,8 indices in chunk is physical 0,0,0 (relative) chunk position
+    //ie, the center of the chunk. we just need to know how far away exactly the player
+    //is from center of the chunk, then figuring out which block should be trivial
+    int indexX = 0;
+    int tempX = curr_chunk->world_pos.x - floor(player_pos.x);
+    // if(tempX == -8) indexX = 0;
+    // if(tempX == -7) indexX = 1;
+    indexX = tempX + 8;
+
+    int indexY = 0;
+    int tempY = curr_chunk->world_pos.y - floor(player_pos.y - 2.0f); //2.0f to get block below player
+    indexY = tempY + 8;
+
+    int tempZ = curr_chunk->world_pos.z - floor(player_pos.z);
+    int indexZ = tempZ + 8;
+
+    float boxX = curr_chunk->world_pos.x - (indexX - 8); //seems redundant but we are just getting it working
+    float boxY = curr_chunk->world_pos.y - (indexY - 8);
+    float boxZ = curr_chunk->world_pos.z - (indexZ - 8);
+
     BoundingBox box = {
-        (Vector3) {relX, relY + 0.5f, relZ},
-        (Vector3) {relX + 1.0f, relY + 1.5f, relZ + 1.0f}
+        (Vector3) {boxX, boxY, boxZ},
+        (Vector3) {boxX + 1.0f, boxY + 1.0f, boxZ + 1.0f}
     };
 
-    return box;
+    // just following players exact movements now.. we want to track block below player
+    // BoundingBox box = {
+    //     (Vector3) {player_pos.x, player_pos.y - PLAYER_HEIGHT + 0.5f, player_pos.z},
+    //     (Vector3) {player_pos.x + 1.0f, player_pos.y - PLAYER_HEIGHT + 1.5f, player_pos.z + 1.0f}
+    // };
 
+    return box;
 }

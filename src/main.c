@@ -129,7 +129,7 @@ int main(void) {
     Ray ray = {0};
     RayCollision collision = {0};
 
-
+    BoundingBox box = {0};
 
 
     DisableCursor();
@@ -156,7 +156,7 @@ int main(void) {
             collision = GetRayCollisionMesh(ray, *chunkmeshes[0]->mesh, matrix);
         }
 
-        BoundingBox box = GetNearbyBlocks(camera.position, hash_table);
+        box = GetNearbyBlocks(camera.position, hash_table);
 
         BeginDrawing();
             
@@ -193,6 +193,9 @@ int main(void) {
             
             DrawText(TextFormat("Player position x:%.2f, y:%.2f, z:%.2f", camera.position.x, camera.position.y, camera.position.z), 
                         140, 10, 20, YELLOW);
+
+            DrawText(TextFormat("box position x:%.2f, y:%.2f, z:%.2f", box.min.x, box.min.y, box.min.z), 
+                        540, 10, 20, YELLOW);
             // DrawText(TextFormat("Current Chunk Position x:%.2f, y:%.2f, z:%.2f", 
             //                     current_chunk_pos.x, current_chunk_pos.y, current_chunk_pos.z), 
             //             640, 10, 20, YELLOW);
