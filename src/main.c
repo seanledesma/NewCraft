@@ -13,16 +13,16 @@ void draw_cube_basic(Vector3 position, Color color, Texture* texture);
 // i do NOT want to load chunks when player steps over a certain boundary
 
 int main(void) {
-    const int screenWidth = 2560;
-    const int screenHeight = 1440;
-    //const int screenWidth = GetMonitorWidth(0);
-    //const int screenHeight = GetMonitorHeight(0);
+    //const int screenWidth = 2560;
+    //const int screenHeight = 1440;
+    const int screenWidth = GetMonitorWidth(0);
+    const int screenHeight = GetMonitorHeight(0);
     SetConfigFlags(FLAG_WINDOW_UNDECORATED);
     //SetConfigFlags(FLAG_WINDOW_HIGHDPI);
     InitWindow(screenWidth, screenHeight, "NewCraft");
 
     Camera camera = { 0 };
-    camera.position = (Vector3) { 0.0f, -11.8f, 0.0f };
+    camera.position = (Vector3) { 0.0f, 1.8f, 0.0f };
     camera.target = (Vector3) { 0.0f, 0.0f, -5.0f };
     camera.up = (Vector3) { 0.0f, 1.0f, 0.0f };
     camera.fovy = 70.0f;
@@ -123,6 +123,13 @@ int main(void) {
     // GenMeshChunk(chunkmeshes[0]->mesh, chunkmeshes[0]->chunk);
     // UploadMesh(chunkmeshes[0]->mesh, false);
 
+
+    Ray ray = {0};
+    BoundingBox test_box = GetMeshBoundingBox(*chunkmeshes[0]->mesh);
+
+
+
+
     DisableCursor();
     SetTargetFPS(120);
     while(!WindowShouldClose()) {
@@ -138,6 +145,24 @@ int main(void) {
         //         mega_chunk_counter++;
         //     }
         // }
+
+        RayCollision collision = {0};
+        collision.distance = __FLT_MAX__;
+        collision.hit = false;
+
+        ray = GetScreenToWorldRay(GetMousePosition(), camera);
+
+        //RayCollision hit_info = GetRayCollisionBox(ray, test_box);
+        RayCollision hit_info = GetRayCollisionMesh(ray, *chunkmeshes[0]->mesh, matrix);
+
+
+        if (hit_info.hit)
+        {
+            collision = hit_info;
+        }
+
+
+
 
 
         BeginDrawing();
@@ -167,6 +192,27 @@ int main(void) {
                 // DrawMesh(*megachunks[0]->chunkmeshes[1]->mesh, material, matrix);
 
             EndMode3D();
+
+            // EXPERIMENTAL
+            // Draw the mesh bbox if we hit it
+            if (hit_info.hit) DrawBoundingBox(test_box, LIME);
+
+            // If we hit something, draw the cursor at the hit point
+            if (collision.hit)
+            {
+                DrawCube(collision.point, 0.3f, 0.3f, 0.3f, ORANGE);
+                DrawCubeWires(collision.point, 0.3f, 0.3f, 0.3f, RED);
+
+                Vector3 normalEnd;
+                normalEnd.x = collision.point.x + collision.normal.x;
+                normalEnd.y = collision.point.y + collision.normal.y;
+                normalEnd.z = collision.point.z + collision.normal.z;
+
+                DrawLine3D(collision.point, normalEnd, RED);
+            }
+
+            DrawRay(ray, MAROON);
+
             
             DrawText(TextFormat("Player position x:%.2f, y:%.2f, z:%.2f", camera.position.x, camera.position.y, camera.position.z), 
                         140, 10, 20, YELLOW);
