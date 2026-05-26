@@ -93,7 +93,7 @@ Chunk* GetCurrentChunk(Vector3 player_pos, HashTable* hash_table) {
     return curr_chunkmesh->chunk;
 }
 
-BoundingBox GetNearbyBlocks(Vector3 player_pos, HashTable* hash_table) {
+BoundingBox* GetNearbyBlocks(Vector3 player_pos, HashTable* hash_table) {
     //.. figuring this out
     // i probably want to figure out nearby blocks up to N, then
     // put some bounding boxes on them, return an array of those..
@@ -128,33 +128,91 @@ BoundingBox GetNearbyBlocks(Vector3 player_pos, HashTable* hash_table) {
     //we know that 8,8,8 indices in chunk is physical 0,0,0 (relative) chunk position
     //ie, the center of the chunk. we just need to know how far away exactly the player
     //is from center of the chunk, then figuring out which block should be trivial
-    int indexX = 0;
-    int tempX = curr_chunk->world_pos.x - floor(player_pos.x);
-    // if(tempX == -8) indexX = 0;
-    // if(tempX == -7) indexX = 1;
-    indexX = tempX + 8;
+    int indexX = (curr_chunk->world_pos.x - floor(player_pos.x)) + 8;
 
-    int indexY = 0;
-    int tempY = curr_chunk->world_pos.y - floor(player_pos.y - 2.0f); //2.0f to get block below player
-    indexY = tempY + 8;
+    int indexY = (curr_chunk->world_pos.y - floor(player_pos.y - 2.0f)) + 8;
 
-    int tempZ = curr_chunk->world_pos.z - floor(player_pos.z);
-    int indexZ = tempZ + 8;
+    int indexZ = (curr_chunk->world_pos.z - floor(player_pos.z)) + 8;
 
     float boxX = curr_chunk->world_pos.x - (indexX - 8); //seems redundant but we are just getting it working
     float boxY = curr_chunk->world_pos.y - (indexY - 8);
     float boxZ = curr_chunk->world_pos.z - (indexZ - 8);
 
-    BoundingBox box = {
-        (Vector3) {boxX, boxY, boxZ},
-        (Vector3) {boxX + 1.0f, boxY + 1.0f, boxZ + 1.0f}
-    };
-
-    // just following players exact movements now.. we want to track block below player
     // BoundingBox box = {
-    //     (Vector3) {player_pos.x, player_pos.y - PLAYER_HEIGHT + 0.5f, player_pos.z},
-    //     (Vector3) {player_pos.x + 1.0f, player_pos.y - PLAYER_HEIGHT + 1.5f, player_pos.z + 1.0f}
+    //     (Vector3) {boxX, boxY, boxZ},
+    //     (Vector3) {boxX + 1.0f, boxY + 1.0f, boxZ + 1.0f}
     // };
 
-    return box;
+    //now let's work on getting all the blocks around player
+    BoundingBox* boxes = (BoundingBox*)MemAlloc(sizeof(BoundingBox) * 729);
+    //first positive
+    // int box_counter = 0;
+    // for (int x = 0; x < 3; x++) {
+    //     for (int y = 0; y < 3; y++) {
+    //         for (int z = 0; z < 3; z++) {
+    //             boxes[box_counter].min = (Vector3) {boxX + x, boxY + y, boxZ + z};
+    //             boxes[box_counter].max = (Vector3) {boxX + x + 1.0f, boxY + y + 1.0f, boxZ + z + 1.0f};
+    //             box_counter++;
+    //         }
+    //     }
+    // }
+
+    // for (int x = -1; x >= -3; x--) {
+    //     for (int y = -1; y >= -3; y--) {
+    //         for (int z = -1; z >= -3; z--) {
+    //             boxes[box_counter].min = (Vector3) {boxX + x, boxY + y, boxZ + z};
+    //             boxes[box_counter].max = (Vector3) {boxX + x + 1.0f, boxY + y + 1.0f, boxZ + z + 1.0f};
+    //             box_counter++;
+    //         }
+    //     }
+    // }
+
+    /*
+    this is dumb.. do i even want to use a bunch of bounding boxes around the player? 
+    it might be a better idea to .. i mean, the goal is to have ray collisions hit the right
+    block the player is looking at. 
+    i'd be making a lot of unneccesary bounding boxes in the air, only need non air blocks 
+    to detect collision.
+    i don't think i'll get around having to make a bunch of bounding boxes around the player, however
+    why don't we instead skip them if they are air, since we have the chunk data..
+    i mean, we should be able to say, hey, grab everything from neg. N from player and go until pos N
+    */
+    int box_counter = 0;
+    for (int x = -3; x <= 3; x++) {
+        for (int y = -3; y <= 5; y++) {
+            for (int z = -3; z <= 3; z++) {
+
+                //need to load adjacent chunk, flip index logic
+                if(indexX + x >= 16) {
+                    continue;
+                }
+                if (indexX + x < 0) {
+                    continue;
+                }
+
+                if(indexY + y >= 16) {
+                    continue;
+                }
+                if (indexY + y < 0) {
+                    continue;
+                }
+
+                if(indexZ + z >= 16) {
+                    continue;
+                }
+                if (indexZ + z < 0) {
+                    continue;
+                }
+
+                if(curr_chunk->blocks[indexX + x][indexY + y][indexZ + z].block_type != BLOCK_AIR) {
+                    boxes[box_counter].min = (Vector3) {boxX + x, boxY + y, boxZ + z};
+                    boxes[box_counter].max = (Vector3) {boxX + x + 1.0f, boxY + y + 1.0f, boxZ + z + 1.0f};
+                    box_counter++;
+                }
+
+            }
+        }
+    }
+
+    return boxes;
 }
