@@ -35,7 +35,7 @@ int main(void) {
     InitWindow(screenWidth, screenHeight, "NewCraft");
 
     Camera camera = { 0 };
-    camera.position = (Vector3) { 0.0f, 10.8f, 0.0f };
+    camera.position = (Vector3) { 0.0f, -2.8f, 0.0f };
     camera.target = (Vector3) { 0.0f, 0.0f, -5.0f };
     camera.up = (Vector3) { 0.0f, 1.0f, 0.0f };
     camera.fovy = 70.0f;
@@ -64,7 +64,6 @@ int main(void) {
     int renderX = 1;
     int renderY = 1;
     int renderZ = 1;
-    int mega_chunk_counter = 0;
 
 
 
@@ -141,7 +140,7 @@ int main(void) {
 
     Vector3* coords = (Vector3*)MemAlloc(500 * sizeof(Vector3));
     Vector3 starting_position = (Vector3) { 0.0f, 0.0f, 0.0f };
-    int depth = 20;
+    int depth = 10;
     int count = 0;
     SpiralTraversal3D(coords, starting_position, depth);
     // create all chunks
@@ -208,7 +207,7 @@ int main(void) {
 
         BeginDrawing();
             
-            ClearBackground(BLACK);
+            ClearBackground(SKYBLUE);
 
             BeginMode3D(camera);
 
@@ -288,109 +287,4 @@ int main(void) {
     CloseWindow();
 
     return 0;       
-}
-
-
-void draw_cube_basic(Vector3 pos, Color color, Texture* texture) {
-    float size = 0.5f;
-
-    rlPushMatrix();
-
-        rlSetTexture(texture->id);
-         rlBegin(RL_QUADS);
-            rlColor4ub(color.r, color.g, color.b, color.a);
-            // for whatever reason, RL_QUADS goes bottom left, bottom right, top right, top left... counter clockwise
-            // and, again for whatever reason, png format has origin at top left, opengl at bottom left, so must swap tex coords here (not intuitive)
-            // Z-POSITIVE face
-            rlNormal3f(0.0f, 0.0f, 1.0f);
-            // Vertex 2: Bottom left
-            rlTexCoord2f(0.0f, 1.0f); rlVertex3f(pos.x-size, pos.y-size, pos.z+size);
-
-            // Vertex 3: Bottom right
-            rlTexCoord2f(1.0f, 1.0f); rlVertex3f(pos.x+size, pos.y-size, pos.z+size);
-
-            // Vertex 3: Top right
-            rlTexCoord2f(1.0f, 0.0f); rlVertex3f(pos.x+size, pos.y+size, pos.z+size);            
-
-            // Vertex 1: Top left
-            rlTexCoord2f(0.0f, 0.0f); rlVertex3f(pos.x-size, pos.y+size, pos.z+size);
-            
-            // Z-NEGATIVE FACE
-            rlNormal3f(0.0f, 0.0f, -1.0f);
-            // Vertex 2: Bottom left
-            rlTexCoord2f(0.0f, 1.0f); rlVertex3f(pos.x+size, pos.y-size, pos.z-size);
-
-            // Vertex 3: Bottom right
-            rlTexCoord2f(1.0f, 1.0f); rlVertex3f(pos.x-size, pos.y-size, pos.z-size);
-
-            // Vertex 3: Top right
-            rlTexCoord2f(1.0f, 0.0f); rlVertex3f(pos.x-size, pos.y+size, pos.z-size);            
-
-            // Vertex 1: Top left
-            rlTexCoord2f(0.0f, 0.0f); rlVertex3f(pos.x+size, pos.y+size, pos.z-size);
-
-
-            // Y-POSITIVE FACE (TOP)
-            rlNormal3f(0.0f, 1.0f, 0.0f);
-            // Vertex 2: Bottom left
-            rlTexCoord2f(0.0f, 1.0f); rlVertex3f(pos.x-size, pos.y+size, pos.z+size);
-
-            // Vertex 3: Bottom right
-            rlTexCoord2f(1.0f, 1.0f); rlVertex3f(pos.x+size, pos.y+size, pos.z+size);
-
-            // Vertex 3: Top right
-            rlTexCoord2f(1.0f, 0.0f); rlVertex3f(pos.x+size, pos.y+size, pos.z-size);            
-
-            // Vertex 1: Top left
-            rlTexCoord2f(0.0f, 0.0f); rlVertex3f(pos.x-size, pos.y+size, pos.z-size);
-
-
-            // Y-NEGATIVE (BOTTOM FACE)
-            rlNormal3f(0.0f, 1.0f, 0.0f);
-            // Vertex 2: Bottom left
-            rlTexCoord2f(0.0f, 1.0f); rlVertex3f(pos.x+size, pos.y-size, pos.z+size);
-
-            // Vertex 3: Bottom right
-            rlTexCoord2f(1.0f, 1.0f); rlVertex3f(pos.x-size, pos.y-size, pos.z+size);
-
-            // Vertex 3: Top right
-            rlTexCoord2f(1.0f, 0.0f); rlVertex3f(pos.x-size, pos.y-size, pos.z-size);            
-
-            // Vertex 1: Top left
-            rlTexCoord2f(0.0f, 0.0f); rlVertex3f(pos.x+size, pos.y-size, pos.z-size);
-            
-
-            // X-NEGATIVE FACE (LEFT)
-            rlNormal3f(0.0f, 0.0f, 1.0f);
-            // Vertex 2: Bottom left
-            rlTexCoord2f(0.0f, 1.0f); rlVertex3f(pos.x-size, pos.y-size, pos.z-size);
-
-            // Vertex 3: Bottom right
-            rlTexCoord2f(1.0f, 1.0f); rlVertex3f(pos.x-size, pos.y-size, pos.z+size);
-
-            // Vertex 3: Top right
-            rlTexCoord2f(1.0f, 0.0f); rlVertex3f(pos.x-size, pos.y+size, pos.z+size);            
-
-            // Vertex 1: Top left
-            rlTexCoord2f(0.0f, 0.0f); rlVertex3f(pos.x-size, pos.y+size, pos.z-size);
-            
-
-            // X-POSITIVE FACE (RIGHT)
-            rlNormal3f(0.0f, 0.0f, 1.0f);
-            // Vertex 2: Bottom left
-            rlTexCoord2f(0.0f, 1.0f); rlVertex3f(pos.x+size, pos.y-size, pos.z+size);
-
-            // Vertex 3: Bottom right
-            rlTexCoord2f(1.0f, 1.0f); rlVertex3f(pos.x+size, pos.y-size, pos.z-size);
-
-            // Vertex 3: Top right
-            rlTexCoord2f(1.0f, 0.0f); rlVertex3f(pos.x+size, pos.y+size, pos.z-size);            
-
-            // Vertex 1: Top left
-            rlTexCoord2f(0.0f, 0.0f); rlVertex3f(pos.x+size, pos.y+size, pos.z+size);
-
-        rlEnd();
-
-        rlSetTexture(0);
-    rlPopMatrix();
 }

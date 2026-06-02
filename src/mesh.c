@@ -16,7 +16,11 @@ void GenMeshChunk(Mesh* mesh, Chunk* chunk, HashTable* hash_table) {
                 float z = chunk->world_pos.z - HALF_CHUNK + blockZ + 0.5f;
                 Vector3 block_world_pos = { x, y, z };
 
-                if(IsBlockVisible(chunk->world_pos, block_world_pos, blockX, blockY, blockZ, hash_table) == false) {
+                // if(IsBlockVisible(chunk->world_pos, block_world_pos, blockX, blockY, blockZ, hash_table) == false) {
+                //     chunk->blocks[blockX][blockY][blockZ].block_type = BLOCK_AIR;
+                // }
+
+                if(IsBlockVisibleImproved(block_world_pos, hash_table) == false) {
                     chunk->blocks[blockX][blockY][blockZ].block_type = BLOCK_AIR;
                 }
                 

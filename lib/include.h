@@ -2,8 +2,6 @@
 #include "rlgl.h"
 #include "raymath.h"
 
-
-
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
@@ -11,10 +9,6 @@
 
 #ifndef INCLUDE_H
 #define INCLUDE_H
-
-// #define FNL_IMPL
-// #include "FastNoiseLite.h"
-//extern fnl_state noise;
 
 #define RENDER_DISTANCE 3
 
@@ -87,34 +81,12 @@
 extern Vector3 relative_positions[];
 
 typedef struct Block {
-    // int block_type;
-    // Vector3 pos;
-    // float tex_coord_u_min;
-    // float tex_coord_u_max;
-    // float tex_coord_v_min;
-    // float tex_coord__v_max;
-    // float vertices[36*3];
-    // float texcoords[36*2];
-    // float normals[36*3];
-    // float vertexCount;
-    // float triangleCount;
-
     int8_t block_type;
-
 } Block;
 
 typedef struct Chunk {
     Vector3 world_pos;
-    // float total_vertices[CHUNK_CUBED * 36 * 3];
-    // float total_texcoords[CHUNK_CUBED * 36 * 2];
-    // float total_normals[CHUNK_CUBED * 36 * 3];
-    // int total_vertex_count;
-    // int total_triangle_count;
-    //Block* blocks[CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE];
-
     Block blocks[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE];
-    //Block blocks[CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE];
-
 } Chunk;
 
 typedef struct ChunkMesh {
@@ -145,10 +117,6 @@ typedef struct MegaChunk {
 ChunkMesh* gen_chunk_mesh(Vector3 world_pos, HashTable* hash_table);
 Chunk* gen_chunk(Vector3 world_pos, HashTable* hash_table);
 Block gen_block(Vector3 world_pos, int blockX, int blockY, int blockZ, int counter, HashTable* hash_table);
-Chunk* GetCurrentChunk(Vector3 player_pos, HashTable* hash_table);
-BoundingBox* GetNearbyBlocks(Vector3 player_pos, HashTable* hash_table);
-Vector3 ConvertWorldBlockPosToChunkIndex(Vector3 block_world_pos, HashTable* hash_table);
-Vector3 ConvertChunkIndexToWorldBlockPos(Vector3 chunk_index, Vector3 chunk_world_pos, HashTable* hash_table);
 
 // hash.c
 HashTable* InitializeTable(uint32_t capacity);
@@ -161,11 +129,20 @@ bool DoesChunkEntryExist(Vector3 pos, HashTable* hash_table);
 //world.c
 void InitWorld();
 int8_t DecideBlockType(Vector3 block_world_pos);
-bool IsBlockVisible(Vector3 chunk_pos, Vector3 block_pos, int blockX, int blockY, int blockZ, HashTable* hash_table);
-MegaChunk* GenMegaChunk(Vector3 megachunk_world_pos, HashTable* hash_table);
 void SpiralTraversal3D(Vector3* coords, Vector3 pos, int depth);
+Chunk* GetCurrentChunk(Vector3 player_pos, HashTable* hash_table);
+Vector3 DeriveChunkPosition(Vector3 starting_pos, HashTable* hash_table);
+Chunk* DeriveChunk(Vector3 starting_pos, HashTable* hash_table);
+BoundingBox* GetNearbyBlocks(Vector3 player_pos, HashTable* hash_table);
+Vector3 ConvertWorldBlockPosToChunkIndex(Vector3 block_world_pos, HashTable* hash_table);
+Vector3 ConvertChunkIndexToWorldBlockPos(Vector3 chunk_index, Vector3 chunk_world_pos, HashTable* hash_table);
+bool IsBlockVisibleImproved(Vector3 block_world_pos, HashTable* hash_table);
 
 //mesh.c
 void GenMeshChunk(Mesh* mesh, Chunk* chunk, HashTable* hash_table);
+bool IsBlockVisible(Vector3 chunk_pos, Vector3 block_pos, int blockX, int blockY, int blockZ, HashTable* hash_table);
+
+//player.c
+void UpdatePlayer(Camera* camera);
 
 #endif

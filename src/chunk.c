@@ -82,231 +82,107 @@ Block gen_block(Vector3 world_pos, int blockX, int blockY, int blockZ, int count
     return block;
 }
 
-Chunk* GetCurrentChunk(Vector3 player_pos, HashTable* hash_table) {
-    ChunkMesh* curr_chunkmesh = (ChunkMesh*)calloc(1,sizeof(ChunkMesh));
+// deprecated
+void draw_cube_basic(Vector3 pos, Color color, Texture* texture) {
+    float size = 0.5f;
 
-    int chunkX = (int)floor((player_pos.x + 8) / 16) * 16;
-    int chunkY = (int)floor(((player_pos.y - PLAYER_HEIGHT) + 8) / 16) * 16;
-    int chunkZ = (int)floor((player_pos.z + 8) / 16) * 16;
-    curr_chunkmesh = FetchChunkEntry((Vector3) {chunkX,chunkY,chunkZ}, hash_table);
+    rlPushMatrix();
 
-    return curr_chunkmesh->chunk;
-}
+        rlSetTexture(texture->id);
+         rlBegin(RL_QUADS);
+            rlColor4ub(color.r, color.g, color.b, color.a);
+            // for whatever reason, RL_QUADS goes bottom left, bottom right, top right, top left... counter clockwise
+            // and, again for whatever reason, png format has origin at top left, opengl at bottom left, so must swap tex coords here (not intuitive)
+            // Z-POSITIVE face
+            rlNormal3f(0.0f, 0.0f, 1.0f);
+            // Vertex 2: Bottom left
+            rlTexCoord2f(0.0f, 1.0f); rlVertex3f(pos.x-size, pos.y-size, pos.z+size);
 
-BoundingBox* GetNearbyBlocks(Vector3 player_pos, HashTable* hash_table) {
-    //.. figuring this out
-    // i probably want to figure out nearby blocks up to N, then
-    // put some bounding boxes on them, return an array of those..
+            // Vertex 3: Bottom right
+            rlTexCoord2f(1.0f, 1.0f); rlVertex3f(pos.x+size, pos.y-size, pos.z+size);
 
-    // Chunk* curr_chunk = (Chunk*)MemAlloc(sizeof(Chunk));
-    // curr_chunk = GetCurrentChunk(player_pos, hash_table);
+            // Vertex 3: Top right
+            rlTexCoord2f(1.0f, 0.0f); rlVertex3f(pos.x+size, pos.y+size, pos.z+size);            
 
-    //next get the block at players feet
-    // int relX = (int)floor((player_pos.x + 8) / 16);
-    // int relY = (int)floor(((player_pos.y - PLAYER_HEIGHT) + 8) / 16);
-    // int relZ = (int)floor((player_pos.z + 8) / 16);
+            // Vertex 1: Top left
+            rlTexCoord2f(0.0f, 0.0f); rlVertex3f(pos.x-size, pos.y+size, pos.z+size);
+            
+            // Z-NEGATIVE FACE
+            rlNormal3f(0.0f, 0.0f, -1.0f);
+            // Vertex 2: Bottom left
+            rlTexCoord2f(0.0f, 1.0f); rlVertex3f(pos.x+size, pos.y-size, pos.z-size);
 
-    // if(player_pos.x != 0.0f && player_pos.y - PLAYER_HEIGHT != 0 && player_pos.z !=0) {
+            // Vertex 3: Bottom right
+            rlTexCoord2f(1.0f, 1.0f); rlVertex3f(pos.x-size, pos.y-size, pos.z-size);
 
-    // }
+            // Vertex 3: Top right
+            rlTexCoord2f(1.0f, 0.0f); rlVertex3f(pos.x-size, pos.y+size, pos.z-size);            
 
-    // listen... best way to do this is to translate player pos / chunk world pos to a relative
-    // block right below player, then translate that to real world coords, pass to box
-        
-    // int relX = (int)floor(curr_chunk->world_pos.x / player_pos.x);
-    // int relY = floor(curr_chunk->world_pos.y / (player_pos.y - PLAYER_HEIGHT));
-    // int relZ = floor(curr_chunk->world_pos.z / player_pos.z);
-    // if(player_pos.x == 0.0f) relX = 8;
-    // if(player_pos.y - PLAYER_HEIGHT == 0.0f) relY = 8;
-    // if(player_pos.z == 0.0f) relZ = 8;
-
-    // Block* curr_block = (Block*)MemAlloc(sizeof(Block));
-    // curr_block = &curr_chunk->blocks[relX][relY][relZ];     //??
+            // Vertex 1: Top left
+            rlTexCoord2f(0.0f, 0.0f); rlVertex3f(pos.x+size, pos.y+size, pos.z-size);
 
 
-    //i would say... the chunk and the player pos have something in common. 
-    //we know that 8,8,8 indices in chunk is physical 0,0,0 (relative) chunk position
-    //ie, the center of the chunk. we just need to know how far away exactly the player
-    //is from center of the chunk, then figuring out which block should be trivial
-    // int indexX = (curr_chunk->world_pos.x - floor(player_pos.x)) + 8;
+            // Y-POSITIVE FACE (TOP)
+            rlNormal3f(0.0f, 1.0f, 0.0f);
+            // Vertex 2: Bottom left
+            rlTexCoord2f(0.0f, 1.0f); rlVertex3f(pos.x-size, pos.y+size, pos.z+size);
 
-    // int indexY = (curr_chunk->world_pos.y - floor(player_pos.y - 2.0f)) + 8;
+            // Vertex 3: Bottom right
+            rlTexCoord2f(1.0f, 1.0f); rlVertex3f(pos.x+size, pos.y+size, pos.z+size);
 
-    // int indexZ = (curr_chunk->world_pos.z - floor(player_pos.z)) + 8;
+            // Vertex 3: Top right
+            rlTexCoord2f(1.0f, 0.0f); rlVertex3f(pos.x+size, pos.y+size, pos.z-size);            
 
-    // float boxX = curr_chunk->world_pos.x - (indexX - 8); //seems redundant but we are just getting it working
-    // float boxY = curr_chunk->world_pos.y - (indexY - 8);
-    // float boxZ = curr_chunk->world_pos.z - (indexZ - 8);
-
-    // BoundingBox box = {
-    //     (Vector3) {boxX, boxY, boxZ},
-    //     (Vector3) {boxX + 1.0f, boxY + 1.0f, boxZ + 1.0f}
-    // };
-
-    //now let's work on getting all the blocks around player
-    // BoundingBox* boxes = (BoundingBox*)MemAlloc(sizeof(BoundingBox) * 729);
-    //first positive
-    // int box_counter = 0;
-    // for (int x = 0; x < 3; x++) {
-    //     for (int y = 0; y < 3; y++) {
-    //         for (int z = 0; z < 3; z++) {
-    //             boxes[box_counter].min = (Vector3) {boxX + x, boxY + y, boxZ + z};
-    //             boxes[box_counter].max = (Vector3) {boxX + x + 1.0f, boxY + y + 1.0f, boxZ + z + 1.0f};
-    //             box_counter++;
-    //         }
-    //     }
-    // }
-
-    // for (int x = -1; x >= -3; x--) {
-    //     for (int y = -1; y >= -3; y--) {
-    //         for (int z = -1; z >= -3; z--) {
-    //             boxes[box_counter].min = (Vector3) {boxX + x, boxY + y, boxZ + z};
-    //             boxes[box_counter].max = (Vector3) {boxX + x + 1.0f, boxY + y + 1.0f, boxZ + z + 1.0f};
-    //             box_counter++;
-    //         }
-    //     }
-    // }
-
-    /*
-    this is dumb.. do i even want to use a bunch of bounding boxes around the player? 
-    it might be a better idea to .. i mean, the goal is to have ray collisions hit the right
-    block the player is looking at. 
-    i'd be making a lot of unneccesary bounding boxes in the air, only need non air blocks 
-    to detect collision.
-    i don't think i'll get around having to make a bunch of bounding boxes around the player, however
-    why don't we instead skip them if they are air, since we have the chunk data..
-    i mean, we should be able to say, hey, grab everything from neg. N from player and go until pos N
-    */
-    // int box_counter = 0;
-    // for (int x = -3; x <= 3; x++) {
-    //     for (int y = -3; y <= 5; y++) {
-    //         for (int z = -3; z <= 3; z++) {
-
-    //             //need to load adjacent chunk, flip index logic
-    //             if(indexX + x >= 16) {
-    //                 continue;
-    //             }
-    //             if (indexX + x < 0) {
-    //                 continue;
-    //             }
-
-    //             if(indexY + y >= 16) {
-    //                 continue;
-    //             }
-    //             if (indexY + y < 0) {
-    //                 continue;
-    //             }
-
-    //             if(indexZ + z >= 16) {
-    //                 continue;
-    //             }
-    //             if (indexZ + z < 0) {
-    //                 continue;
-    //             }
-
-    //             if(curr_chunk->blocks[indexX + x][indexY + y][indexZ + z].block_type != BLOCK_AIR) {
-    //                 boxes[box_counter].min = (Vector3) {boxX + x, boxY + y, boxZ + z};
-    //                 boxes[box_counter].max = (Vector3) {boxX + x + 1.0f, boxY + y + 1.0f, boxZ + z + 1.0f};
-    //                 // boxes[box_counter].min = (Vector3) {boxX + x - 1.0f, boxY + y - 1.0f, boxZ + z - 1.0f};
-    //                 // boxes[box_counter].max = (Vector3) {boxX + x, boxY + y, boxZ + z};
-    //                 box_counter++;
-    //             }
-
-    //         }
-    //     }
-    // }
-
-    BoundingBox* boxes = (BoundingBox*)MemAlloc(sizeof(BoundingBox) * 729);
-
-    Vector3 base_block_world = (Vector3) {
-        floor(player_pos.x),
-        floor(player_pos.y - 1),
-        floor(player_pos.z)
-    };
-
-    //Vector3 base_block_index = ConvertWorldBlockPosToChunkIndex(base_block_world, hash_table);
-
-    // int box_counter = 0;
-    // for (int x = -3; x <= 3; x++) {
-    //     for (int y = -3; y <= 5; y++) {
-    //         for(int z = -3; z <= 3; z++) {
-    //             Vector3 curr_block_world = (Vector3) {
-    //                 base_block_world.x + x,
-    //                 base_block_world.y + y,
-    //                 base_block_world.z + z
-    //             };
-
-    //             if(DecideBlockType(curr_block_world) == BLOCK_AIR) {
-    //                 continue;
-    //             }
-
-    //             boxes[box_counter].min = curr_block_world;
-    //             boxes[box_counter].max = (Vector3) { 
-    //                 curr_block_world.x + 1.0f,
-    //                 curr_block_world.y + 1.0f,
-    //                 curr_block_world.z + 1.0f
-    //             };
-    //             box_counter++;
-    //         }
-    //     }
-    // }
-
-    int depth = 7;
-    Vector3* coords = (Vector3*)MemAlloc((depth*depth*depth*depth) * sizeof(Vector3));
-    SpiralTraversal3D(coords, base_block_world, depth);
-
-    for(int i = 0; i < (depth*depth*depth); i++) {
-
-        if(DecideBlockType(coords[i]) == BLOCK_AIR) {
-            continue;
-        }
-
-        boxes[i].min = coords[i];
-        boxes[i].max = (Vector3) { 
-            coords[i].x + 1.0f,
-            coords[i].y + 1.0f,
-            coords[i].z + 1.0f
-        };
-    }
-
-    // Vector3* coords = (Vector3*)MemAlloc(270 * sizeof(Vector3));
-    // Vector3 pos = (Vector3) { 10.0f, 0.0f, 10.0f };
-    // SpiralTraversal3D(coords, pos, 6);
-    // for(int i = 0; i < 270; i++) {
-    //     TraceLog(LOG_WARNING, TextFormat("x: %.2f, y: %.2f, z: %.2f", coords[i].x, coords[i].y, coords[i].z));
-    // }
-
-    free(coords);
-
-    return boxes;
-}
+            // Vertex 1: Top left
+            rlTexCoord2f(0.0f, 0.0f); rlVertex3f(pos.x-size, pos.y+size, pos.z-size);
 
 
-Vector3 ConvertWorldBlockPosToChunkIndex(Vector3 block_world_pos, HashTable* hash_table) {
-    Vector3 chunk_index = {0};
+            // Y-NEGATIVE (BOTTOM FACE)
+            rlNormal3f(0.0f, 1.0f, 0.0f);
+            // Vertex 2: Bottom left
+            rlTexCoord2f(0.0f, 1.0f); rlVertex3f(pos.x+size, pos.y-size, pos.z+size);
 
-    // first need to get the chunk the block pertains to
-    Chunk* curr_chunk = (Chunk*)MemAlloc(sizeof(Chunk));
-    curr_chunk = GetCurrentChunk(block_world_pos, hash_table);
+            // Vertex 3: Bottom right
+            rlTexCoord2f(1.0f, 1.0f); rlVertex3f(pos.x-size, pos.y-size, pos.z+size);
 
-    // then figure out the block index
-    chunk_index.x = (curr_chunk->world_pos.x - floor(block_world_pos.x)) + 8;
+            // Vertex 3: Top right
+            rlTexCoord2f(1.0f, 0.0f); rlVertex3f(pos.x-size, pos.y-size, pos.z-size);            
 
-    chunk_index.y = (curr_chunk->world_pos.y - floor(block_world_pos.y)) + 8;
+            // Vertex 1: Top left
+            rlTexCoord2f(0.0f, 0.0f); rlVertex3f(pos.x+size, pos.y-size, pos.z-size);
+            
 
-    chunk_index.z = (curr_chunk->world_pos.z - floor(block_world_pos.z)) + 8;
+            // X-NEGATIVE FACE (LEFT)
+            rlNormal3f(0.0f, 0.0f, 1.0f);
+            // Vertex 2: Bottom left
+            rlTexCoord2f(0.0f, 1.0f); rlVertex3f(pos.x-size, pos.y-size, pos.z-size);
 
+            // Vertex 3: Bottom right
+            rlTexCoord2f(1.0f, 1.0f); rlVertex3f(pos.x-size, pos.y-size, pos.z+size);
 
-    return chunk_index;
-}
+            // Vertex 3: Top right
+            rlTexCoord2f(1.0f, 0.0f); rlVertex3f(pos.x-size, pos.y+size, pos.z+size);            
 
+            // Vertex 1: Top left
+            rlTexCoord2f(0.0f, 0.0f); rlVertex3f(pos.x-size, pos.y+size, pos.z-size);
+            
 
-Vector3 ConvertChunkIndexToWorldBlockPos(Vector3 chunk_index, Vector3 chunk_world_pos, HashTable* hash_table) {
-    Vector3 block_world_pos = {0};
+            // X-POSITIVE FACE (RIGHT)
+            rlNormal3f(0.0f, 0.0f, 1.0f);
+            // Vertex 2: Bottom left
+            rlTexCoord2f(0.0f, 1.0f); rlVertex3f(pos.x+size, pos.y-size, pos.z+size);
 
-    block_world_pos.x = chunk_world_pos.x + (chunk_index.x - HALF_CHUNK);
-    block_world_pos.y = chunk_world_pos.y + (chunk_index.y - HALF_CHUNK);
-    block_world_pos.z = chunk_world_pos.z + (chunk_index.z - HALF_CHUNK);
+            // Vertex 3: Bottom right
+            rlTexCoord2f(1.0f, 1.0f); rlVertex3f(pos.x+size, pos.y-size, pos.z-size);
 
-    return block_world_pos;
+            // Vertex 3: Top right
+            rlTexCoord2f(1.0f, 0.0f); rlVertex3f(pos.x+size, pos.y+size, pos.z-size);            
+
+            // Vertex 1: Top left
+            rlTexCoord2f(0.0f, 0.0f); rlVertex3f(pos.x+size, pos.y+size, pos.z+size);
+
+        rlEnd();
+
+        rlSetTexture(0);
+    rlPopMatrix();
 }
