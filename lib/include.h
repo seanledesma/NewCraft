@@ -163,7 +163,7 @@ void InitWorld();
 int8_t DecideBlockType(Vector3 block_world_pos);
 bool IsBlockVisible(Vector3 chunk_pos, Vector3 block_pos, int blockX, int blockY, int blockZ, HashTable* hash_table);
 MegaChunk* GenMegaChunk(Vector3 megachunk_world_pos, HashTable* hash_table);
-void SpiralTraversal3D(Vector3 pos, int depth);
+void SpiralTraversal3D(Vector3* coords, Vector3 pos, int depth);
 
 //mesh.c
 void GenMeshChunk(Mesh* mesh, Chunk* chunk, HashTable* hash_table);

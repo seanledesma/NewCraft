@@ -63,20 +63,27 @@ void InitWorld() {
 }
 
 // given a 3D coord (Vector3) and depth (how many rows/columns to traverse) return array of coords
-void SpiralTraversal3D(Vector3 pos, int depth) {
-    // remember that if you floor you need to add .5 back at end
-    int posX = (int)floor(pos.x);
-    int posZ = (int)floor(pos.z);
+void SpiralTraversal3D(Vector3* coords, Vector3 pos, int depth) {
+    // this does relative spiraling, need to add to acutal position at the end
+    int posX = 0;
+    int posZ = 0;
     int dx = 0;
     int dz = -1;
     int temp = 0;
     int maxI = depth * depth;
-    TraceLog(LOG_WARNING, "posX = %d, posZ = %d", posX, posZ);
+    int coord_counter = 0;
+
     for(int i = 0; i < maxI; i++) {
+
         if ((-depth/2 <= posX) && (posX <= depth/2) && (-depth/2 <= posZ) && (posZ <= depth/2)) {
-            //do stuff
-            //TraceLog(LOG_WARNING, "posX = %d", posX);
+            TraceLog(LOG_WARNING, TextFormat("posZ = %d, posZ + pos.z = %d", posZ, posZ+(int)pos.z));
+            coords[coord_counter++] = (Vector3) {
+                pos.x + posX,
+                pos.y,
+                pos.z + posZ
+            };
         }
+
         if ( (posX == posZ) || ((posX < 0) && (posX == -posZ)) || ((posX > 0) && (posX == 1-posZ)) ) {
             temp = dx;
             dx = -dz;
@@ -84,10 +91,60 @@ void SpiralTraversal3D(Vector3 pos, int depth) {
         }
         posX += dx;
         posZ += dz;
-
-        TraceLog(LOG_WARNING, "posX = %d, posZ = %d", posX, posZ);
     }
 
+    // do it again for y-1
+    posX = 0;
+    posZ = 0;
+    dx = 0;
+    dz = -1;
+    temp = 0;
+    
+    for(int i = 0; i < maxI; i++) {
+
+        if ((-depth/2 <= posX) && (posX <= depth/2) && (-depth/2 <= posZ) && (posZ <= depth/2)) {
+            TraceLog(LOG_WARNING, TextFormat("posZ = %d, posZ + pos.z = %d", posZ, posZ+(int)pos.z));
+            coords[coord_counter++] = (Vector3) {
+                pos.x + posX,
+                pos.y - 1.0f,
+                pos.z + posZ
+            };
+        }
+
+        if ( (posX == posZ) || ((posX < 0) && (posX == -posZ)) || ((posX > 0) && (posX == 1-posZ)) ) {
+            temp = dx;
+            dx = -dz;
+            dz = temp;
+        }
+        posX += dx;
+        posZ += dz;
+    }
+
+    posX = 0;
+    posZ = 0;
+    dx = 0;
+    dz = -1;
+    temp = 0;
+    
+    for(int i = 0; i < maxI; i++) {
+
+        if ((-depth/2 <= posX) && (posX <= depth/2) && (-depth/2 <= posZ) && (posZ <= depth/2)) {
+            TraceLog(LOG_WARNING, TextFormat("posZ = %d, posZ + pos.z = %d", posZ, posZ+(int)pos.z));
+            coords[coord_counter++] = (Vector3) {
+                pos.x + posX,
+                pos.y + 1.0f,
+                pos.z + posZ
+            };
+        }
+
+        if ( (posX == posZ) || ((posX < 0) && (posX == -posZ)) || ((posX > 0) && (posX == 1-posZ)) ) {
+            temp = dx;
+            dx = -dz;
+            dz = temp;
+        }
+        posX += dx;
+        posZ += dz;
+    }
 }
 
 int8_t DecideBlockType(Vector3 block_world_pos) {

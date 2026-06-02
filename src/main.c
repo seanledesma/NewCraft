@@ -14,8 +14,14 @@ void draw_cube_basic(Vector3 position, Color color, Texture* texture);
 
 int main(void) {
 
+    Vector3* coords = (Vector3*)MemAlloc(270 * sizeof(Vector3));
+    Vector3 pos = (Vector3) { 10.0f, 0.0f, 10.0f };
+    SpiralTraversal3D(coords, pos, 6);
+    for(int i = 0; i < 270; i++) {
+        TraceLog(LOG_WARNING, TextFormat("x: %.2f, y: %.2f, z: %.2f", coords[i].x, coords[i].y, coords[i].z));
+    }
 
-    SpiralTraversal3D((Vector3){10,0,10}, 3);
+    free(coords);
     return(0);
 
 
