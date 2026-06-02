@@ -14,22 +14,15 @@ void draw_cube_basic(Vector3 position, Color color, Texture* texture);
 
 int main(void) {
 
-    Vector3* coords = (Vector3*)MemAlloc(270 * sizeof(Vector3));
-    Vector3 pos = (Vector3) { 10.0f, 0.0f, 10.0f };
-    SpiralTraversal3D(coords, pos, 6);
-    for(int i = 0; i < 270; i++) {
-        TraceLog(LOG_WARNING, TextFormat("x: %.2f, y: %.2f, z: %.2f", coords[i].x, coords[i].y, coords[i].z));
-    }
+    // Vector3* coords = (Vector3*)MemAlloc(270 * sizeof(Vector3));
+    // Vector3 pos = (Vector3) { 10.0f, 0.0f, 10.0f };
+    // SpiralTraversal3D(coords, pos, 6);
+    // for(int i = 0; i < 270; i++) {
+    //     TraceLog(LOG_WARNING, TextFormat("x: %.2f, y: %.2f, z: %.2f", coords[i].x, coords[i].y, coords[i].z));
+    // }
 
-    free(coords);
-    return(0);
-
-
-
-
-
-
-
+    // free(coords);
+    // return(0);
 
     const int screenWidth = 2560;
     const int screenHeight = 1440;
@@ -42,7 +35,7 @@ int main(void) {
     InitWindow(screenWidth, screenHeight, "NewCraft");
 
     Camera camera = { 0 };
-    camera.position = (Vector3) { 0.0f, 1.8f, 0.0f };
+    camera.position = (Vector3) { 0.0f, 10.8f, 0.0f };
     camera.target = (Vector3) { 0.0f, 0.0f, -5.0f };
     camera.up = (Vector3) { 0.0f, 1.0f, 0.0f };
     camera.fovy = 70.0f;
@@ -78,7 +71,7 @@ int main(void) {
     // i don't need this right now but will want to do this later
     //mega_chunk_relative_positions[0] = current_chunk->chunk->world_pos; 
 
-    MegaChunk* megachunks[MEGA_CHUNKS_MAX];
+    //MegaChunk* megachunks[MEGA_CHUNKS_MAX];
 
     //load 27 megachunks in one go
     // while(mega_chunk_counter < MEGA_CHUNKS_MAX) {
@@ -139,9 +132,37 @@ int main(void) {
     //     UploadMesh(chunkmeshes[i]->mesh, false);
     // }
 
-    chunkmeshes[0] = FetchChunkEntry(relative_positions[0], hash_table);
-    GenMeshChunk(chunkmeshes[0]->mesh, chunkmeshes[0]->chunk, hash_table);
-    UploadMesh(chunkmeshes[0]->mesh, false);
+    // Vector3* coords = (Vector3*)MemAlloc(270 * sizeof(Vector3));
+    // Vector3 pos = (Vector3) { 10.0f, 0.0f, 10.0f };
+    // SpiralTraversal3D(coords, pos, 6);
+    // for(int i = 0; i < 270; i++) {
+    //     TraceLog(LOG_WARNING, TextFormat("x: %.2f, y: %.2f, z: %.2f", coords[i].x, coords[i].y, coords[i].z));
+    // }
+
+    Vector3* coords = (Vector3*)MemAlloc(500 * sizeof(Vector3));
+    Vector3 starting_position = (Vector3) { 0.0f, 0.0f, 0.0f };
+    int depth = 20;
+    int count = 0;
+    SpiralTraversal3D(coords, starting_position, depth);
+    // create all chunks
+    for (int i = 0; i < depth*depth; i++) {
+        chunkmeshes[i] = FetchChunkEntry((Vector3) { 
+            coords[i].x * CHUNK_SIZE,
+            coords[i].y * CHUNK_SIZE,
+            coords[i].z * CHUNK_SIZE
+         }, hash_table);
+         count++;
+    }
+
+    // then create all meshes
+    for (int i = 0; i < count; i++) {
+        GenMeshChunk(chunkmeshes[i]->mesh, chunkmeshes[i]->chunk, hash_table);
+        UploadMesh(chunkmeshes[i]->mesh, false);
+    }
+
+    // chunkmeshes[0] = FetchChunkEntry(relative_positions[0], hash_table);
+    // GenMeshChunk(chunkmeshes[0]->mesh, chunkmeshes[0]->chunk, hash_table);
+    // UploadMesh(chunkmeshes[0]->mesh, false);
 
     Model model = LoadModelFromMesh(*chunkmeshes[0]->mesh);
     Ray ray = {0};
@@ -202,11 +223,11 @@ int main(void) {
                 //     DrawMesh(*megachunks[0]->chunkmeshes[j]->mesh, material, matrix);
                 // }
 
-                // for(int i = 0; i < count; i++) {
-                //     DrawMesh(*chunkmeshes[i]->mesh, material, matrix);
-                // }
+                for(int i = 0; i < count; i++) {
+                    DrawMesh(*chunkmeshes[i]->mesh, material, matrix);
+                }
 
-                DrawMesh(*chunkmeshes[0]->mesh, material, matrix);
+                //DrawMesh(*chunkmeshes[0]->mesh, material, matrix);
 
                 
                 for(int i = 0; i < 729; i++) {
@@ -252,11 +273,11 @@ int main(void) {
     //     UnloadMesh(*megachunks[0]->chunkmeshes[j]->mesh);
     // }
 
-    // for (int i = 0; i < count; i++) {
-    //     UnloadMesh(*chunkmeshes[i]->mesh);
-    // }
+    for (int i = 0; i < count; i++) {
+        UnloadMesh(*chunkmeshes[i]->mesh);
+    }
 
-    UnloadMesh(*chunkmeshes[0]->mesh);
+    //UnloadMesh(*chunkmeshes[0]->mesh);
 
     UnloadModel(model);
 

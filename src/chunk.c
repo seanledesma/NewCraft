@@ -220,36 +220,63 @@ BoundingBox* GetNearbyBlocks(Vector3 player_pos, HashTable* hash_table) {
 
     Vector3 base_block_world = (Vector3) {
         floor(player_pos.x),
-        floor(player_pos.y - 2),
+        floor(player_pos.y - 1),
         floor(player_pos.z)
     };
 
     //Vector3 base_block_index = ConvertWorldBlockPosToChunkIndex(base_block_world, hash_table);
 
-    int box_counter = 0;
-    for (int x = -3; x <= 3; x++) {
-        for (int y = -3; y <= 5; y++) {
-            for(int z = -3; z <= 3; z++) {
-                Vector3 curr_block_world = (Vector3) {
-                    base_block_world.x + x,
-                    base_block_world.y + y,
-                    base_block_world.z + z
-                };
+    // int box_counter = 0;
+    // for (int x = -3; x <= 3; x++) {
+    //     for (int y = -3; y <= 5; y++) {
+    //         for(int z = -3; z <= 3; z++) {
+    //             Vector3 curr_block_world = (Vector3) {
+    //                 base_block_world.x + x,
+    //                 base_block_world.y + y,
+    //                 base_block_world.z + z
+    //             };
 
-                if(DecideBlockType(curr_block_world) == BLOCK_AIR) {
-                    continue;
-                }
+    //             if(DecideBlockType(curr_block_world) == BLOCK_AIR) {
+    //                 continue;
+    //             }
 
-                boxes[box_counter].min = curr_block_world;
-                boxes[box_counter].max = (Vector3) { 
-                    curr_block_world.x + 1.0f,
-                    curr_block_world.y + 1.0f,
-                    curr_block_world.z + 1.0f
-                };
-                box_counter++;
-            }
+    //             boxes[box_counter].min = curr_block_world;
+    //             boxes[box_counter].max = (Vector3) { 
+    //                 curr_block_world.x + 1.0f,
+    //                 curr_block_world.y + 1.0f,
+    //                 curr_block_world.z + 1.0f
+    //             };
+    //             box_counter++;
+    //         }
+    //     }
+    // }
+
+    int depth = 7;
+    Vector3* coords = (Vector3*)MemAlloc((depth*depth*depth*depth) * sizeof(Vector3));
+    SpiralTraversal3D(coords, base_block_world, depth);
+
+    for(int i = 0; i < (depth*depth*depth); i++) {
+
+        if(DecideBlockType(coords[i]) == BLOCK_AIR) {
+            continue;
         }
+
+        boxes[i].min = coords[i];
+        boxes[i].max = (Vector3) { 
+            coords[i].x + 1.0f,
+            coords[i].y + 1.0f,
+            coords[i].z + 1.0f
+        };
     }
+
+    // Vector3* coords = (Vector3*)MemAlloc(270 * sizeof(Vector3));
+    // Vector3 pos = (Vector3) { 10.0f, 0.0f, 10.0f };
+    // SpiralTraversal3D(coords, pos, 6);
+    // for(int i = 0; i < 270; i++) {
+    //     TraceLog(LOG_WARNING, TextFormat("x: %.2f, y: %.2f, z: %.2f", coords[i].x, coords[i].y, coords[i].z));
+    // }
+
+    free(coords);
 
     return boxes;
 }

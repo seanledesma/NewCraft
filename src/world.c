@@ -62,6 +62,7 @@ void InitWorld() {
     noise.frequency = 0.03f;
 }
 
+
 // given a 3D coord (Vector3) and depth (how many rows/columns to traverse) return array of coords
 void SpiralTraversal3D(Vector3* coords, Vector3 pos, int depth) {
     // this does relative spiraling, need to add to acutal position at the end
@@ -76,12 +77,36 @@ void SpiralTraversal3D(Vector3* coords, Vector3 pos, int depth) {
     for(int i = 0; i < maxI; i++) {
 
         if ((-depth/2 <= posX) && (posX <= depth/2) && (-depth/2 <= posZ) && (posZ <= depth/2)) {
-            TraceLog(LOG_WARNING, TextFormat("posZ = %d, posZ + pos.z = %d", posZ, posZ+(int)pos.z));
+            // for(int j = -1; j < 1; j++) {
+            //     coords[coord_counter++] = (Vector3) {
+            //         pos.x + posX,
+            //         pos.y + j,
+            //         pos.z + posZ
+            //     };
+            // }
+
+            // for(int j = -depth/2; j < -1; j++) {
+            //     coords[coord_counter++] = (Vector3) {
+            //         pos.x + posX,
+            //         pos.y + j,
+            //         pos.z + posZ
+            //     };
+            // }
+
+            // for(int j = 1; j < depth/2; j++) {
+            //     coords[coord_counter++] = (Vector3) {
+            //         pos.x + posX,
+            //         pos.y + j,
+            //         pos.z + posZ
+            //     };
+            // }
+
             coords[coord_counter++] = (Vector3) {
                 pos.x + posX,
                 pos.y,
                 pos.z + posZ
             };
+
         }
 
         if ( (posX == posZ) || ((posX < 0) && (posX == -posZ)) || ((posX > 0) && (posX == 1-posZ)) ) {
@@ -93,58 +118,57 @@ void SpiralTraversal3D(Vector3* coords, Vector3 pos, int depth) {
         posZ += dz;
     }
 
-    // do it again for y-1
-    posX = 0;
-    posZ = 0;
-    dx = 0;
-    dz = -1;
-    temp = 0;
+    // // do it again for y-1
+    // posX = 0;
+    // posZ = 0;
+    // dx = 0;
+    // dz = -1;
+    // temp = 0;
     
-    for(int i = 0; i < maxI; i++) {
+    // for(int i = 0; i < maxI; i++) {
 
-        if ((-depth/2 <= posX) && (posX <= depth/2) && (-depth/2 <= posZ) && (posZ <= depth/2)) {
-            TraceLog(LOG_WARNING, TextFormat("posZ = %d, posZ + pos.z = %d", posZ, posZ+(int)pos.z));
-            coords[coord_counter++] = (Vector3) {
-                pos.x + posX,
-                pos.y - 1.0f,
-                pos.z + posZ
-            };
-        }
+    //     if ((-depth/2 <= posX) && (posX <= depth/2) && (-depth/2 <= posZ) && (posZ <= depth/2)) {
+    //         coords[coord_counter++] = (Vector3) {
+    //             pos.x + posX,
+    //             pos.y - 1.0f,
+    //             pos.z + posZ
+    //         };
+    //     }
 
-        if ( (posX == posZ) || ((posX < 0) && (posX == -posZ)) || ((posX > 0) && (posX == 1-posZ)) ) {
-            temp = dx;
-            dx = -dz;
-            dz = temp;
-        }
-        posX += dx;
-        posZ += dz;
-    }
+    //     if ( (posX == posZ) || ((posX < 0) && (posX == -posZ)) || ((posX > 0) && (posX == 1-posZ)) ) {
+    //         temp = dx;
+    //         dx = -dz;
+    //         dz = temp;
+    //     }
+    //     posX += dx;
+    //     posZ += dz;
+    // }
 
-    posX = 0;
-    posZ = 0;
-    dx = 0;
-    dz = -1;
-    temp = 0;
+    // // now for y+1
+    // posX = 0;
+    // posZ = 0;
+    // dx = 0;
+    // dz = -1;
+    // temp = 0;
     
-    for(int i = 0; i < maxI; i++) {
+    // for(int i = 0; i < maxI; i++) {
 
-        if ((-depth/2 <= posX) && (posX <= depth/2) && (-depth/2 <= posZ) && (posZ <= depth/2)) {
-            TraceLog(LOG_WARNING, TextFormat("posZ = %d, posZ + pos.z = %d", posZ, posZ+(int)pos.z));
-            coords[coord_counter++] = (Vector3) {
-                pos.x + posX,
-                pos.y + 1.0f,
-                pos.z + posZ
-            };
-        }
+    //     if ((-depth/2 <= posX) && (posX <= depth/2) && (-depth/2 <= posZ) && (posZ <= depth/2)) {
+    //         coords[coord_counter++] = (Vector3) {
+    //             pos.x + posX,
+    //             pos.y + 1.0f,
+    //             pos.z + posZ
+    //         };
+    //     }
 
-        if ( (posX == posZ) || ((posX < 0) && (posX == -posZ)) || ((posX > 0) && (posX == 1-posZ)) ) {
-            temp = dx;
-            dx = -dz;
-            dz = temp;
-        }
-        posX += dx;
-        posZ += dz;
-    }
+    //     if ( (posX == posZ) || ((posX < 0) && (posX == -posZ)) || ((posX > 0) && (posX == 1-posZ)) ) {
+    //         temp = dx;
+    //         dx = -dz;
+    //         dz = temp;
+    //     }
+    //     posX += dx;
+    //     posZ += dz;
+    // }
 }
 
 int8_t DecideBlockType(Vector3 block_world_pos) {
