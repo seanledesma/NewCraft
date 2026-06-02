@@ -62,6 +62,34 @@ void InitWorld() {
     noise.frequency = 0.03f;
 }
 
+// given a 3D coord (Vector3) and depth (how many rows/columns to traverse) return array of coords
+void SpiralTraversal3D(Vector3 pos, int depth) {
+    // remember that if you floor you need to add .5 back at end
+    int posX = (int)floor(pos.x);
+    int posZ = (int)floor(pos.z);
+    int dx = 0;
+    int dz = -1;
+    int temp = 0;
+    int maxI = depth * depth;
+    TraceLog(LOG_WARNING, "posX = %d, posZ = %d", posX, posZ);
+    for(int i = 0; i < maxI; i++) {
+        if ((-depth/2 <= posX) && (posX <= depth/2) && (-depth/2 <= posZ) && (posZ <= depth/2)) {
+            //do stuff
+            //TraceLog(LOG_WARNING, "posX = %d", posX);
+        }
+        if ( (posX == posZ) || ((posX < 0) && (posX == -posZ)) || ((posX > 0) && (posX == 1-posZ)) ) {
+            temp = dx;
+            dx = -dz;
+            dz = temp;
+        }
+        posX += dx;
+        posZ += dz;
+
+        TraceLog(LOG_WARNING, "posX = %d, posZ = %d", posX, posZ);
+    }
+
+}
+
 int8_t DecideBlockType(Vector3 block_world_pos) {
     //will return a value between -1 and 1 !!
     float height = fnlGetNoise2D(&noise, block_world_pos.x, block_world_pos.z);

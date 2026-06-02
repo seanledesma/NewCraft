@@ -98,8 +98,8 @@ BoundingBox* GetNearbyBlocks(Vector3 player_pos, HashTable* hash_table) {
     // i probably want to figure out nearby blocks up to N, then
     // put some bounding boxes on them, return an array of those..
 
-    Chunk* curr_chunk = (Chunk*)MemAlloc(sizeof(Chunk));
-    curr_chunk = GetCurrentChunk(player_pos, hash_table);
+    // Chunk* curr_chunk = (Chunk*)MemAlloc(sizeof(Chunk));
+    // curr_chunk = GetCurrentChunk(player_pos, hash_table);
 
     //next get the block at players feet
     // int relX = (int)floor((player_pos.x + 8) / 16);
@@ -113,30 +113,30 @@ BoundingBox* GetNearbyBlocks(Vector3 player_pos, HashTable* hash_table) {
     // listen... best way to do this is to translate player pos / chunk world pos to a relative
     // block right below player, then translate that to real world coords, pass to box
         
-    int relX = (int)floor(curr_chunk->world_pos.x / player_pos.x);
-    int relY = floor(curr_chunk->world_pos.y / (player_pos.y - PLAYER_HEIGHT));
-    int relZ = floor(curr_chunk->world_pos.z / player_pos.z);
-    if(player_pos.x == 0.0f) relX = 8;
-    if(player_pos.y - PLAYER_HEIGHT == 0.0f) relY = 8;
-    if(player_pos.z == 0.0f) relZ = 8;
+    // int relX = (int)floor(curr_chunk->world_pos.x / player_pos.x);
+    // int relY = floor(curr_chunk->world_pos.y / (player_pos.y - PLAYER_HEIGHT));
+    // int relZ = floor(curr_chunk->world_pos.z / player_pos.z);
+    // if(player_pos.x == 0.0f) relX = 8;
+    // if(player_pos.y - PLAYER_HEIGHT == 0.0f) relY = 8;
+    // if(player_pos.z == 0.0f) relZ = 8;
 
-    Block* curr_block = (Block*)MemAlloc(sizeof(Block));
-    curr_block = &curr_chunk->blocks[relX][relY][relZ];     //??
+    // Block* curr_block = (Block*)MemAlloc(sizeof(Block));
+    // curr_block = &curr_chunk->blocks[relX][relY][relZ];     //??
 
 
     //i would say... the chunk and the player pos have something in common. 
     //we know that 8,8,8 indices in chunk is physical 0,0,0 (relative) chunk position
     //ie, the center of the chunk. we just need to know how far away exactly the player
     //is from center of the chunk, then figuring out which block should be trivial
-    int indexX = (curr_chunk->world_pos.x - floor(player_pos.x)) + 8;
+    // int indexX = (curr_chunk->world_pos.x - floor(player_pos.x)) + 8;
 
-    int indexY = (curr_chunk->world_pos.y - floor(player_pos.y - 2.0f)) + 8;
+    // int indexY = (curr_chunk->world_pos.y - floor(player_pos.y - 2.0f)) + 8;
 
-    int indexZ = (curr_chunk->world_pos.z - floor(player_pos.z)) + 8;
+    // int indexZ = (curr_chunk->world_pos.z - floor(player_pos.z)) + 8;
 
-    float boxX = curr_chunk->world_pos.x - (indexX - 8); //seems redundant but we are just getting it working
-    float boxY = curr_chunk->world_pos.y - (indexY - 8);
-    float boxZ = curr_chunk->world_pos.z - (indexZ - 8);
+    // float boxX = curr_chunk->world_pos.x - (indexX - 8); //seems redundant but we are just getting it working
+    // float boxY = curr_chunk->world_pos.y - (indexY - 8);
+    // float boxZ = curr_chunk->world_pos.z - (indexZ - 8);
 
     // BoundingBox box = {
     //     (Vector3) {boxX, boxY, boxZ},
@@ -144,7 +144,7 @@ BoundingBox* GetNearbyBlocks(Vector3 player_pos, HashTable* hash_table) {
     // };
 
     //now let's work on getting all the blocks around player
-    BoundingBox* boxes = (BoundingBox*)MemAlloc(sizeof(BoundingBox) * 729);
+    // BoundingBox* boxes = (BoundingBox*)MemAlloc(sizeof(BoundingBox) * 729);
     //first positive
     // int box_counter = 0;
     // for (int x = 0; x < 3; x++) {
@@ -177,44 +177,109 @@ BoundingBox* GetNearbyBlocks(Vector3 player_pos, HashTable* hash_table) {
     why don't we instead skip them if they are air, since we have the chunk data..
     i mean, we should be able to say, hey, grab everything from neg. N from player and go until pos N
     */
+    // int box_counter = 0;
+    // for (int x = -3; x <= 3; x++) {
+    //     for (int y = -3; y <= 5; y++) {
+    //         for (int z = -3; z <= 3; z++) {
+
+    //             //need to load adjacent chunk, flip index logic
+    //             if(indexX + x >= 16) {
+    //                 continue;
+    //             }
+    //             if (indexX + x < 0) {
+    //                 continue;
+    //             }
+
+    //             if(indexY + y >= 16) {
+    //                 continue;
+    //             }
+    //             if (indexY + y < 0) {
+    //                 continue;
+    //             }
+
+    //             if(indexZ + z >= 16) {
+    //                 continue;
+    //             }
+    //             if (indexZ + z < 0) {
+    //                 continue;
+    //             }
+
+    //             if(curr_chunk->blocks[indexX + x][indexY + y][indexZ + z].block_type != BLOCK_AIR) {
+    //                 boxes[box_counter].min = (Vector3) {boxX + x, boxY + y, boxZ + z};
+    //                 boxes[box_counter].max = (Vector3) {boxX + x + 1.0f, boxY + y + 1.0f, boxZ + z + 1.0f};
+    //                 // boxes[box_counter].min = (Vector3) {boxX + x - 1.0f, boxY + y - 1.0f, boxZ + z - 1.0f};
+    //                 // boxes[box_counter].max = (Vector3) {boxX + x, boxY + y, boxZ + z};
+    //                 box_counter++;
+    //             }
+
+    //         }
+    //     }
+    // }
+
+    BoundingBox* boxes = (BoundingBox*)MemAlloc(sizeof(BoundingBox) * 729);
+
+    Vector3 base_block_world = (Vector3) {
+        floor(player_pos.x),
+        floor(player_pos.y - 2),
+        floor(player_pos.z)
+    };
+
+    //Vector3 base_block_index = ConvertWorldBlockPosToChunkIndex(base_block_world, hash_table);
+
     int box_counter = 0;
     for (int x = -3; x <= 3; x++) {
         for (int y = -3; y <= 5; y++) {
-            for (int z = -3; z <= 3; z++) {
+            for(int z = -3; z <= 3; z++) {
+                Vector3 curr_block_world = (Vector3) {
+                    base_block_world.x + x,
+                    base_block_world.y + y,
+                    base_block_world.z + z
+                };
 
-                //need to load adjacent chunk, flip index logic
-                if(indexX + x >= 16) {
-                    continue;
-                }
-                if (indexX + x < 0) {
-                    continue;
-                }
-
-                if(indexY + y >= 16) {
-                    continue;
-                }
-                if (indexY + y < 0) {
+                if(DecideBlockType(curr_block_world) == BLOCK_AIR) {
                     continue;
                 }
 
-                if(indexZ + z >= 16) {
-                    continue;
-                }
-                if (indexZ + z < 0) {
-                    continue;
-                }
-
-                if(curr_chunk->blocks[indexX + x][indexY + y][indexZ + z].block_type != BLOCK_AIR) {
-                    // boxes[box_counter].min = (Vector3) {boxX + x, boxY + y, boxZ + z};
-                    // boxes[box_counter].max = (Vector3) {boxX + x + 1.0f, boxY + y + 1.0f, boxZ + z + 1.0f};
-                    boxes[box_counter].min = (Vector3) {boxX + x - 1.0f, boxY + y - 1.0f, boxZ + z - 1.0f};
-                    boxes[box_counter].max = (Vector3) {boxX + x, boxY + y, boxZ + z};
-                    box_counter++;
-                }
-
+                boxes[box_counter].min = curr_block_world;
+                boxes[box_counter].max = (Vector3) { 
+                    curr_block_world.x + 1.0f,
+                    curr_block_world.y + 1.0f,
+                    curr_block_world.z + 1.0f
+                };
+                box_counter++;
             }
         }
     }
 
     return boxes;
+}
+
+
+Vector3 ConvertWorldBlockPosToChunkIndex(Vector3 block_world_pos, HashTable* hash_table) {
+    Vector3 chunk_index = {0};
+
+    // first need to get the chunk the block pertains to
+    Chunk* curr_chunk = (Chunk*)MemAlloc(sizeof(Chunk));
+    curr_chunk = GetCurrentChunk(block_world_pos, hash_table);
+
+    // then figure out the block index
+    chunk_index.x = (curr_chunk->world_pos.x - floor(block_world_pos.x)) + 8;
+
+    chunk_index.y = (curr_chunk->world_pos.y - floor(block_world_pos.y)) + 8;
+
+    chunk_index.z = (curr_chunk->world_pos.z - floor(block_world_pos.z)) + 8;
+
+
+    return chunk_index;
+}
+
+
+Vector3 ConvertChunkIndexToWorldBlockPos(Vector3 chunk_index, Vector3 chunk_world_pos, HashTable* hash_table) {
+    Vector3 block_world_pos = {0};
+
+    block_world_pos.x = chunk_world_pos.x + (chunk_index.x - HALF_CHUNK);
+    block_world_pos.y = chunk_world_pos.y + (chunk_index.y - HALF_CHUNK);
+    block_world_pos.z = chunk_world_pos.z + (chunk_index.z - HALF_CHUNK);
+
+    return block_world_pos;
 }

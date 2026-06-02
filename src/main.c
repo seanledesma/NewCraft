@@ -13,6 +13,18 @@ void draw_cube_basic(Vector3 position, Color color, Texture* texture);
 // i do NOT want to load chunks when player steps over a certain boundary
 
 int main(void) {
+
+
+    SpiralTraversal3D((Vector3){10,0,10}, 3);
+    return(0);
+
+
+
+
+
+
+
+
     const int screenWidth = 2560;
     const int screenHeight = 1440;
     // const int screenWidth = GetMonitorWidth(0);
@@ -149,11 +161,20 @@ int main(void) {
         // }
 
         if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
-            ray = GetScreenToWorldRay(GetMousePosition(), camera);
+            // ray = GetScreenToWorldRay(GetMousePosition(), camera);
+            ray = GetScreenToWorldRay((Vector2) { screenWidth/2, screenHeight / 2 }, camera);
             //collision = GetRayCollisionMesh(ray, model.meshes[0], model.transform);
 
             ray.direction = Vector3Normalize(ray.direction);
-            collision = GetRayCollisionMesh(ray, *chunkmeshes[0]->mesh, matrix);
+            //collision = GetRayCollisionMesh(ray, *chunkmeshes[0]->mesh, matrix);
+            // collision = GetRayCollisionBox(ray, boxes[box_counter]);
+
+            //run through all nearby boxes real quick
+            int box_counter = 0;
+            for (int i = 0; i < 275; i++) {
+                collision = GetRayCollisionBox(ray, boxes[box_counter++]);
+                if (collision.hit) break;
+            }
         }
 
         boxes = GetNearbyBlocks(camera.position, hash_table);

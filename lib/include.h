@@ -147,6 +147,8 @@ Chunk* gen_chunk(Vector3 world_pos, HashTable* hash_table);
 Block gen_block(Vector3 world_pos, int blockX, int blockY, int blockZ, int counter, HashTable* hash_table);
 Chunk* GetCurrentChunk(Vector3 player_pos, HashTable* hash_table);
 BoundingBox* GetNearbyBlocks(Vector3 player_pos, HashTable* hash_table);
+Vector3 ConvertWorldBlockPosToChunkIndex(Vector3 block_world_pos, HashTable* hash_table);
+Vector3 ConvertChunkIndexToWorldBlockPos(Vector3 chunk_index, Vector3 chunk_world_pos, HashTable* hash_table);
 
 // hash.c
 HashTable* InitializeTable(uint32_t capacity);
@@ -161,6 +163,7 @@ void InitWorld();
 int8_t DecideBlockType(Vector3 block_world_pos);
 bool IsBlockVisible(Vector3 chunk_pos, Vector3 block_pos, int blockX, int blockY, int blockZ, HashTable* hash_table);
 MegaChunk* GenMegaChunk(Vector3 megachunk_world_pos, HashTable* hash_table);
+void SpiralTraversal3D(Vector3 pos, int depth);
 
 //mesh.c
 void GenMeshChunk(Mesh* mesh, Chunk* chunk, HashTable* hash_table);
