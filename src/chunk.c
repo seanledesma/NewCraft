@@ -205,8 +205,10 @@ BoundingBox* GetNearbyBlocks(Vector3 player_pos, HashTable* hash_table) {
                 }
 
                 if(curr_chunk->blocks[indexX + x][indexY + y][indexZ + z].block_type != BLOCK_AIR) {
-                    boxes[box_counter].min = (Vector3) {boxX + x, boxY + y, boxZ + z};
-                    boxes[box_counter].max = (Vector3) {boxX + x + 1.0f, boxY + y + 1.0f, boxZ + z + 1.0f};
+                    // boxes[box_counter].min = (Vector3) {boxX + x, boxY + y, boxZ + z};
+                    // boxes[box_counter].max = (Vector3) {boxX + x + 1.0f, boxY + y + 1.0f, boxZ + z + 1.0f};
+                    boxes[box_counter].min = (Vector3) {boxX + x - 1.0f, boxY + y - 1.0f, boxZ + z - 1.0f};
+                    boxes[box_counter].max = (Vector3) {boxX + x, boxY + y, boxZ + z};
                     box_counter++;
                 }
 
