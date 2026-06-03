@@ -137,6 +137,7 @@ BoundingBox* GetNearbyBlocks(Vector3 player_pos, HashTable* hash_table);
 Vector3 ConvertWorldBlockPosToChunkIndex(Vector3 block_world_pos, HashTable* hash_table);
 Vector3 ConvertChunkIndexToWorldBlockPos(Vector3 chunk_index, Vector3 chunk_world_pos, HashTable* hash_table);
 bool IsBlockVisibleImproved(Vector3 block_world_pos, HashTable* hash_table);
+bool IsBlockAir(Vector3 block_world_pos, HashTable* hash_table);
 
 //mesh.c
 void GenMeshChunk(Mesh* mesh, Chunk* chunk, HashTable* hash_table);

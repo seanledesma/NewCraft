@@ -135,6 +135,63 @@ void SpiralTraversal3D(Vector3* coords, Vector3 pos, int depth) {
     }
 }
 
+BoundingBox* GetNearbyBlocks(Vector3 player_pos, HashTable* hash_table) {
+    /*
+    this is dumb.. do i even want to use a bunch of bounding boxes around the player? 
+    it might be a better idea to .. i mean, the goal is to have ray collisions hit the right
+    block the player is looking at. 
+    i'd be making a lot of unneccesary bounding boxes in the air, only need non air blocks 
+    to detect collision.
+    i don't think i'll get around having to make a bunch of bounding boxes around the player, however
+    why don't we instead skip them if they are air, since we have the chunk data..
+    i mean, we should be able to say, hey, grab everything from neg. N from player and go until pos N
+    */
+
+    BoundingBox* boxes = (BoundingBox*)MemAlloc(sizeof(BoundingBox) * 729);
+
+    Vector3 base_block_world = (Vector3) {
+        floor(player_pos.x),
+        floor(player_pos.y - 2),
+        floor(player_pos.z)
+    };
+
+    //Vector3 base_block_index = ConvertWorldBlockPosToChunkIndex(base_block_world, hash_table);
+
+    int depth = 7;
+    Vector3* coords = (Vector3*)MemAlloc((depth*depth) * sizeof(Vector3));
+    SpiralTraversal3D(coords, base_block_world, depth);
+
+    for(int i = 0; i < (depth*depth); i++) {
+
+        // Vector3 index = ConvertWorldBlockPosToChunkIndex(coords[i], hash_table);
+        /*
+            I WAS THINKING... i might do this instead of is block air then skip, so it's just
+            skipping all the blocks the player can't see..
+            BUT that may require a big refactor in IsBlockVisible...
+        */
+        // if(!IsBlockVisible())
+
+        if(IsBlockAir(coords[i], hash_table) == true) {
+            continue;
+        }
+
+        // if(DecideBlockType(coords[i]) == BLOCK_AIR) {
+        //     continue;
+        // }
+
+        boxes[i].min = coords[i];
+        boxes[i].max = (Vector3) { 
+            coords[i].x + 1.0f,
+            coords[i].y + 1.0f,
+            coords[i].z + 1.0f
+        };
+    }
+
+    free(coords);
+
+    return boxes;
+}
+
 Chunk* GetCurrentChunk(Vector3 player_pos, HashTable* hash_table) {
     ChunkMesh* curr_chunkmesh = (ChunkMesh*)calloc(1,sizeof(ChunkMesh));
 
@@ -147,7 +204,7 @@ Chunk* GetCurrentChunk(Vector3 player_pos, HashTable* hash_table) {
 }
 
 Vector3 DeriveChunkPosition(Vector3 starting_pos, HashTable* hash_table) {
-    ChunkMesh* chunkmesh = (ChunkMesh*)calloc(1,sizeof(ChunkMesh));
+    //ChunkMesh* chunkmesh = (ChunkMesh*)calloc(1,sizeof(ChunkMesh));
 
     int chunkX = (int)floor((starting_pos.x + 8) / 16) * 16;
     int chunkY = (int)floor((starting_pos.y + 8) / 16) * 16;
@@ -171,59 +228,57 @@ Chunk* DeriveChunk(Vector3 starting_pos, HashTable* hash_table) {
     return chunkmesh->chunk;
 }
 
-BoundingBox* GetNearbyBlocks(Vector3 player_pos, HashTable* hash_table) {
-    /*
-    this is dumb.. do i even want to use a bunch of bounding boxes around the player? 
-    it might be a better idea to .. i mean, the goal is to have ray collisions hit the right
-    block the player is looking at. 
-    i'd be making a lot of unneccesary bounding boxes in the air, only need non air blocks 
-    to detect collision.
-    i don't think i'll get around having to make a bunch of bounding boxes around the player, however
-    why don't we instead skip them if they are air, since we have the chunk data..
-    i mean, we should be able to say, hey, grab everything from neg. N from player and go until pos N
-    */
 
-    BoundingBox* boxes = (BoundingBox*)MemAlloc(sizeof(BoundingBox) * 729);
+bool IsBlockAir(Vector3 block_world_pos, HashTable* hash_table) {
+    //allll we're gonna do is see if this block, at the given coords, is air, or no.
+    Vector3 index = ConvertWorldBlockPosToChunkIndex(block_world_pos, hash_table);
+    Chunk* chunk = (Chunk*)MemAlloc(sizeof(Chunk));
+    chunk = DeriveChunk(block_world_pos, hash_table);
 
-    Vector3 base_block_world = (Vector3) {
-        floor(player_pos.x),
-        floor(player_pos.y - 1),
-        floor(player_pos.z)
-    };
-
-    //Vector3 base_block_index = ConvertWorldBlockPosToChunkIndex(base_block_world, hash_table);
-
-    int depth = 7;
-    Vector3* coords = (Vector3*)MemAlloc((depth*depth*depth*depth) * sizeof(Vector3));
-    SpiralTraversal3D(coords, base_block_world, depth);
-
-    for(int i = 0; i < (depth*depth*depth); i++) {
-
-        // Vector3 index = ConvertWorldBlockPosToChunkIndex(coords[i], hash_table);
-        /*
-            I WAS THINKING... i might do this instead of is block air then skip, so it's just
-            skipping all the blocks the player can't see..
-            BUT that may require a big refactor in IsBlockVisible...
-        */
-        // if(!IsBlockVisible())
-
-        if(DecideBlockType(coords[i]) == BLOCK_AIR) {
-            continue;
-        }
-
-        boxes[i].min = coords[i];
-        boxes[i].max = (Vector3) { 
-            coords[i].x + 1.0f,
-            coords[i].y + 1.0f,
-            coords[i].z + 1.0f
-        };
+    if(chunk->blocks[(int)index.x][(int)index.y][(int)index.z].block_type == BLOCK_AIR) {
+        TraceLog(LOG_WARNING, "hit true");
+        return true;
+    }else{
+        TraceLog(LOG_WARNING, "hit false");
+        return false;
     }
 
-    free(coords);
-
-    return boxes;
 }
 
+
+Vector3 ConvertWorldBlockPosToChunkIndex(Vector3 block_world_pos, HashTable* hash_table) {
+    Vector3 chunk_index = {0};
+
+    // first need to get the chunk the block pertains to
+    // Chunk* curr_chunk = (Chunk*)MemAlloc(sizeof(Chunk));
+    // curr_chunk = DeriveChunk(block_world_pos, hash_table);
+
+    // I actually don't need that chunk, we are just converting to an index
+    Vector3 world_pos = DeriveChunkPosition(block_world_pos, hash_table);
+
+    // then figure out the block index
+    chunk_index.x = (world_pos.x - floor(block_world_pos.x)) + 7;       // 7?? or 8??
+
+    chunk_index.y = (world_pos.y - floor(block_world_pos.y)) + 7;
+
+    chunk_index.z = (world_pos.z - floor(block_world_pos.z)) + 7;
+
+
+    return chunk_index;
+}
+
+
+Vector3 ConvertChunkIndexToWorldBlockPos(Vector3 chunk_index, Vector3 chunk_world_pos, HashTable* hash_table) {
+    Vector3 block_world_pos = {0};
+
+    block_world_pos.x = chunk_world_pos.x + (chunk_index.x - HALF_CHUNK);
+    block_world_pos.y = chunk_world_pos.y + (chunk_index.y - HALF_CHUNK);
+    block_world_pos.z = chunk_world_pos.z + (chunk_index.z - HALF_CHUNK);
+
+    return block_world_pos;
+}
+
+//i'm coming back to this later.. some bad assumptions when making this
 bool IsBlockVisibleImproved(Vector3 block_world_pos, HashTable* hash_table) {
     // first check if that block is in a chunk that even exists
     Vector3 chunk_world_pos = DeriveChunkPosition(block_world_pos, hash_table);
@@ -284,34 +339,4 @@ bool IsBlockVisibleImproved(Vector3 block_world_pos, HashTable* hash_table) {
     //if all else fails, it's not visible
     return false;
 
-}
-
-
-Vector3 ConvertWorldBlockPosToChunkIndex(Vector3 block_world_pos, HashTable* hash_table) {
-    Vector3 chunk_index = {0};
-
-    // first need to get the chunk the block pertains to
-    Chunk* curr_chunk = (Chunk*)MemAlloc(sizeof(Chunk));
-    curr_chunk = DeriveChunk(block_world_pos, hash_table);
-
-    // then figure out the block index
-    chunk_index.x = (curr_chunk->world_pos.x - floor(block_world_pos.x)) + 7;
-
-    chunk_index.y = (curr_chunk->world_pos.y - floor(block_world_pos.y)) + 7;
-
-    chunk_index.z = (curr_chunk->world_pos.z - floor(block_world_pos.z)) + 7;
-
-
-    return chunk_index;
-}
-
-
-Vector3 ConvertChunkIndexToWorldBlockPos(Vector3 chunk_index, Vector3 chunk_world_pos, HashTable* hash_table) {
-    Vector3 block_world_pos = {0};
-
-    block_world_pos.x = chunk_world_pos.x + (chunk_index.x - HALF_CHUNK);
-    block_world_pos.y = chunk_world_pos.y + (chunk_index.y - HALF_CHUNK);
-    block_world_pos.z = chunk_world_pos.z + (chunk_index.z - HALF_CHUNK);
-
-    return block_world_pos;
 }
