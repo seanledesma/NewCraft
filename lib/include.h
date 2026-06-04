@@ -129,11 +129,11 @@ bool DoesChunkEntryExist(Vector3 pos, HashTable* hash_table);
 //world.c
 void InitWorld();
 int8_t DecideBlockType(Vector3 block_world_pos);
-void SpiralTraversal3D(Vector3* coords, Vector3 pos, int depth);
+int SpiralTraversal2D(Vector3* coords, int coords_index, Vector3 pos, int depth);
 Chunk* GetCurrentChunk(Vector3 player_pos, HashTable* hash_table);
 Vector3 DeriveChunkPosition(Vector3 starting_pos, HashTable* hash_table);
 Chunk* DeriveChunk(Vector3 starting_pos, HashTable* hash_table);
-void GetNearbyBlocks(BoundingBox* boxes, Vector3 player_pos, HashTable* hash_table);
+int GetNearbyBlocks(BoundingBox* boxes, Vector3 player_pos, HashTable* hash_table);
 Vector3 ConvertWorldBlockPosToChunkIndex(Vector3 block_world_pos, HashTable* hash_table);
 Vector3 ConvertChunkIndexToWorldBlockPos(Vector3 chunk_index, Vector3 chunk_world_pos, HashTable* hash_table);
 bool IsBlockVisibleImproved(Vector3 block_world_pos, HashTable* hash_table);

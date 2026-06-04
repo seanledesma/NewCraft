@@ -138,11 +138,13 @@ int main(void) {
     //     TraceLog(LOG_WARNING, TextFormat("x: %.2f, y: %.2f, z: %.2f", coords[i].x, coords[i].y, coords[i].z));
     // }
 
-    Vector3* coords = (Vector3*)MemAlloc(500 * sizeof(Vector3));
+    // generating chunks starting from center
+    Vector3* coords = (Vector3*)MemAlloc(1000 * sizeof(Vector3));
     Vector3 starting_position = (Vector3) { 0.0f, 0.0f, 0.0f };
     int depth = 10;
     int count = 0;
-    SpiralTraversal3D(coords, starting_position, depth);
+    int coords_counter = 0;
+    coords_counter = SpiralTraversal2D(coords, coords_counter, starting_position, depth);
     // create all chunks
     for (int i = 0; i < depth*depth; i++) {
         chunkmeshes[i] = FetchChunkEntry((Vector3) { 
@@ -166,9 +168,9 @@ int main(void) {
     Model model = LoadModelFromMesh(*chunkmeshes[0]->mesh);
     Ray ray = {0};
     RayCollision collision = {0};
-
-    BoundingBox* boxes = (BoundingBox*)MemAlloc(sizeof(BoundingBox) * depth*depth);
-
+    // make boxes as big as it may ever possibly get
+    BoundingBox* boxes = (BoundingBox*)MemAlloc(sizeof(BoundingBox) * depth*depth*5);
+    int nearby_bounding_box_counter = 0;
 
     DisableCursor();
     SetTargetFPS(120);
@@ -185,7 +187,9 @@ int main(void) {
         //         mega_chunk_counter++;
         //     }
         // }
-        GetNearbyBlocks(boxes, camera.position, hash_table);
+
+        nearby_bounding_box_counter = GetNearbyBlocks(boxes, camera.position, hash_table);
+
         if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
             // ray = GetScreenToWorldRay(GetMousePosition(), camera);
             ray = GetScreenToWorldRay((Vector2) { screenWidth/2, screenHeight / 2 }, camera);
@@ -197,9 +201,12 @@ int main(void) {
 
             //run through all nearby boxes real quick
             int box_counter = 0;
-            for (int i = 0; i < depth*depth; i++) {
+            for (int i = 0; i < nearby_bounding_box_counter; i++) {
                 collision = GetRayCollisionBox(ray, boxes[box_counter++]);
-                if (collision.hit) break;
+                if (collision.hit) {
+
+                    break;
+                }
             }
         }
 
@@ -229,7 +236,7 @@ int main(void) {
                 //DrawMesh(*chunkmeshes[0]->mesh, material, matrix);
 
                 
-                for(int i = 0; i < depth*depth; i++) {
+                for(int i = 0; i < nearby_bounding_box_counter; i++) {
                     DrawBoundingBox(boxes[i], ORANGE);
                 }
                 

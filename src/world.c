@@ -80,8 +80,10 @@ int8_t DecideBlockType(Vector3 block_world_pos) {
     return BLOCK_MAGMA;
 }
 
-// given a 3D coord (Vector3) and depth (how many rows/columns to traverse) return array of coords
-void SpiralTraversal3D(Vector3* coords, Vector3 pos, int depth) {
+// traverse in a 2D spiral along XZ axis to generate Vector3 array of positions.
+// may be called multiple times to reach desired Y height.
+// returns an int signifying number of elements actually recorded in the passed-in coords array
+int SpiralTraversal2D(Vector3* coords, int coords_index, Vector3 pos, int depth) {
     // this does relative spiraling, need to add to acutal position at the end
     int posX = 0;
     int posZ = 0;
@@ -89,7 +91,6 @@ void SpiralTraversal3D(Vector3* coords, Vector3 pos, int depth) {
     int dz = -1;
     int temp = 0;
     int maxI = depth * depth;
-    int coord_counter = 0;
 
     for(int i = 0; i < maxI; i++) {
 
@@ -118,11 +119,23 @@ void SpiralTraversal3D(Vector3* coords, Vector3 pos, int depth) {
             //     };
             // }
 
-            coords[coord_counter++] = (Vector3) {
+            coords[coords_index++] = (Vector3) {
                 pos.x + posX,
                 pos.y,
                 pos.z + posZ
             };
+
+            // coords[coord_counter++] = (Vector3) {
+            //     pos.x + posX,
+            //     pos.y-1,
+            //     pos.z + posZ
+            // };
+
+            // coords[coord_counter++] = (Vector3) {
+            //     pos.x + posX,
+            //     pos.y+1,
+            //     pos.z + posZ
+            // };
         }
 
         if ( (posX == posZ) || ((posX < 0) && (posX == -posZ)) || ((posX > 0) && (posX == 1-posZ)) ) {
@@ -133,9 +146,10 @@ void SpiralTraversal3D(Vector3* coords, Vector3 pos, int depth) {
         posX += dx;
         posZ += dz;
     }
+    return coords_index;
 }
-
-void GetNearbyBlocks(BoundingBox* boxes, Vector3 player_pos, HashTable* hash_table) {
+// return an integer representing number of nearby blocks
+int GetNearbyBlocks(BoundingBox* boxes, Vector3 player_pos, HashTable* hash_table) {
     /*
     this is dumb.. do i even want to use a bunch of bounding boxes around the player? 
     it might be a better idea to .. i mean, the goal is to have ray collisions hit the right
@@ -149,18 +163,44 @@ void GetNearbyBlocks(BoundingBox* boxes, Vector3 player_pos, HashTable* hash_tab
 
     Vector3 base_block_world = (Vector3) {
         floor(player_pos.x),
-        floor(player_pos.y - 1.8),
+        floor(player_pos.y-1.8),
         floor(player_pos.z)
     };
 
     //Vector3 base_block_index = ConvertWorldBlockPosToChunkIndex(base_block_world, hash_table);
 
-    int depth = 10;
-    Vector3* coords = (Vector3*)MemAlloc((depth*depth) * sizeof(Vector3));
-    //as far as i can tell, there's no issue with spiral traversal, rather IsBlockAir :(
-    SpiralTraversal3D(coords, base_block_world, depth);
+    int depth = 8;
+    // make sure to make coords array as big as it may ever possibly get
+    Vector3* coords = (Vector3*)MemAlloc((depth*depth*5) * sizeof(Vector3));
+    int coords_counter = 0;
+    coords_counter = SpiralTraversal2D(coords, coords_counter, base_block_world, depth);
+    //then get coords for y-1
+    coords_counter = SpiralTraversal2D(coords, coords_counter, (Vector3) {
+        base_block_world.x,
+        base_block_world.y - 1,
+        base_block_world.z
+    }, depth);
+    //then get coords for y+1
+    coords_counter = SpiralTraversal2D(coords, coords_counter, (Vector3) {
+        base_block_world.x,
+        base_block_world.y + 1,
+        base_block_world.z
+    }, depth);
+    //then get coords for y+2
+    coords_counter = SpiralTraversal2D(coords, coords_counter, (Vector3) {
+        base_block_world.x,
+        base_block_world.y + 2,
+        base_block_world.z
+    }, depth);
+    //then get coords for y+3
+    coords_counter = SpiralTraversal2D(coords, coords_counter, (Vector3) {
+        base_block_world.x,
+        base_block_world.y + 3,
+        base_block_world.z
+    }, depth);
 
-    for(int i = 0; i < (depth*depth); i++) {
+
+    for(int i = 0; i < coords_counter; i++) {
 
         // Vector3 index = ConvertWorldBlockPosToChunkIndex(coords[i], hash_table);
         /*
@@ -173,10 +213,6 @@ void GetNearbyBlocks(BoundingBox* boxes, Vector3 player_pos, HashTable* hash_tab
         if(IsBlockAir(coords[i], hash_table) == true) {
             continue;
         }
-
-        // if(DecideBlockType(coords[i]) == BLOCK_AIR) {
-        //     continue;
-        // }
 
         boxes[i].min = coords[i];
         boxes[i].max = (Vector3) { 
@@ -212,6 +248,7 @@ void GetNearbyBlocks(BoundingBox* boxes, Vector3 player_pos, HashTable* hash_tab
 
 
     free(coords);
+    return coords_counter;
 }
 
 Chunk* GetCurrentChunk(Vector3 player_pos, HashTable* hash_table) {
@@ -271,11 +308,11 @@ bool IsBlockAir(Vector3 block_world_pos, HashTable* hash_table) {
     Vector3 index = ConvertWorldBlockPosToChunkIndex(block_world_pos, hash_table);
     Chunk* chunk = (Chunk*)MemAlloc(sizeof(Chunk));
     chunk = DeriveChunk(block_world_pos, hash_table);
-    TraceLog(LOG_WARNING, TextFormat("index x: %d", (int)index.x));
-    TraceLog(LOG_WARNING, TextFormat("index y: %d", (int)index.y));
-    TraceLog(LOG_WARNING, TextFormat("index z: %d", (int)index.z));
-    TraceLog(LOG_WARNING, TextFormat("of chunk x:%.2f, y:%.2f, z:%.2f", chunk->world_pos.x, 
-                chunk->world_pos.y, chunk->world_pos.z));
+    // TraceLog(LOG_WARNING, TextFormat("index x: %d", (int)index.x));
+    // TraceLog(LOG_WARNING, TextFormat("index y: %d", (int)index.y));
+    // TraceLog(LOG_WARNING, TextFormat("index z: %d", (int)index.z));
+    // TraceLog(LOG_WARNING, TextFormat("of chunk x:%.2f, y:%.2f, z:%.2f", chunk->world_pos.x, 
+    //             chunk->world_pos.y, chunk->world_pos.z));
     if(chunk->blocks[(int)index.x][(int)index.y][(int)index.z].block_type == BLOCK_AIR) {
         //TraceLog(LOG_WARNING, "hit true");
         //TraceLog(LOG_WARNING, TextFormat("index y when hitting block air: %d", (int)index.y));
