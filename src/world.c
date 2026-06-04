@@ -170,20 +170,20 @@ void GetNearbyBlocks(BoundingBox* boxes, Vector3 player_pos, HashTable* hash_tab
         */
         // if(!IsBlockVisible())
 
-        // if(IsBlockAir(coords[i], hash_table) == true) {
+        if(IsBlockAir(coords[i], hash_table) == true) {
+            continue;
+        }
+
+        // if(DecideBlockType(coords[i]) == BLOCK_AIR) {
         //     continue;
         // }
 
-        // // if(DecideBlockType(coords[i]) == BLOCK_AIR) {
-        // //     continue;
-        // // }
-
-        // boxes[i].min = coords[i];
-        // boxes[i].max = (Vector3) { 
-        //     coords[i].x + 1.0f,
-        //     coords[i].y + 1.0f,
-        //     coords[i].z + 1.0f
-        // };
+        boxes[i].min = coords[i];
+        boxes[i].max = (Vector3) { 
+            coords[i].x + 1.0f,
+            coords[i].y + 1.0f,
+            coords[i].z + 1.0f
+        };
     }
     // TraceLog(LOG_WARNING, TextFormat("block type under player: %d", DecideBlockType(coords[0])));
     // TraceLog(LOG_WARNING, TextFormat("base block x:%.2f, y:%.2f, z:%.2f", 
@@ -194,20 +194,20 @@ void GetNearbyBlocks(BoundingBox* boxes, Vector3 player_pos, HashTable* hash_tab
 
 
 
-    if(IsBlockAir(coords[0], hash_table) == true) {
-        return;
-    }
-
-    // if(DecideBlockType(coords[i]) == BLOCK_AIR) {
-    //     continue;
+    // if(IsBlockAir(coords[0], hash_table) == true) {
+    //     return;
     // }
 
-    boxes[0].min = coords[0];
-    boxes[0].max = (Vector3) { 
-        coords[0].x + 1.0f,
-        coords[0].y + 1.0f,
-        coords[0].z + 1.0f
-    };
+    // // if(DecideBlockType(coords[i]) == BLOCK_AIR) {
+    // //     continue;
+    // // }
+
+    // boxes[0].min = coords[0];
+    // boxes[0].max = (Vector3) { 
+    //     coords[0].x + 1.0f,
+    //     coords[0].y + 1.0f,
+    //     coords[0].z + 1.0f
+    // };
 
 
 
@@ -322,31 +322,43 @@ Vector3 ConvertWorldBlockPosToChunkIndex(Vector3 block_world_pos, HashTable* has
     if(world_pos.x < 0 || blockX < 0) {
         if(world_pos.x < 0 && blockX < 0) {
             if(world_pos.x < blockX) {
+                chunk_index.x = floor((blockX - world_pos.x) + 8);  //GOOD
+            } else if(world_pos.x >= blockX) {
                 chunk_index.x = floor((blockX - world_pos.x) + 8);
-            } else {
-                chunk_index.x = floor((blockX + world_pos.x) + 8);
             }
         } else {
             chunk_index.x = floor((blockX + world_pos.x) + 8);
         }
-    }else if(world_pos.x >= blockX) {
-
+    }else {
         chunk_index.x = floor((blockX - world_pos.x) + 8);
-
-    } else {
-        chunk_index.x = floor((world_pos.x + blockX) + 8);
     }
 
-    if(world_pos.y <= blockY) {
-        chunk_index.y = floor((world_pos.y - blockY) + 8);
-    }else if(world_pos.y > blockY) {
+    if(world_pos.y < 0 || blockY < 0) {
+        if(world_pos.y < 0 && blockY < 0) {
+            if(world_pos.y < blockY) {
+                chunk_index.y = floor((blockY - world_pos.y) + 8);  //GOOD
+            } else if(world_pos.y >= blockY) {
+                chunk_index.y = floor((blockY - world_pos.y) + 8);
+            }
+        } else {
+            chunk_index.y = floor((blockY + world_pos.y) + 8);
+        }
+    }else {
         chunk_index.y = floor((blockY - world_pos.y) + 8);
     }
 
-    // FOR Z BLOCK 
-    if(world_pos.z <= blockZ) {
-        chunk_index.z = floor((world_pos.z - blockZ) + 8);
-    }else if(world_pos.z > blockZ) {
+    
+    if(world_pos.z < 0 || blockZ < 0) {
+        if(world_pos.z < 0 && blockZ < 0) {
+            if(world_pos.z < blockZ) {
+                chunk_index.z = floor((blockZ - world_pos.z) + 8);  //GOOD
+            } else if(world_pos.z >= blockZ) {
+                chunk_index.z = floor((blockZ - world_pos.z) + 8);
+            }
+        } else {
+            chunk_index.z = floor((blockZ + world_pos.z) + 8);
+        }
+    }else {
         chunk_index.z = floor((blockZ - world_pos.z) + 8);
     }
 
