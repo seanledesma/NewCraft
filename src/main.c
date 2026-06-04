@@ -35,7 +35,7 @@ int main(void) {
     InitWindow(screenWidth, screenHeight, "NewCraft");
 
     Camera camera = { 0 };
-    camera.position = (Vector3) { 0.0f, 1.8f, 0.0f };
+    camera.position = (Vector3) { 0.0f, 2.8f, 0.0f };
     camera.target = (Vector3) { 0.0f, 0.0f, -5.0f };
     camera.up = (Vector3) { 0.0f, 1.0f, 0.0f };
     camera.fovy = 70.0f;
@@ -185,7 +185,7 @@ int main(void) {
         //         mega_chunk_counter++;
         //     }
         // }
-        boxes = GetNearbyBlocks(camera.position, hash_table);
+        GetNearbyBlocks(boxes, camera.position, hash_table);
         if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
             // ray = GetScreenToWorldRay(GetMousePosition(), camera);
             ray = GetScreenToWorldRay((Vector2) { screenWidth/2, screenHeight / 2 }, camera);
@@ -203,7 +203,7 @@ int main(void) {
             }
         }
 
-
+        //TraceLog(LOG_WARNING, TextFormat("IN MAIN LOOP what is block type under player: %d", chunkmeshes[0]->chunk->blocks[8][8][8].block_type));
 
         BeginDrawing();
             
@@ -232,6 +232,18 @@ int main(void) {
                 for(int i = 0; i < depth*depth; i++) {
                     DrawBoundingBox(boxes[i], ORANGE);
                 }
+                
+                DrawBoundingBox(boxes[1], PURPLE);
+                DrawBoundingBox(boxes[2], PURPLE);
+                DrawBoundingBox(boxes[3], PURPLE);
+                DrawBoundingBox(boxes[4], PURPLE);
+                DrawBoundingBox(boxes[5], PURPLE);
+                DrawBoundingBox(boxes[6], PURPLE);
+                DrawBoundingBox(boxes[7], PURPLE);
+                DrawBoundingBox(boxes[8], PURPLE);
+                DrawBoundingBox(boxes[9], PURPLE);
+
+                DrawBoundingBox(boxes[0], PINK);
 
                 // DrawMesh(*megachunks[0]->chunkmeshes[0]->mesh, material, matrix);
                 // DrawMesh(*megachunks[0]->chunkmeshes[1]->mesh, material, matrix);

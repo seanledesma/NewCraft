@@ -133,7 +133,7 @@ void SpiralTraversal3D(Vector3* coords, Vector3 pos, int depth);
 Chunk* GetCurrentChunk(Vector3 player_pos, HashTable* hash_table);
 Vector3 DeriveChunkPosition(Vector3 starting_pos, HashTable* hash_table);
 Chunk* DeriveChunk(Vector3 starting_pos, HashTable* hash_table);
-BoundingBox* GetNearbyBlocks(Vector3 player_pos, HashTable* hash_table);
+void GetNearbyBlocks(BoundingBox* boxes, Vector3 player_pos, HashTable* hash_table);
 Vector3 ConvertWorldBlockPosToChunkIndex(Vector3 block_world_pos, HashTable* hash_table);
 Vector3 ConvertChunkIndexToWorldBlockPos(Vector3 chunk_index, Vector3 chunk_world_pos, HashTable* hash_table);
 bool IsBlockVisibleImproved(Vector3 block_world_pos, HashTable* hash_table);

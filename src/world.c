@@ -135,7 +135,7 @@ void SpiralTraversal3D(Vector3* coords, Vector3 pos, int depth) {
     }
 }
 
-BoundingBox* GetNearbyBlocks(Vector3 player_pos, HashTable* hash_table) {
+void GetNearbyBlocks(BoundingBox* boxes, Vector3 player_pos, HashTable* hash_table) {
     /*
     this is dumb.. do i even want to use a bunch of bounding boxes around the player? 
     it might be a better idea to .. i mean, the goal is to have ray collisions hit the right
@@ -147,8 +147,6 @@ BoundingBox* GetNearbyBlocks(Vector3 player_pos, HashTable* hash_table) {
     i mean, we should be able to say, hey, grab everything from neg. N from player and go until pos N
     */
 
-    BoundingBox* boxes = (BoundingBox*)MemAlloc(sizeof(BoundingBox) * 729);
-
     Vector3 base_block_world = (Vector3) {
         floor(player_pos.x),
         floor(player_pos.y - 1.8),
@@ -157,8 +155,9 @@ BoundingBox* GetNearbyBlocks(Vector3 player_pos, HashTable* hash_table) {
 
     //Vector3 base_block_index = ConvertWorldBlockPosToChunkIndex(base_block_world, hash_table);
 
-    int depth = 7;
+    int depth = 10;
     Vector3* coords = (Vector3*)MemAlloc((depth*depth) * sizeof(Vector3));
+    //as far as i can tell, there's no issue with spiral traversal, rather IsBlockAir :(
     SpiralTraversal3D(coords, base_block_world, depth);
 
     for(int i = 0; i < (depth*depth); i++) {
@@ -171,25 +170,48 @@ BoundingBox* GetNearbyBlocks(Vector3 player_pos, HashTable* hash_table) {
         */
         // if(!IsBlockVisible())
 
-        if(IsBlockAir(coords[i], hash_table) == true) {
-            continue;
-        }
-
-        // if(DecideBlockType(coords[i]) == BLOCK_AIR) {
+        // if(IsBlockAir(coords[i], hash_table) == true) {
         //     continue;
         // }
 
-        boxes[i].min = coords[i];
-        boxes[i].max = (Vector3) { 
-            coords[i].x + 1.0f,
-            coords[i].y + 1.0f,
-            coords[i].z + 1.0f
-        };
+        // // if(DecideBlockType(coords[i]) == BLOCK_AIR) {
+        // //     continue;
+        // // }
+
+        // boxes[i].min = coords[i];
+        // boxes[i].max = (Vector3) { 
+        //     coords[i].x + 1.0f,
+        //     coords[i].y + 1.0f,
+        //     coords[i].z + 1.0f
+        // };
+    }
+    // TraceLog(LOG_WARNING, TextFormat("block type under player: %d", DecideBlockType(coords[0])));
+    // TraceLog(LOG_WARNING, TextFormat("base block x:%.2f, y:%.2f, z:%.2f", 
+    //             base_block_world.x, base_block_world.y, base_block_world.z));
+    //TraceLog(LOG_WARNING, TextFormat("is block air under player: %d", IsBlockAir(coords[0], hash_table)));
+
+
+
+
+
+    if(IsBlockAir(coords[0], hash_table) == true) {
+        return;
     }
 
-    free(coords);
+    // if(DecideBlockType(coords[i]) == BLOCK_AIR) {
+    //     continue;
+    // }
 
-    return boxes;
+    boxes[0].min = coords[0];
+    boxes[0].max = (Vector3) { 
+        coords[0].x + 1.0f,
+        coords[0].y + 1.0f,
+        coords[0].z + 1.0f
+    };
+
+
+
+    free(coords);
 }
 
 Chunk* GetCurrentChunk(Vector3 player_pos, HashTable* hash_table) {
@@ -281,16 +303,38 @@ Vector3 ConvertWorldBlockPosToChunkIndex(Vector3 block_world_pos, HashTable* has
     float blockY = block_world_pos.y;
     float blockZ = block_world_pos.z;
 
-    if(world_pos.x <= blockX) {
-        chunk_index.x = floor((world_pos.x - blockX) + 8);
-        // TraceLog(LOG_WARNING, TextFormat("3blockX: %.2f", block_world_pos.x));
-        // TraceLog(LOG_WARNING, TextFormat("4world pos > block, index: %.2f", chunk_index.x));
-        // TraceLog(LOG_WARNING, TextFormat("5world pos x: %.2f", world_pos.x));
-    }else if(world_pos.x > blockX) {
+    // if(world_pos.x < 0 || blockX < 0) {
+    //     if(world_pos.x < 0 && blockX < 0) {
+    //         if(world_pos.x < blockX) {
+    //             chunk_index.x = floor((world_pos.x - blockX) + 8);
+    //         } else {
+    //             chunk_index.x = floor((world_pos.x + blockX) + 8);
+    //         }
+    //     }
+    //     if(world_pos.x < 0 && blockX >= 0) {
+    //         // literally impossible?
+    //     }
+    //     if(blockX < 0 && world_pos.x >= 0) {
+    //         chunk_index.x = floor((world_pos.x + blockX) + 8);
+    //     }
+    // }
+
+    if(world_pos.x < 0 || blockX < 0) {
+        if(world_pos.x < 0 && blockX < 0) {
+            if(world_pos.x < blockX) {
+                chunk_index.x = floor((blockX - world_pos.x) + 8);
+            } else {
+                chunk_index.x = floor((blockX + world_pos.x) + 8);
+            }
+        } else {
+            chunk_index.x = floor((blockX + world_pos.x) + 8);
+        }
+    }else if(world_pos.x >= blockX) {
+
         chunk_index.x = floor((blockX - world_pos.x) + 8);
-        // TraceLog(LOG_WARNING, TextFormat("3blockX: %.2f", block_world_pos.x));
-        // TraceLog(LOG_WARNING, TextFormat("4world pos > block, index: %.2f", chunk_index.x));
-        // TraceLog(LOG_WARNING, TextFormat("5world pos x: %.2f", world_pos.x));
+
+    } else {
+        chunk_index.x = floor((world_pos.x + blockX) + 8);
     }
 
     if(world_pos.y <= blockY) {

@@ -79,6 +79,10 @@ Block gen_block(Vector3 world_pos, int blockX, int blockY, int blockZ, int count
     
     block.block_type = DecideBlockType(blockpos);
 
+    // if(IsBlockVisible(world_pos, blockpos, blockX, blockY, blockZ, hash_table) == false) {
+    //     block.block_type = BLOCK_AIR;
+    // }
+
     return block;
 }
 
