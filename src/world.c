@@ -151,7 +151,7 @@ BoundingBox* GetNearbyBlocks(Vector3 player_pos, HashTable* hash_table) {
 
     Vector3 base_block_world = (Vector3) {
         floor(player_pos.x),
-        floor(player_pos.y - 2),
+        floor(player_pos.y - 1.8),
         floor(player_pos.z)
     };
 
@@ -200,6 +200,10 @@ Chunk* GetCurrentChunk(Vector3 player_pos, HashTable* hash_table) {
     int chunkZ = (int)floor((player_pos.z + 8) / 16) * 16;
     curr_chunkmesh = FetchChunkEntry((Vector3) {chunkX,chunkY,chunkZ}, hash_table);
 
+    if(chunkX % CHUNK_SIZE != 0) {
+        TraceLog(LOG_ERROR, "Incorrect chunk position, check world.c");
+    }
+
     return curr_chunkmesh->chunk;
 }
 
@@ -209,6 +213,12 @@ Vector3 DeriveChunkPosition(Vector3 starting_pos, HashTable* hash_table) {
     int chunkX = (int)floor((starting_pos.x + 8) / 16) * 16;
     int chunkY = (int)floor((starting_pos.y + 8) / 16) * 16;
     int chunkZ = (int)floor((starting_pos.z + 8) / 16) * 16;
+    // TraceLog(LOG_WARNING, TextFormat("1starting x: %.2f", starting_pos.x));
+    // TraceLog(LOG_WARNING, TextFormat("2chunk pos x: %d", chunkX));
+
+    if(chunkX % CHUNK_SIZE != 0) {
+        TraceLog(LOG_ERROR, "Incorrect chunk position, check world.c");
+    }
 
     return (Vector3) { (float)chunkX, (float)chunkY, (float)chunkZ };
 }
@@ -225,24 +235,33 @@ Chunk* DeriveChunk(Vector3 starting_pos, HashTable* hash_table) {
         TraceLog(LOG_ERROR, "DERIVE CHUNK DID NOT FIND CHUNK");
     }
 
+    if(chunkX % CHUNK_SIZE != 0) {
+        TraceLog(LOG_ERROR, "Incorrect chunk position, check world.c");
+    }
+
     return chunkmesh->chunk;
 }
 
 
 bool IsBlockAir(Vector3 block_world_pos, HashTable* hash_table) {
+    // TraceLog(LOG_WARNING, TextFormat("0-isblockair blockX: %.2f", block_world_pos.x));
     //allll we're gonna do is see if this block, at the given coords, is air, or no.
     Vector3 index = ConvertWorldBlockPosToChunkIndex(block_world_pos, hash_table);
     Chunk* chunk = (Chunk*)MemAlloc(sizeof(Chunk));
     chunk = DeriveChunk(block_world_pos, hash_table);
-
+    TraceLog(LOG_WARNING, TextFormat("index x: %d", (int)index.x));
+    TraceLog(LOG_WARNING, TextFormat("index y: %d", (int)index.y));
+    TraceLog(LOG_WARNING, TextFormat("index z: %d", (int)index.z));
+    TraceLog(LOG_WARNING, TextFormat("of chunk x:%.2f, y:%.2f, z:%.2f", chunk->world_pos.x, 
+                chunk->world_pos.y, chunk->world_pos.z));
     if(chunk->blocks[(int)index.x][(int)index.y][(int)index.z].block_type == BLOCK_AIR) {
-        TraceLog(LOG_WARNING, "hit true");
+        //TraceLog(LOG_WARNING, "hit true");
+        //TraceLog(LOG_WARNING, TextFormat("index y when hitting block air: %d", (int)index.y));
         return true;
     }else{
-        TraceLog(LOG_WARNING, "hit false");
+        //TraceLog(LOG_WARNING, "hit false");
         return false;
     }
-
 }
 
 
@@ -257,11 +276,42 @@ Vector3 ConvertWorldBlockPosToChunkIndex(Vector3 block_world_pos, HashTable* has
     Vector3 world_pos = DeriveChunkPosition(block_world_pos, hash_table);
 
     // then figure out the block index
-    chunk_index.x = (world_pos.x - floor(block_world_pos.x)) + 7;       // 7?? or 8??
 
-    chunk_index.y = (world_pos.y - floor(block_world_pos.y)) + 7;
+    float blockX = block_world_pos.x;
+    float blockY = block_world_pos.y;
+    float blockZ = block_world_pos.z;
 
-    chunk_index.z = (world_pos.z - floor(block_world_pos.z)) + 7;
+    if(world_pos.x <= blockX) {
+        chunk_index.x = floor((world_pos.x - blockX) + 8);
+        // TraceLog(LOG_WARNING, TextFormat("3blockX: %.2f", block_world_pos.x));
+        // TraceLog(LOG_WARNING, TextFormat("4world pos > block, index: %.2f", chunk_index.x));
+        // TraceLog(LOG_WARNING, TextFormat("5world pos x: %.2f", world_pos.x));
+    }else if(world_pos.x > blockX) {
+        chunk_index.x = floor((blockX - world_pos.x) + 8);
+        // TraceLog(LOG_WARNING, TextFormat("3blockX: %.2f", block_world_pos.x));
+        // TraceLog(LOG_WARNING, TextFormat("4world pos > block, index: %.2f", chunk_index.x));
+        // TraceLog(LOG_WARNING, TextFormat("5world pos x: %.2f", world_pos.x));
+    }
+
+    if(world_pos.y <= blockY) {
+        chunk_index.y = floor((world_pos.y - blockY) + 8);
+    }else if(world_pos.y > blockY) {
+        chunk_index.y = floor((blockY - world_pos.y) + 8);
+    }
+
+    // FOR Z BLOCK 
+    if(world_pos.z <= blockZ) {
+        chunk_index.z = floor((world_pos.z - blockZ) + 8);
+    }else if(world_pos.z > blockZ) {
+        chunk_index.z = floor((blockZ - world_pos.z) + 8);
+    }
+
+    //throw an error if any index is below zero or above chunksize - 1
+    if(chunk_index.x < 0 || chunk_index.y < 0 || chunk_index.z < 0 ||
+    chunk_index.x > CHUNK_SIZE-1 || chunk_index.y > CHUNK_SIZE-1 || chunk_index.z > CHUNK_SIZE-1) {
+        
+        TraceLog(LOG_ERROR, "Index out of bounds, check ConvertWorldBlockPosToChunkIndex");
+    }
 
 
     return chunk_index;

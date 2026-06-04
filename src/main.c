@@ -167,7 +167,7 @@ int main(void) {
     Ray ray = {0};
     RayCollision collision = {0};
 
-    BoundingBox* boxes = (BoundingBox*)MemAlloc(sizeof(BoundingBox) * 729);
+    BoundingBox* boxes = (BoundingBox*)MemAlloc(sizeof(BoundingBox) * depth*depth);
 
 
     DisableCursor();
@@ -185,7 +185,7 @@ int main(void) {
         //         mega_chunk_counter++;
         //     }
         // }
-
+        boxes = GetNearbyBlocks(camera.position, hash_table);
         if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
             // ray = GetScreenToWorldRay(GetMousePosition(), camera);
             ray = GetScreenToWorldRay((Vector2) { screenWidth/2, screenHeight / 2 }, camera);
@@ -197,13 +197,13 @@ int main(void) {
 
             //run through all nearby boxes real quick
             int box_counter = 0;
-            for (int i = 0; i < 275; i++) {
+            for (int i = 0; i < depth*depth; i++) {
                 collision = GetRayCollisionBox(ray, boxes[box_counter++]);
                 if (collision.hit) break;
             }
         }
 
-        boxes = GetNearbyBlocks(camera.position, hash_table);
+
 
         BeginDrawing();
             
@@ -229,7 +229,7 @@ int main(void) {
                 //DrawMesh(*chunkmeshes[0]->mesh, material, matrix);
 
                 
-                for(int i = 0; i < 729; i++) {
+                for(int i = 0; i < depth*depth; i++) {
                     DrawBoundingBox(boxes[i], ORANGE);
                 }
 
