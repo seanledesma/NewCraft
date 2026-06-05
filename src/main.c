@@ -214,11 +214,50 @@ int main(void) {
             //run through all nearby boxes real quick
             int box_counter = 0;
             for (int i = 0; i < nearby_bounding_box_counter; i++) {
-                collision = GetRayCollisionBox(ray, boxes[box_counter++]);
+                collision = GetRayCollisionBox(ray, boxes[box_counter]);
                 if (collision.hit) {
-
+                    //break a block!
+                    // BreakBlock(collision.point, hash_table);
+                    BreakBlock(boxes[box_counter].min, hash_table);
                     break;
                 }
+                box_counter++;
+            }
+        }
+
+        // check for dirty chunks to re-make
+        for (int i = 0; i < coords_counter; i++) {
+            if(chunkmeshes[i]->dirty == true) {
+
+                chunkmeshes[i]->dirty = false;
+
+                UnloadMesh(*chunkmeshes[i]->mesh);
+                //do i need to free mesh or will that cause issues?
+                MemFree(chunkmeshes[i]->mesh);
+                Mesh* mesh = (Mesh*)calloc(1,sizeof(Mesh));
+                
+                int num_blocks_in_chunk = CHUNK_CUBED;
+
+                int num_block_vertices = 36 * 3;
+                int num_block_texcoords = 36 * 2;
+                int num_block_normals = 36 * 3;
+
+                int num_chunk_vertices = num_block_vertices * num_blocks_in_chunk;
+                int num_chunk_texcoords = num_block_texcoords * num_blocks_in_chunk;
+                int num_chunk_normals = num_block_normals * num_blocks_in_chunk;
+                mesh->vertices = (float *)MemAlloc(num_chunk_vertices * sizeof(float));
+    
+                mesh->texcoords = (float *)MemAlloc(num_chunk_texcoords * sizeof(float));
+            
+                mesh->normals = (float *)MemAlloc(num_chunk_normals * sizeof(float));
+
+                mesh->vertexCount = 0;
+                mesh->triangleCount = 0;
+
+
+                chunkmeshes[i]->mesh = mesh;
+                GenMeshChunkSimplified(chunkmeshes[i]->mesh, chunkmeshes[i]->chunk, hash_table);
+                UploadMesh(chunkmeshes[i]->mesh, false);
             }
         }
 
@@ -241,7 +280,7 @@ int main(void) {
                 //     DrawMesh(*megachunks[0]->chunkmeshes[j]->mesh, material, matrix);
                 // }
 
-                for(int i = 0; i < count; i++) {
+                for(int i = 0; i < coords_counter; i++) {
                     DrawMesh(*chunkmeshes[i]->mesh, material, matrix);
                 }
 

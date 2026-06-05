@@ -86,6 +86,23 @@ Block gen_block(Vector3 world_pos, int blockX, int blockY, int blockZ, int count
     return block;
 }
 
+
+void BreakBlock(Vector3 point, HashTable* hash_table) {
+    TraceLog(LOG_WARNING, TextFormat("hit breakblock"));
+    TraceLog(LOG_WARNING, TextFormat("point x:%.2f, y:%.2f, z:%.2f", point.x, point.y, point.z));
+    ChunkMesh* chunkmesh = (ChunkMesh*)calloc(1,sizeof(ChunkMesh));
+    chunkmesh = DeriveChunkMesh(point, hash_table);
+
+    chunkmesh->dirty = true;
+
+    Vector3 chunk_index = ConvertWorldBlockPosToChunkIndex(point, hash_table);
+
+    TraceLog(LOG_WARNING, TextFormat("index x:%d, y:%d, z:%d", (int)chunk_index.x, (int)chunk_index.y, (int)chunk_index.z));
+    chunkmesh->chunk->blocks[(int)chunk_index.x][(int)chunk_index.y][(int)chunk_index.z].block_type = BLOCK_AIR;
+}
+
+
+
 // deprecated
 void draw_cube_basic(Vector3 pos, Color color, Texture* texture) {
     float size = 0.5f;

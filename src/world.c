@@ -301,6 +301,25 @@ Chunk* DeriveChunk(Vector3 starting_pos, HashTable* hash_table) {
     return chunkmesh->chunk;
 }
 
+ChunkMesh* DeriveChunkMesh(Vector3 starting_pos, HashTable* hash_table) {
+    ChunkMesh* chunkmesh = (ChunkMesh*)calloc(1,sizeof(ChunkMesh));
+
+    int chunkX = (int)floor((starting_pos.x + 8) / 16) * 16;
+    int chunkY = (int)floor((starting_pos.y + 8) / 16) * 16;
+    int chunkZ = (int)floor((starting_pos.z + 8) / 16) * 16;
+    if(DoesChunkEntryExist((Vector3) { chunkX, chunkY, chunkZ }, hash_table)){
+        chunkmesh = FetchChunkEntry((Vector3) { chunkX, chunkY, chunkZ }, hash_table);
+    } else {
+        TraceLog(LOG_ERROR, "DERIVE CHUNK DID NOT FIND CHUNK");
+    }
+
+    if(chunkX % CHUNK_SIZE != 0) {
+        TraceLog(LOG_ERROR, "Incorrect chunk position, check world.c");
+    }
+
+    return chunkmesh;
+}
+
 
 bool IsBlockAir(Vector3 block_world_pos, HashTable* hash_table) {
     // TraceLog(LOG_WARNING, TextFormat("0-isblockair blockX: %.2f", block_world_pos.x));

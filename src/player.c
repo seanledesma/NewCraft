@@ -40,7 +40,7 @@ void UpdatePlayer(Player* player, Camera* camera, BoundingBox* boxes) {
     float deltatime = GetFrameTime();
     player->velocity.y += GRAVITY * (deltatime / 1); 
     camera->position.y += player->velocity.y * (deltatime / 1);
-    TraceLog(LOG_WARNING, TextFormat("player velocity y: %.2f", player->velocity.y));
+    TraceLog(LOG_DEBUG, TextFormat("player velocity y: %.2f", player->velocity.y));
     TraceLog(LOG_DEBUG, TextFormat("deltatime: %.2f", deltatime));
     if(player->on_ground == false) {
         //gravity, affects camera then player position
@@ -52,7 +52,7 @@ void UpdatePlayer(Player* player, Camera* camera, BoundingBox* boxes) {
     //check if player hits the bounding box under player, if so, reset camera position
     //else update player position to align with camera
     if(CheckCollisionBoxes(player->bounding_box, boxes[0])) {
-        TraceLog(LOG_WARNING, TextFormat("hit %.5f", deltatime));
+        TraceLog(LOG_DEBUG, TextFormat("hit %.5f", deltatime));
         camera->position.y = ceil(boxes[0].max.y) + PLAYER_HEIGHT + 0.00001f;
         //player->position.y = ceil(boxes[0].max.y) + 0.0000001f;
         // camera->position = (Vector3) {
