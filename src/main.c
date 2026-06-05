@@ -14,7 +14,7 @@ void draw_cube_basic(Vector3 position, Color color, Texture* texture);
 
 int main(void) {
 
-    SetTraceLogLevel(LOG_DEBUG);
+    //SetTraceLogLevel(LOG_DEBUG);
 
     // Vector3* coords = (Vector3*)MemAlloc(270 * sizeof(Vector3));
     // Vector3 pos = (Vector3) { 10.0f, 0.0f, 10.0f };
@@ -272,7 +272,7 @@ int main(void) {
             EndMode3D();
 
             
-            DrawText(TextFormat("Player position x:%.2f, y:%.2f, z:%.2f", camera.position.x, camera.position.y, camera.position.z), 
+            DrawText(TextFormat("Player position x:%.2f, y:%.2f, z:%.2f", camera.position.x, camera.position.y-PLAYER_HEIGHT, camera.position.z), 
                         140, 10, 20, YELLOW);
 
             // DrawText(TextFormat("box position x:%.2f, y:%.2f, z:%.2f", box.min.x, box.min.y, box.min.z), 

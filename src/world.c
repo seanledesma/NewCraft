@@ -163,7 +163,7 @@ int GetNearbyBlocks(BoundingBox* boxes, Vector3 player_pos, HashTable* hash_tabl
 
     Vector3 base_block_world = (Vector3) {
         floor(player_pos.x),
-        floor(player_pos.y-PLAYER_HEIGHT),
+        floor(player_pos.y-2.0),
         floor(player_pos.z)
     };
 
