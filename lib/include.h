@@ -10,6 +10,9 @@
 #ifndef INCLUDE_H
 #define INCLUDE_H
 
+#define PLAYER_HEIGHT 1.8f
+#define GRAVITY -9.8f
+
 #define RENDER_DISTANCE 3
 
 #define CHUNK_SIZE 16
@@ -108,10 +111,19 @@ typedef struct HashTable {
     int32_t length; // how many entries
 }HashTable;
 
-typedef struct MegaChunk {
-    ChunkMesh* chunkmeshes[3*3*3];
-    Vector3 center_pos;
-}MegaChunk;
+typedef struct Player {
+    Vector3 position;
+    BoundingBox bounding_box;
+    Vector3 velocity;
+    float acceleration; 
+    bool on_ground;
+    bool frozen;
+}Player;
+
+// typedef struct MegaChunk {
+//     ChunkMesh* chunkmeshes[3*3*3];
+//     Vector3 center_pos;
+// }MegaChunk;
 
 // chunk.c
 ChunkMesh* gen_chunk_mesh(Vector3 world_pos, HashTable* hash_table);
@@ -144,6 +156,7 @@ void GenMeshChunk(Mesh* mesh, Chunk* chunk, HashTable* hash_table);
 bool IsBlockVisible(Vector3 chunk_pos, Vector3 block_pos, int blockX, int blockY, int blockZ, HashTable* hash_table);
 
 //player.c
-void UpdatePlayer(Camera* camera);
+void InitPlayer(Player* player, Camera* camera);
+void UpdatePlayer(Player* player, Camera* camera, BoundingBox* boxes);
 
 #endif

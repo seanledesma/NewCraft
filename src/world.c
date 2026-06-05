@@ -163,7 +163,7 @@ int GetNearbyBlocks(BoundingBox* boxes, Vector3 player_pos, HashTable* hash_tabl
 
     Vector3 base_block_world = (Vector3) {
         floor(player_pos.x),
-        floor(player_pos.y-1.8),
+        floor(player_pos.y-PLAYER_HEIGHT),
         floor(player_pos.z)
     };
 
@@ -175,29 +175,29 @@ int GetNearbyBlocks(BoundingBox* boxes, Vector3 player_pos, HashTable* hash_tabl
     int coords_counter = 0;
     coords_counter = SpiralTraversal2D(coords, coords_counter, base_block_world, depth);
     //then get coords for y-1
-    coords_counter = SpiralTraversal2D(coords, coords_counter, (Vector3) {
-        base_block_world.x,
-        base_block_world.y - 1,
-        base_block_world.z
-    }, depth);
-    //then get coords for y+1
-    coords_counter = SpiralTraversal2D(coords, coords_counter, (Vector3) {
-        base_block_world.x,
-        base_block_world.y + 1,
-        base_block_world.z
-    }, depth);
-    //then get coords for y+2
-    coords_counter = SpiralTraversal2D(coords, coords_counter, (Vector3) {
-        base_block_world.x,
-        base_block_world.y + 2,
-        base_block_world.z
-    }, depth);
-    //then get coords for y+3
-    coords_counter = SpiralTraversal2D(coords, coords_counter, (Vector3) {
-        base_block_world.x,
-        base_block_world.y + 3,
-        base_block_world.z
-    }, depth);
+    // coords_counter = SpiralTraversal2D(coords, coords_counter, (Vector3) {
+    //     base_block_world.x,
+    //     base_block_world.y - 1,
+    //     base_block_world.z
+    // }, depth);
+    // //then get coords for y+1
+    // coords_counter = SpiralTraversal2D(coords, coords_counter, (Vector3) {
+    //     base_block_world.x,
+    //     base_block_world.y + 1,
+    //     base_block_world.z
+    // }, depth);
+    // //then get coords for y+2
+    // coords_counter = SpiralTraversal2D(coords, coords_counter, (Vector3) {
+    //     base_block_world.x,
+    //     base_block_world.y + 2,
+    //     base_block_world.z
+    // }, depth);
+    // //then get coords for y+3
+    // coords_counter = SpiralTraversal2D(coords, coords_counter, (Vector3) {
+    //     base_block_world.x,
+    //     base_block_world.y + 3,
+    //     base_block_world.z
+    // }, depth);
 
 
     for(int i = 0; i < coords_counter; i++) {
@@ -272,8 +272,8 @@ Vector3 DeriveChunkPosition(Vector3 starting_pos, HashTable* hash_table) {
     int chunkX = (int)floor((starting_pos.x + 8) / 16) * 16;
     int chunkY = (int)floor((starting_pos.y + 8) / 16) * 16;
     int chunkZ = (int)floor((starting_pos.z + 8) / 16) * 16;
-    // TraceLog(LOG_WARNING, TextFormat("1starting x: %.2f", starting_pos.x));
-    // TraceLog(LOG_WARNING, TextFormat("2chunk pos x: %d", chunkX));
+    TraceLog(LOG_DEBUG, TextFormat("1starting y: %.2f", starting_pos.y));
+    TraceLog(LOG_DEBUG, TextFormat("2chunk pos y: %d", chunkY));
 
     if(chunkX % CHUNK_SIZE != 0) {
         TraceLog(LOG_ERROR, "Incorrect chunk position, check world.c");
@@ -383,7 +383,10 @@ Vector3 ConvertWorldBlockPosToChunkIndex(Vector3 block_world_pos, HashTable* has
     }else {
         chunk_index.y = floor((blockY - world_pos.y) + 8);
     }
-
+    TraceLog(LOG_DEBUG, TextFormat("world y: %.2f", world_pos.y));
+    TraceLog(LOG_DEBUG, TextFormat("blockY: %d", blockY));
+    TraceLog(LOG_DEBUG, TextFormat("chunk index y: %.2f", chunk_index.y));
+    TraceLog(LOG_DEBUG, TextFormat("chunk index x: %.2f", chunk_index.x));
     
     if(world_pos.z < 0 || blockZ < 0) {
         if(world_pos.z < 0 && blockZ < 0) {

@@ -14,6 +14,8 @@ void draw_cube_basic(Vector3 position, Color color, Texture* texture);
 
 int main(void) {
 
+    SetTraceLogLevel(LOG_DEBUG);
+
     // Vector3* coords = (Vector3*)MemAlloc(270 * sizeof(Vector3));
     // Vector3 pos = (Vector3) { 10.0f, 0.0f, 10.0f };
     // SpiralTraversal3D(coords, pos, 6);
@@ -35,13 +37,16 @@ int main(void) {
     InitWindow(screenWidth, screenHeight, "NewCraft");
 
     Camera camera = { 0 };
-    camera.position = (Vector3) { 0.0f, 2.8f, 0.0f };
+    camera.position = (Vector3) { 0.0f, PLAYER_HEIGHT+10, 0.0f };
     camera.target = (Vector3) { 0.0f, 0.0f, -5.0f };
     camera.up = (Vector3) { 0.0f, 1.0f, 0.0f };
     camera.fovy = 70.0f;
     camera.projection = CAMERA_PERSPECTIVE;
 
     int cameraMode = CAMERA_FIRST_PERSON;
+
+    Player player = {0};
+    InitPlayer(&player, &camera);
 
 
 
@@ -145,8 +150,14 @@ int main(void) {
     int count = 0;
     int coords_counter = 0;
     coords_counter = SpiralTraversal2D(coords, coords_counter, starting_position, depth);
+    coords_counter = SpiralTraversal2D(coords, coords_counter, 
+        (Vector3) {
+            starting_position.x,
+            starting_position.y + 1,
+            starting_position.z
+        }, depth);
     // create all chunks
-    for (int i = 0; i < depth*depth; i++) {
+    for (int i = 0; i < coords_counter; i++) {
         chunkmeshes[i] = FetchChunkEntry((Vector3) { 
             coords[i].x * CHUNK_SIZE,
             coords[i].y * CHUNK_SIZE,
@@ -156,7 +167,7 @@ int main(void) {
     }
 
     // then create all meshes
-    for (int i = 0; i < count; i++) {
+    for (int i = 0; i < coords_counter; i++) {
         GenMeshChunk(chunkmeshes[i]->mesh, chunkmeshes[i]->chunk, hash_table);
         UploadMesh(chunkmeshes[i]->mesh, false);
     }
@@ -176,6 +187,7 @@ int main(void) {
     SetTargetFPS(120);
     while(!WindowShouldClose()) {
         UpdateCamera(&camera, cameraMode);
+        UpdatePlayer(&player, &camera, boxes);
 
         // if(mega_chunk_counter < MEGA_CHUNKS_MAX) {
         //     //working on mega-chunk idea
@@ -187,7 +199,7 @@ int main(void) {
         //         mega_chunk_counter++;
         //     }
         // }
-
+        TraceLog(LOG_DEBUG, TextFormat("0starting pos in main y: %.2f", camera.position.y));
         nearby_bounding_box_counter = GetNearbyBlocks(boxes, camera.position, hash_table);
 
         if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
