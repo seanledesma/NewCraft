@@ -78,10 +78,10 @@
 #define LAVA_TEX_COORD_V_MIN 0.42f
 #define LAVA_TEX_COORD_V_MAX 0.58f
 
-#define MAGMA_TEX_COORD_U_MIN 0.42f
-#define MAGMA_TEX_COORD_U_MAX 0.58f
-#define MAGMA_TEX_COORD_V_MIN 0.82f
-#define MAGMA_TEX_COORD_V_MAX 0.98f
+#define MAGMA_TEX_COORD_U_MIN 0.789f
+#define MAGMA_TEX_COORD_U_MAX 0.9f
+#define MAGMA_TEX_COORD_V_MIN 0.023f
+#define MAGMA_TEX_COORD_V_MAX 0.195f
 
 extern Vector3 relative_positions[];
 

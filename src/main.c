@@ -38,7 +38,7 @@ int main(void) {
 
     Camera camera = { 0 };
     camera.position = (Vector3) { 0.0f, PLAYER_HEIGHT-10, 0.0f };
-    camera.target = (Vector3) { camera.position.x, camera.position.y, camera.position.z - 10 };
+    camera.target = (Vector3) { camera.position.x, camera.position.y, camera.position.z - 1 };
     camera.up = (Vector3) { 0.0f, 1.0f, 0.0f };
     camera.fovy = 70.0f;
     camera.projection = CAMERA_PERSPECTIVE;
@@ -145,45 +145,46 @@ int main(void) {
     // }
 
     // generating chunks starting from center
-    Vector3* coords = (Vector3*)MemAlloc(1000 * sizeof(Vector3));
-    Vector3 starting_position = (Vector3) { 0.0f, 0.0f, 0.0f };
+    // Vector3* coords = (Vector3*)MemAlloc(1000 * sizeof(Vector3));
+    // Vector3 starting_position = (Vector3) { 0.0f, 0.0f, 0.0f };
     int depth = 10;
     int count = 0;
-    int coords_counter = 0;
-    coords_counter = SpiralTraversal2D(coords, coords_counter, starting_position, depth);
-    coords_counter = SpiralTraversal2D(coords, coords_counter, 
-        (Vector3) {
-            starting_position.x,
-            starting_position.y + 1,
-            starting_position.z
-        }, depth);
+    // int coords_counter = 0;
+    // coords_counter = SpiralTraversal2D(coords, coords_counter, starting_position, depth);
+    // coords_counter = SpiralTraversal2D(coords, coords_counter, 
+    //     (Vector3) {
+    //         starting_position.x,
+    //         starting_position.y + 1,
+    //         starting_position.z
+    //     }, depth);
 
-    coords_counter = SpiralTraversal2D(coords, coords_counter, 
-        (Vector3) {
-            starting_position.x,
-            starting_position.y - 1,
-            starting_position.z
-        }, depth);
+    // coords_counter = SpiralTraversal2D(coords, coords_counter, 
+    //     (Vector3) {
+    //         starting_position.x,
+    //         starting_position.y - 1,
+    //         starting_position.z
+    //     }, depth);
     // create all chunks
-    for (int i = 0; i < coords_counter; i++) {
-        chunkmeshes[i] = FetchChunkEntry((Vector3) { 
-            coords[i].x * CHUNK_SIZE,
-            coords[i].y * CHUNK_SIZE,
-            coords[i].z * CHUNK_SIZE
-         }, hash_table);
-         count++;
-    }
+    // for (int i = 0; i < coords_counter; i++) {
+    //     chunkmeshes[i] = FetchChunkEntry((Vector3) { 
+    //         coords[i].x * CHUNK_SIZE,
+    //         coords[i].y * CHUNK_SIZE,
+    //         coords[i].z * CHUNK_SIZE
+    //      }, hash_table);
+    //      count++;
+    // }
 
     // then create all meshes
-    for (int i = 0; i < coords_counter; i++) {
-        GenMeshChunkRework(chunkmeshes[i]->mesh, chunkmeshes[i]->chunk, hash_table);
-        //GenMeshChunk(chunkmeshes[i]->mesh, chunkmeshes[i]->chunk, hash_table);
-        UploadMesh(chunkmeshes[i]->mesh, false);
-    }
+    // for (int i = 0; i < coords_counter; i++) {
+    //     GenMeshChunkRework(chunkmeshes[i]->mesh, chunkmeshes[i]->chunk, hash_table);
+    //     //GenMeshChunk(chunkmeshes[i]->mesh, chunkmeshes[i]->chunk, hash_table);
+    //     UploadMesh(chunkmeshes[i]->mesh, false);
+    // }
 
-    // chunkmeshes[0] = FetchChunkEntry(relative_positions[0], hash_table);
+    chunkmeshes[0] = FetchChunkEntry(relative_positions[0], hash_table);
     // GenMeshChunk(chunkmeshes[0]->mesh, chunkmeshes[0]->chunk, hash_table);
-    // UploadMesh(chunkmeshes[0]->mesh, false);
+    GenMeshChunkRework(chunkmeshes[0]->mesh, chunkmeshes[0]->chunk, hash_table);
+    UploadMesh(chunkmeshes[0]->mesh, false);
 
     Model model = LoadModelFromMesh(*chunkmeshes[0]->mesh);
     Ray ray = {0};
@@ -209,7 +210,7 @@ int main(void) {
         //     }
         // }
         TraceLog(LOG_DEBUG, TextFormat("0starting pos in main y: %.2f", camera.position.y));
-        nearby_bounding_box_counter = GetNearbyBlocks(boxes, camera.position, hash_table);
+        //nearby_bounding_box_counter = GetNearbyBlocks(boxes, camera.position, hash_table);
 
         if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
             // ray = GetScreenToWorldRay(GetMousePosition(), camera);
@@ -227,7 +228,7 @@ int main(void) {
                 if (collision.hit) {
                     //break a block!
                     // BreakBlock(collision.point, hash_table);
-                    BreakBlock(boxes[box_counter].min, hash_table);
+                    //BreakBlock(boxes[box_counter].min, hash_table);
                     break;
                 }
                 box_counter++;
@@ -235,48 +236,49 @@ int main(void) {
         }
 
         // check for dirty chunks to re-make
-        for (int i = 0; i < coords_counter; i++) {
-            if(chunkmeshes[i]->dirty == true) {
+        // for (int i = 0; i < coords_counter; i++) {
+        //     if(chunkmeshes[i]->dirty == true) {
 
-                chunkmeshes[i]->dirty = false;
+        //         chunkmeshes[i]->dirty = false;
 
-                UnloadMesh(*chunkmeshes[i]->mesh);
-                //do i need to free mesh or will that cause issues?
-                MemFree(chunkmeshes[i]->mesh);
-                Mesh* mesh = (Mesh*)calloc(1,sizeof(Mesh));
+        //         UnloadMesh(*chunkmeshes[i]->mesh);
+        //         //do i need to free mesh or will that cause issues?
+        //         MemFree(chunkmeshes[i]->mesh);
+        //         Mesh* mesh = (Mesh*)calloc(1,sizeof(Mesh));
                 
-                int num_blocks_in_chunk = CHUNK_CUBED;
+        //         int num_blocks_in_chunk = CHUNK_CUBED;
 
-                int num_block_vertices = 36 * 3;
-                int num_block_texcoords = 36 * 2;
-                int num_block_normals = 36 * 3;
+        //         int num_block_vertices = 36 * 3;
+        //         int num_block_texcoords = 36 * 2;
+        //         int num_block_normals = 36 * 3;
 
-                int num_chunk_vertices = num_block_vertices * num_blocks_in_chunk;
-                int num_chunk_texcoords = num_block_texcoords * num_blocks_in_chunk;
-                int num_chunk_normals = num_block_normals * num_blocks_in_chunk;
-                mesh->vertices = (float *)MemAlloc(num_chunk_vertices * sizeof(float));
+        //         int num_chunk_vertices = num_block_vertices * num_blocks_in_chunk;
+        //         int num_chunk_texcoords = num_block_texcoords * num_blocks_in_chunk;
+        //         int num_chunk_normals = num_block_normals * num_blocks_in_chunk;
+        //         mesh->vertices = (float *)MemAlloc(num_chunk_vertices * sizeof(float));
     
-                mesh->texcoords = (float *)MemAlloc(num_chunk_texcoords * sizeof(float));
+        //         mesh->texcoords = (float *)MemAlloc(num_chunk_texcoords * sizeof(float));
             
-                mesh->normals = (float *)MemAlloc(num_chunk_normals * sizeof(float));
+        //         mesh->normals = (float *)MemAlloc(num_chunk_normals * sizeof(float));
 
-                mesh->vertexCount = 0;
-                mesh->triangleCount = 0;
+        //         mesh->vertexCount = 0;
+        //         mesh->triangleCount = 0;
 
 
-                chunkmeshes[i]->mesh = mesh;
-                GenMeshChunkSimplified(chunkmeshes[i]->mesh, chunkmeshes[i]->chunk, hash_table);
-                UploadMesh(chunkmeshes[i]->mesh, false);
-            }
-        }
+        //         chunkmeshes[i]->mesh = mesh;
+        //         GenMeshChunkSimplified(chunkmeshes[i]->mesh, chunkmeshes[i]->chunk, hash_table);
+        //         UploadMesh(chunkmeshes[i]->mesh, false);
+        //     }
+        // }
 
         //TraceLog(LOG_WARNING, TextFormat("IN MAIN LOOP what is block type under player: %d", chunkmeshes[0]->chunk->blocks[8][8][8].block_type));
 
         BeginDrawing();
             
-            ClearBackground(SKYBLUE);
+            ClearBackground(BLACK);
 
             BeginMode3D(camera);
+            DrawGrid(20, 1);
 
                 // for (int i = 0; i < MEGA_CHUNKS_MAX; i++) {
                 //     for (int j = 0; j < MEGA_CHUNK_SIZE; j++) {
@@ -289,11 +291,11 @@ int main(void) {
                 //     DrawMesh(*megachunks[0]->chunkmeshes[j]->mesh, material, matrix);
                 // }
 
-                for(int i = 0; i < coords_counter; i++) {
-                    DrawMesh(*chunkmeshes[i]->mesh, material, matrix);
-                }
+                // for(int i = 0; i < coords_counter; i++) {
+                //     DrawMesh(*chunkmeshes[i]->mesh, material, matrix);
+                // }
 
-                //DrawMesh(*chunkmeshes[0]->mesh, material, matrix);
+                DrawMesh(*chunkmeshes[0]->mesh, material, matrix);
 
                 
                 // for(int i = 0; i < nearby_bounding_box_counter; i++) {
@@ -310,12 +312,19 @@ int main(void) {
                 // DrawBoundingBox(boxes[8], PURPLE);
                 // DrawBoundingBox(boxes[9], PURPLE);
 
-                DrawBoundingBox(boxes[0], PINK);
+                //DrawBoundingBox(boxes[0], PINK);
 
                 // DrawMesh(*megachunks[0]->chunkmeshes[0]->mesh, material, matrix);
                 // DrawMesh(*megachunks[0]->chunkmeshes[1]->mesh, material, matrix);
 
                 if (collision.hit) DrawCube(collision.point, 0.3f, 0.3f, 0.3f, RED);
+
+                DrawLine3D((Vector3) { camera.target.x, camera.target.y, camera.target.z }, 
+                            (Vector3) { camera.target.x + 0.1f, camera.target.y, camera.target.z }, RED);
+                DrawLine3D((Vector3) { camera.target.x, camera.target.y, camera.target.z }, 
+                            (Vector3) { camera.target.x, camera.target.y + 0.1f, camera.target.z }, GREEN);
+                DrawLine3D((Vector3) { camera.target.x, camera.target.y, camera.target.z }, 
+                            (Vector3) { camera.target.x, camera.target.y, camera.target.z + 0.1f }, BLUE);
 
             EndMode3D();
 
@@ -333,8 +342,8 @@ int main(void) {
 
             if(collision.hit) DrawText("hit!", 900, 10, 50, YELLOW);
 
-            DrawRectangle((screenWidth/2) - 20, (screenHeight / 2), 45, 5, GRAY);
-            DrawRectangle((screenWidth/2), (screenHeight / 2) - 20, 5, 45, GRAY);
+            // DrawRectangle((screenWidth/2) - 20, (screenHeight / 2), 45, 5, GRAY);
+            // DrawRectangle((screenWidth/2), (screenHeight / 2) - 20, 5, 45, GRAY);
             DrawFPS(10, 10);
         EndDrawing();
     }
@@ -351,11 +360,11 @@ int main(void) {
     //     UnloadMesh(*megachunks[0]->chunkmeshes[j]->mesh);
     // }
 
-    for (int i = 0; i < count; i++) {
-        UnloadMesh(*chunkmeshes[i]->mesh);
-    }
+    // for (int i = 0; i < count; i++) {
+    //     UnloadMesh(*chunkmeshes[i]->mesh);
+    // }
 
-    //UnloadMesh(*chunkmeshes[0]->mesh);
+    UnloadMesh(*chunkmeshes[0]->mesh);
 
     UnloadModel(model);
 
