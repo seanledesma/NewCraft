@@ -54,7 +54,8 @@ int main(void) {
     // noise.noise_type = FNL_NOISE_OPENSIMPLEX2;
     InitWorld();
 
-    Texture texture = LoadTexture("assets/tex_atlas_2.png");
+    Texture texture = LoadTexture("assets/my_tex_atlas.png");
+    SetTextureFilter(texture, TEXTURE_FILTER_POINT);
     Material material = LoadMaterialDefault();
     material.maps[MATERIAL_MAP_DIFFUSE].texture = texture;
 
