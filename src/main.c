@@ -37,8 +37,8 @@ int main(void) {
     InitWindow(screenWidth, screenHeight, "NewCraft");
 
     Camera camera = { 0 };
-    camera.position = (Vector3) { 0.0f, PLAYER_HEIGHT+10, 0.0f };
-    camera.target = (Vector3) { 0.0f, 0.0f, -5.0f };
+    camera.position = (Vector3) { 0.0f, PLAYER_HEIGHT-10, 0.0f };
+    camera.target = (Vector3) { camera.position.x, camera.position.y, camera.position.z - 10 };
     camera.up = (Vector3) { 0.0f, 1.0f, 0.0f };
     camera.fovy = 70.0f;
     camera.projection = CAMERA_PERSPECTIVE;
@@ -155,6 +155,13 @@ int main(void) {
         (Vector3) {
             starting_position.x,
             starting_position.y + 1,
+            starting_position.z
+        }, depth);
+
+    coords_counter = SpiralTraversal2D(coords, coords_counter, 
+        (Vector3) {
+            starting_position.x,
+            starting_position.y - 1,
             starting_position.z
         }, depth);
     // create all chunks
@@ -288,19 +295,19 @@ int main(void) {
                 //DrawMesh(*chunkmeshes[0]->mesh, material, matrix);
 
                 
-                for(int i = 0; i < nearby_bounding_box_counter; i++) {
-                    DrawBoundingBox(boxes[i], ORANGE);
-                }
+                // for(int i = 0; i < nearby_bounding_box_counter; i++) {
+                //     DrawBoundingBox(boxes[i], ORANGE);
+                // }
                 
-                DrawBoundingBox(boxes[1], PURPLE);
-                DrawBoundingBox(boxes[2], PURPLE);
-                DrawBoundingBox(boxes[3], PURPLE);
-                DrawBoundingBox(boxes[4], PURPLE);
-                DrawBoundingBox(boxes[5], PURPLE);
-                DrawBoundingBox(boxes[6], PURPLE);
-                DrawBoundingBox(boxes[7], PURPLE);
-                DrawBoundingBox(boxes[8], PURPLE);
-                DrawBoundingBox(boxes[9], PURPLE);
+                // DrawBoundingBox(boxes[1], PURPLE);
+                // DrawBoundingBox(boxes[2], PURPLE);
+                // DrawBoundingBox(boxes[3], PURPLE);
+                // DrawBoundingBox(boxes[4], PURPLE);
+                // DrawBoundingBox(boxes[5], PURPLE);
+                // DrawBoundingBox(boxes[6], PURPLE);
+                // DrawBoundingBox(boxes[7], PURPLE);
+                // DrawBoundingBox(boxes[8], PURPLE);
+                // DrawBoundingBox(boxes[9], PURPLE);
 
                 DrawBoundingBox(boxes[0], PINK);
 

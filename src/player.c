@@ -16,6 +16,7 @@ void InitPlayer(Player* player, Camera* camera) {
     };
 
     player->on_ground = false;
+    player->flying = true;
 }
 
 
@@ -38,20 +39,19 @@ void UpdatePlayer(Player* player, Camera* camera, BoundingBox* boxes) {
 
 
     float deltatime = GetFrameTime();
-    player->velocity.y += GRAVITY * (deltatime / 1); 
-    camera->position.y += player->velocity.y * (deltatime / 1);
-    TraceLog(LOG_DEBUG, TextFormat("player velocity y: %.2f", player->velocity.y));
-    TraceLog(LOG_DEBUG, TextFormat("deltatime: %.2f", deltatime));
-    if(player->on_ground == false) {
-        //gravity, affects camera then player position
-        
 
+    if(player->flying == false) {
+        //gravity, affects camera then player position
+        player->velocity.y += GRAVITY * (deltatime / 1); 
+        camera->position.y += player->velocity.y * (deltatime / 1);
+        TraceLog(LOG_DEBUG, TextFormat("player velocity y: %.2f", player->velocity.y));
+        TraceLog(LOG_DEBUG, TextFormat("deltatime: %.2f", deltatime));
     }
     //TraceLog(LOG_WARNING, "hi");
     
     //check if player hits the bounding box under player, if so, reset camera position
     //else update player position to align with camera
-    if(CheckCollisionBoxes(player->bounding_box, boxes[0])) {
+    if(CheckCollisionBoxes(player->bounding_box, boxes[0]) && player->flying == false) {
         TraceLog(LOG_DEBUG, TextFormat("hit %.5f", deltatime));
         camera->position.y = ceil(boxes[0].max.y) + PLAYER_HEIGHT + 0.00001f;
         //player->position.y = ceil(boxes[0].max.y) + 0.0000001f;
@@ -109,13 +109,26 @@ void UpdatePlayer(Player* player, Camera* camera, BoundingBox* boxes) {
 
 
     // handle jumping
-    if (IsKeyPressed(KEY_SPACE) && player->on_ground == true) {
+    if (IsKeyPressed(KEY_SPACE) && player->on_ground == true && player->flying == false) {
         player->on_ground = false;
         camera->position.y += 0.1f;
         player->velocity.y = 5;
     }
 
+    // handle flying
+    if (IsKeyPressed(KEY_F)) player->flying = true;
+    if (IsKeyPressed(KEY_G)) player->flying = false;
 
+    if (player->flying) {
+        if (IsKeyDown(KEY_SPACE)) {
+            camera->position.y += 0.1f;
+            camera->target.y += 0.1f;
+        }
+        if (IsKeyDown(KEY_LEFT_SHIFT)) {
+            camera->position.y -= 0.1f;
+            camera->target.y -= 0.1f;
+        }
+    }
 
 
 }

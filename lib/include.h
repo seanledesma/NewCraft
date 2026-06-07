@@ -47,10 +47,10 @@
 #define DIRT_LIGHT_TEX_COORD_V_MIN 0.22f
 #define DIRT_LIGHT_TEX_COORD_V_MAX 0.38f
 
-#define DIRT_DARK_TEX_COORD_U_MIN 0.62f
-#define DIRT_DARK_TEX_COORD_U_MAX 0.78f
-#define DIRT_DARK_TEX_COORD_V_MIN 0.82f
-#define DIRT_DARK_TEX_COORD_V_MAX 0.98f
+#define DIRT_DARK_TEX_COORD_U_MIN 0.415f
+#define DIRT_DARK_TEX_COORD_U_MAX 0.585f
+#define DIRT_DARK_TEX_COORD_V_MIN 0.023f
+#define DIRT_DARK_TEX_COORD_V_MAX 0.195f
 
 #define GRASS_TEX_COORD_U_MIN 0.22f
 #define GRASS_TEX_COORD_U_MAX 0.38f
@@ -68,10 +68,10 @@
 // #define STONE_TEX_COORD_V_MIN 0.82f
 // #define STONE_TEX_COORD_V_MAX 0.98f
 
-#define STONE_TEX_COORD_U_MIN 0.22f
-#define STONE_TEX_COORD_U_MAX 0.38f
-#define STONE_TEX_COORD_V_MIN 0.82f
-#define STONE_TEX_COORD_V_MAX 0.98f
+#define STONE_TEX_COORD_U_MIN 0.609f
+#define STONE_TEX_COORD_U_MAX 0.782f
+#define STONE_TEX_COORD_V_MIN 0.023f
+#define STONE_TEX_COORD_V_MAX 0.195f
 
 #define LAVA_TEX_COORD_U_MIN 0.82f
 #define LAVA_TEX_COORD_U_MAX 0.98f
@@ -121,6 +121,7 @@ typedef struct Player {
     float acceleration; 
     bool on_ground;
     bool frozen;
+    bool flying;
 }Player;
 
 // typedef struct MegaChunk {
