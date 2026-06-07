@@ -149,7 +149,6 @@ int8_t DecideBlockType(Vector3 block_world_pos);
 int SpiralTraversal2D(Vector3* coords, int coords_index, Vector3 pos, int depth);
 Chunk* GetCurrentChunk(Vector3 player_pos, HashTable* hash_table);
 Vector3 DeriveChunkPosition(Vector3 starting_pos, HashTable* hash_table);
-Chunk* DeriveChunk(Vector3 starting_pos, HashTable* hash_table);
 ChunkMesh* DeriveChunkMesh(Vector3 starting_pos, HashTable* hash_table);
 int GetNearbyBlocks(BoundingBox* boxes, Vector3 player_pos, HashTable* hash_table);
 Vector3 ConvertWorldBlockPosToChunkIndex(Vector3 block_world_pos, HashTable* hash_table);
@@ -160,8 +159,9 @@ bool IsBlockAir(Vector3 block_world_pos, HashTable* hash_table);
 //mesh.c
 void GenMeshChunk(Mesh* mesh, Chunk* chunk, HashTable* hash_table);
 void GenMeshChunkSimplified(Mesh* mesh, Chunk* chunk, HashTable* hash_table);
+void GenMeshChunkRework(Mesh* mesh, Chunk* chunk, HashTable* hash_table);
 bool IsBlockVisible(Vector3 chunk_pos, Vector3 block_pos, int blockX, int blockY, int blockZ, HashTable* hash_table);
-
+bool IsBlockVisibleRework(Vector3 block_world_position, HashTable* hash_table);
 //player.c
 void InitPlayer(Player* player, Camera* camera);
 void UpdatePlayer(Player* player, Camera* camera, BoundingBox* boxes);

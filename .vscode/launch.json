@@ -10,6 +10,16 @@
             "cwd": "${workspaceFolder}",
             "preLaunchTask": "build debug",
         },
+
+        {
+            "name": "Debug Game (Linux)",
+            "type": "lldb",
+            "request": "launch",
+            "program": "${workspaceFolder}/bin/game_debug",
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "preLaunchTask": "build debug",
+        },
         
         {
             "name": "Debug Game (Windows)",

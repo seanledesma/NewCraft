@@ -282,27 +282,9 @@ Vector3 DeriveChunkPosition(Vector3 starting_pos, HashTable* hash_table) {
     return (Vector3) { (float)chunkX, (float)chunkY, (float)chunkZ };
 }
 
-Chunk* DeriveChunk(Vector3 starting_pos, HashTable* hash_table) {
-    ChunkMesh* chunkmesh = (ChunkMesh*)calloc(1,sizeof(ChunkMesh));
-
-    int chunkX = (int)floor((starting_pos.x + 8) / 16) * 16;
-    int chunkY = (int)floor((starting_pos.y + 8) / 16) * 16;
-    int chunkZ = (int)floor((starting_pos.z + 8) / 16) * 16;
-    if(DoesChunkEntryExist((Vector3) { chunkX, chunkY, chunkZ }, hash_table)){
-        chunkmesh = FetchChunkEntry((Vector3) { chunkX, chunkY, chunkZ }, hash_table);
-    } else {
-        TraceLog(LOG_ERROR, "DERIVE CHUNK DID NOT FIND CHUNK");
-    }
-
-    if(chunkX % CHUNK_SIZE != 0) {
-        TraceLog(LOG_ERROR, "Incorrect chunk position, check world.c");
-    }
-
-    return chunkmesh->chunk;
-}
 
 ChunkMesh* DeriveChunkMesh(Vector3 starting_pos, HashTable* hash_table) {
-    ChunkMesh* chunkmesh = (ChunkMesh*)calloc(1,sizeof(ChunkMesh));
+    ChunkMesh* chunkmesh = {0};
 
     int chunkX = (int)floor((starting_pos.x + 8) / 16) * 16;
     int chunkY = (int)floor((starting_pos.y + 8) / 16) * 16;
@@ -316,28 +298,47 @@ ChunkMesh* DeriveChunkMesh(Vector3 starting_pos, HashTable* hash_table) {
     if(chunkX % CHUNK_SIZE != 0) {
         TraceLog(LOG_ERROR, "Incorrect chunk position, check world.c");
     }
-
     return chunkmesh;
 }
+
+// ChunkMesh* DeriveChunkMesh(Vector3 starting_pos, HashTable* hash_table) {
+//     ChunkMesh* chunkmesh = (ChunkMesh*)calloc(1,sizeof(ChunkMesh));
+
+//     int chunkX = (int)floor((starting_pos.x + 8) / 16) * 16;
+//     int chunkY = (int)floor((starting_pos.y + 8) / 16) * 16;
+//     int chunkZ = (int)floor((starting_pos.z + 8) / 16) * 16;
+//     if(DoesChunkEntryExist((Vector3) { chunkX, chunkY, chunkZ }, hash_table)){
+//         chunkmesh = FetchChunkEntry((Vector3) { chunkX, chunkY, chunkZ }, hash_table);
+//     } else {
+//         TraceLog(LOG_ERROR, "DERIVE CHUNK DID NOT FIND CHUNK");
+//     }
+
+//     if(chunkX % CHUNK_SIZE != 0) {
+//         TraceLog(LOG_ERROR, "Incorrect chunk position, check world.c");
+//     }
+
+//     return chunkmesh;
+// }
 
 
 bool IsBlockAir(Vector3 block_world_pos, HashTable* hash_table) {
     // TraceLog(LOG_WARNING, TextFormat("0-isblockair blockX: %.2f", block_world_pos.x));
     //allll we're gonna do is see if this block, at the given coords, is air, or no.
     Vector3 index = ConvertWorldBlockPosToChunkIndex(block_world_pos, hash_table);
-    Chunk* chunk = (Chunk*)MemAlloc(sizeof(Chunk));
-    chunk = DeriveChunk(block_world_pos, hash_table);
+    ChunkMesh* chunkmesh = DeriveChunkMesh(block_world_pos, hash_table);
     // TraceLog(LOG_WARNING, TextFormat("index x: %d", (int)index.x));
     // TraceLog(LOG_WARNING, TextFormat("index y: %d", (int)index.y));
     // TraceLog(LOG_WARNING, TextFormat("index z: %d", (int)index.z));
     // TraceLog(LOG_WARNING, TextFormat("of chunk x:%.2f, y:%.2f, z:%.2f", chunk->world_pos.x, 
     //             chunk->world_pos.y, chunk->world_pos.z));
-    if(chunk->blocks[(int)index.x][(int)index.y][(int)index.z].block_type == BLOCK_AIR) {
+    if(chunkmesh->chunk->blocks[(int)index.x][(int)index.y][(int)index.z].block_type == BLOCK_AIR) {
         //TraceLog(LOG_WARNING, "hit true");
         //TraceLog(LOG_WARNING, TextFormat("index y when hitting block air: %d", (int)index.y));
+        chunkmesh = NULL;
         return true;
     }else{
         //TraceLog(LOG_WARNING, "hit false");
+        chunkmesh = NULL;
         return false;
     }
 }
@@ -471,35 +472,35 @@ bool IsBlockVisibleImproved(Vector3 block_world_pos, HashTable* hash_table) {
     //get the chunk for this block, then the index
     Chunk* temp_chunk = (Chunk*)MemAlloc(sizeof(Chunk));
     Vector3 temp_pos = (Vector3) { block_world_pos.x + 1, block_world_pos.y, block_world_pos.z };
-    temp_chunk = DeriveChunk(temp_pos, hash_table);
-    Vector3 temp_index = ConvertWorldBlockPosToChunkIndex(temp_pos, hash_table);
-    if(temp_chunk->blocks[(int)temp_index.x][(int)temp_index.y][(int)temp_index.z].block_type == BLOCK_AIR) return true;
+    // temp_chunk = DeriveChunk(temp_pos, hash_table);
+    // Vector3 temp_index = ConvertWorldBlockPosToChunkIndex(temp_pos, hash_table);
+    // if(temp_chunk->blocks[(int)temp_index.x][(int)temp_index.y][(int)temp_index.z].block_type == BLOCK_AIR) return true;
 
-    //gonna do this a few more time
-    temp_pos = (Vector3) { block_world_pos.x - 1, block_world_pos.y, block_world_pos.z };
-    temp_chunk = DeriveChunk(temp_pos, hash_table);
-    temp_index = ConvertWorldBlockPosToChunkIndex(temp_pos, hash_table);
-    if(temp_chunk->blocks[(int)temp_index.x][(int)temp_index.y][(int)temp_index.z].block_type == BLOCK_AIR) return true;
+    // //gonna do this a few more time
+    // temp_pos = (Vector3) { block_world_pos.x - 1, block_world_pos.y, block_world_pos.z };
+    // temp_chunk = DeriveChunk(temp_pos, hash_table);
+    // temp_index = ConvertWorldBlockPosToChunkIndex(temp_pos, hash_table);
+    // if(temp_chunk->blocks[(int)temp_index.x][(int)temp_index.y][(int)temp_index.z].block_type == BLOCK_AIR) return true;
 
-    temp_pos = (Vector3) { block_world_pos.x, block_world_pos.y+1, block_world_pos.z };
-    temp_chunk = DeriveChunk(temp_pos, hash_table);
-    temp_index = ConvertWorldBlockPosToChunkIndex(temp_pos, hash_table);
-    if(temp_chunk->blocks[(int)temp_index.x][(int)temp_index.y][(int)temp_index.z].block_type == BLOCK_AIR) return true;
+    // temp_pos = (Vector3) { block_world_pos.x, block_world_pos.y+1, block_world_pos.z };
+    // temp_chunk = DeriveChunk(temp_pos, hash_table);
+    // temp_index = ConvertWorldBlockPosToChunkIndex(temp_pos, hash_table);
+    // if(temp_chunk->blocks[(int)temp_index.x][(int)temp_index.y][(int)temp_index.z].block_type == BLOCK_AIR) return true;
 
-    temp_pos = (Vector3) { block_world_pos.x, block_world_pos.y-1, block_world_pos.z };
-    temp_chunk = DeriveChunk(temp_pos, hash_table);
-    temp_index = ConvertWorldBlockPosToChunkIndex(temp_pos, hash_table);
-    if(temp_chunk->blocks[(int)temp_index.x][(int)temp_index.y][(int)temp_index.z].block_type == BLOCK_AIR) return true;
+    // temp_pos = (Vector3) { block_world_pos.x, block_world_pos.y-1, block_world_pos.z };
+    // temp_chunk = DeriveChunk(temp_pos, hash_table);
+    // temp_index = ConvertWorldBlockPosToChunkIndex(temp_pos, hash_table);
+    // if(temp_chunk->blocks[(int)temp_index.x][(int)temp_index.y][(int)temp_index.z].block_type == BLOCK_AIR) return true;
 
-    temp_pos = (Vector3) { block_world_pos.x, block_world_pos.y, block_world_pos.z+1 };
-    temp_chunk = DeriveChunk(temp_pos, hash_table);
-    temp_index = ConvertWorldBlockPosToChunkIndex(temp_pos, hash_table);
-    if(temp_chunk->blocks[(int)temp_index.x][(int)temp_index.y][(int)temp_index.z].block_type == BLOCK_AIR) return true;
+    // temp_pos = (Vector3) { block_world_pos.x, block_world_pos.y, block_world_pos.z+1 };
+    // temp_chunk = DeriveChunk(temp_pos, hash_table);
+    // temp_index = ConvertWorldBlockPosToChunkIndex(temp_pos, hash_table);
+    // if(temp_chunk->blocks[(int)temp_index.x][(int)temp_index.y][(int)temp_index.z].block_type == BLOCK_AIR) return true;
 
-    temp_pos = (Vector3) { block_world_pos.x, block_world_pos.y, block_world_pos.z-1 };
-    temp_chunk = DeriveChunk(temp_pos, hash_table);
-    temp_index = ConvertWorldBlockPosToChunkIndex(temp_pos, hash_table);
-    if(temp_chunk->blocks[(int)temp_index.x][(int)temp_index.y][(int)temp_index.z].block_type == BLOCK_AIR) return true;
+    // temp_pos = (Vector3) { block_world_pos.x, block_world_pos.y, block_world_pos.z-1 };
+    // temp_chunk = DeriveChunk(temp_pos, hash_table);
+    // temp_index = ConvertWorldBlockPosToChunkIndex(temp_pos, hash_table);
+    // if(temp_chunk->blocks[(int)temp_index.x][(int)temp_index.y][(int)temp_index.z].block_type == BLOCK_AIR) return true;
 
     //if all else fails, it's not visible
     return false;

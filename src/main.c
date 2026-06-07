@@ -176,7 +176,8 @@ int main(void) {
 
     // then create all meshes
     for (int i = 0; i < coords_counter; i++) {
-        GenMeshChunk(chunkmeshes[i]->mesh, chunkmeshes[i]->chunk, hash_table);
+        GenMeshChunkRework(chunkmeshes[i]->mesh, chunkmeshes[i]->chunk, hash_table);
+        //GenMeshChunk(chunkmeshes[i]->mesh, chunkmeshes[i]->chunk, hash_table);
         UploadMesh(chunkmeshes[i]->mesh, false);
     }
 
