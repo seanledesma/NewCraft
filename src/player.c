@@ -40,10 +40,12 @@ void UpdatePlayer(Player* player, Camera* camera, BoundingBox* boxes) {
 
     float deltatime = GetFrameTime();
 
-    if(player->flying == false) {
+    //handle falling
+    if(player->flying == false && !player->on_ground) {
         //gravity, affects camera then player position
         player->velocity.y += GRAVITY * (deltatime / 1); 
         camera->position.y += player->velocity.y * (deltatime / 1);
+        camera->target.y += player->velocity.y * (deltatime / 1);
         TraceLog(LOG_DEBUG, TextFormat("player velocity y: %.2f", player->velocity.y));
         TraceLog(LOG_DEBUG, TextFormat("deltatime: %.2f", deltatime));
     }
@@ -54,6 +56,10 @@ void UpdatePlayer(Player* player, Camera* camera, BoundingBox* boxes) {
     if(CheckCollisionBoxes(player->bounding_box, boxes[0]) && player->flying == false) {
         TraceLog(LOG_DEBUG, TextFormat("hit %.5f", deltatime));
         camera->position.y = ceil(boxes[0].max.y) + PLAYER_HEIGHT + 0.00001f;
+        //camera->target.y = ceil(boxes[0].max.y) + PLAYER_HEIGHT + 0.00001f;
+        camera->target.y -= player->velocity.y * (deltatime / 1);
+
+
         //player->position.y = ceil(boxes[0].max.y) + 0.0000001f;
         // camera->position = (Vector3) {
         //     player->position.x,
@@ -112,6 +118,7 @@ void UpdatePlayer(Player* player, Camera* camera, BoundingBox* boxes) {
     if (IsKeyPressed(KEY_SPACE) && player->on_ground == true && player->flying == false) {
         player->on_ground = false;
         camera->position.y += 0.1f;
+        camera->target.y += 0.1f;
         player->velocity.y = 5;
     }
 

@@ -497,12 +497,8 @@ bool IsBlockVisibleRework(Vector3 block_world_position, HashTable* hash_table) {
     }
 }
 
-
-
-// The goal here is to assign textures to FACES, not entire blocks, while keeping mesh structure intact
-// I should call IsBlockVisible for each face, not just block.
 void GenMeshChunkRework(Mesh* mesh, Chunk* chunk, HashTable* hash_table) {
-    int block_counter = 0;
+    int face_counter = 0;
     // if you see all magma, something went wrong
     float u_min = MAGMA_TEX_COORD_U_MIN;
     float u_max = MAGMA_TEX_COORD_U_MAX;
@@ -518,21 +514,6 @@ void GenMeshChunkRework(Mesh* mesh, Chunk* chunk, HashTable* hash_table) {
                 Vector3 block_world_pos = { x, y, z };
                 bool is_visible = false;
                 float size = 0.5f;
-                int face_counter = 1;
-
-                int vert_count = block_counter * face_counter * 6 * 3;
-                int tex_count = block_counter * face_counter * 6 * 2;
-                int norm_count = block_counter * face_counter * 6 * 3;
-
-                // if(IsBlockVisible(chunk->world_pos, block_world_pos, blockX, blockY, blockZ, hash_table) == false) {
-                //     chunk->blocks[blockX][blockY][blockZ].block_type = BLOCK_AIR;
-                // }
-
-                // if(IsBlockVisibleImproved(block_world_pos, hash_table) == false) {
-                //     chunk->blocks[blockX][blockY][blockZ].block_type = BLOCK_AIR;
-                // }
-
-
 
                 int block_type = chunk->blocks[blockX][blockY][blockZ].block_type;
 
@@ -542,7 +523,7 @@ void GenMeshChunkRework(Mesh* mesh, Chunk* chunk, HashTable* hash_table) {
                     continue;
                 }
 
-                TraceLog(LOG_WARNING, TextFormat("block type: %d", chunk->blocks[blockX][blockY][blockZ].block_type));
+                //TraceLog(LOG_WARNING, TextFormat("block type: %d", chunk->blocks[blockX][blockY][blockZ].block_type));
                 // we will know if block is visible or not by checking all 6 sides
                 //front side (Z+)
                 if (IsBlockVisibleRework((Vector3) { block_world_pos.x, block_world_pos.y, block_world_pos.z + 1 }, hash_table)) {
@@ -611,9 +592,9 @@ void GenMeshChunkRework(Mesh* mesh, Chunk* chunk, HashTable* hash_table) {
                         zero, zero, one,
                     };
 
-                    int vert_count = block_counter * (face_counter * 6 * 3);
-                    int tex_count = block_counter * (face_counter * 6 * 2);
-                    int norm_count = block_counter * (face_counter * 6 * 3);
+                    int vert_count = (face_counter * 6 * 3);
+                    int tex_count = (face_counter * 6 * 2);
+                    int norm_count = (face_counter * 6 * 3);
 
                     memcpy(mesh->vertices + vert_count, vertices, 6*3*sizeof(float));
                     
@@ -632,10 +613,6 @@ void GenMeshChunkRework(Mesh* mesh, Chunk* chunk, HashTable* hash_table) {
 
                     face_counter++;
                 }
-
-                //just for now
-                // mesh->vertexCount += 30;
-                // mesh->triangleCount += 10;
 
                 //back side (Z-)
                 if (IsBlockVisibleRework((Vector3) { block_world_pos.x, block_world_pos.y, block_world_pos.z - 1 }, hash_table)) {
@@ -703,9 +680,9 @@ void GenMeshChunkRework(Mesh* mesh, Chunk* chunk, HashTable* hash_table) {
                         zero, zero, -one,
                     };
 
-                    int vert_count = block_counter * (face_counter * 6 * 3);
-                    int tex_count = block_counter * (face_counter * 6 * 2);
-                    int norm_count = block_counter * (face_counter * 6 * 3);
+                    int vert_count = (face_counter * 6 * 3);
+                    int tex_count = (face_counter * 6 * 2);
+                    int norm_count = (face_counter * 6 * 3);
 
                     memcpy(mesh->vertices + vert_count, vertices, 6*3*sizeof(float));
                     
@@ -789,9 +766,9 @@ void GenMeshChunkRework(Mesh* mesh, Chunk* chunk, HashTable* hash_table) {
                         zero, one, zero,
                     };
 
-                    int vert_count = block_counter * (face_counter * 6 * 3);
-                    int tex_count = block_counter * (face_counter * 6 * 2);
-                    int norm_count = block_counter * (face_counter * 6 * 3);
+                    int vert_count = (face_counter * 6 * 3);
+                    int tex_count = (face_counter * 6 * 2);
+                    int norm_count = (face_counter * 6 * 3);
 
                     memcpy(mesh->vertices + vert_count, vertices, 6*3*sizeof(float));
                     
@@ -875,9 +852,9 @@ void GenMeshChunkRework(Mesh* mesh, Chunk* chunk, HashTable* hash_table) {
                         zero, -one, zero,
                     };
 
-                    int vert_count = block_counter * (face_counter * 6 * 3);
-                    int tex_count = block_counter * (face_counter * 6 * 2);
-                    int norm_count = block_counter * (face_counter * 6 * 3);
+                    int vert_count = (face_counter * 6 * 3);
+                    int tex_count = (face_counter * 6 * 2);
+                    int norm_count = (face_counter * 6 * 3);
 
                     memcpy(mesh->vertices + vert_count, vertices, 6*3*sizeof(float));
                     
@@ -961,9 +938,9 @@ void GenMeshChunkRework(Mesh* mesh, Chunk* chunk, HashTable* hash_table) {
                         -one, zero, zero,
                     };
 
-                    int vert_count = block_counter * face_counter * 6 * 3;
-                    int tex_count = block_counter * face_counter * 6 * 2;
-                    int norm_count = block_counter * face_counter * 6 * 3;
+                    int vert_count = (face_counter * 6 * 3);
+                    int tex_count = (face_counter * 6 * 2);
+                    int norm_count = (face_counter * 6 * 3);
 
                     memcpy(mesh->vertices + vert_count, vertices, 6*3*sizeof(float));
                     
@@ -1048,9 +1025,9 @@ void GenMeshChunkRework(Mesh* mesh, Chunk* chunk, HashTable* hash_table) {
                         one, zero, zero,
                     };
 
-                    int vert_count = block_counter * (face_counter * 6 * 3);
-                    int tex_count = block_counter * (face_counter * 6 * 2);
-                    int norm_count = block_counter * (face_counter * 6 * 3);
+                    int vert_count = (face_counter * 6 * 3);
+                    int tex_count = (face_counter * 6 * 2);
+                    int norm_count = (face_counter * 6 * 3);
 
                     memcpy(mesh->vertices + vert_count, vertices, 6*3*sizeof(float));
                     
@@ -1072,31 +1049,634 @@ void GenMeshChunkRework(Mesh* mesh, Chunk* chunk, HashTable* hash_table) {
 
 
                 if (is_visible = false) {
-                    TraceLog(LOG_WARNING, "are we even getting here");
+                    TraceLog(LOG_WARNING, "is visible is false for some reason in GenMeshChunkRework");
                     //basically, if we get all the way to the bottom here, the block is not visible
-                    //is_visible = false;
                     chunk->blocks[blockX][blockY][blockZ].block_type = BLOCK_AIR;
                 }
-
-
-                // int vert_count = block_counter * (36 * 3);
-                // int tex_count = block_counter * (36 * 2);
-                // int norm_count = block_counter * (36 * 3);
-
-                // memcpy(mesh->vertices + vert_count, vertices, 36*3*sizeof(float));
-                
-                // memcpy(mesh->texcoords + tex_count, texcoords, 36*2*sizeof(float));
-
-                // memcpy(mesh->normals + norm_count, normals, 36*3*sizeof(float));
-
-                // mesh->vertexCount += 36;
-                // mesh->triangleCount += 12;
-
-                block_counter++;
             }
         }
     }
 }
+
+// The goal here is to assign textures to FACES, not entire blocks, while keeping mesh structure intact
+// I should call IsBlockVisible for each face, not just block.
+// void GenMeshChunkRework(Mesh* mesh, Chunk* chunk, HashTable* hash_table) {
+//     int block_counter = 0;
+//     // if you see all magma, something went wrong
+//     float u_min = MAGMA_TEX_COORD_U_MIN;
+//     float u_max = MAGMA_TEX_COORD_U_MAX;
+//     float v_min = MAGMA_TEX_COORD_V_MIN;
+//     float v_max = MAGMA_TEX_COORD_V_MAX;
+
+//     for (int blockX = 0; blockX < CHUNK_SIZE; blockX++) {
+//         for (int blockY = 0; blockY < CHUNK_SIZE; blockY++) {
+//             for (int blockZ = 0; blockZ < CHUNK_SIZE; blockZ++) {
+//                 float x = chunk->world_pos.x - HALF_CHUNK + blockX + 0.5f;
+//                 float y = chunk->world_pos.y - HALF_CHUNK + blockY + 0.5f;
+//                 float z = chunk->world_pos.z - HALF_CHUNK + blockZ + 0.5f;
+//                 Vector3 block_world_pos = { x, y, z };
+//                 bool is_visible = false;
+//                 float size = 0.5f;
+//                 int face_counter = 1;
+
+//                 int vert_count = 0;
+//                 int tex_count = 0;
+//                 int norm_count = 0;
+
+//                 int num_block_vertices = 36 * 3;
+//                 int num_block_texcoords = 36 * 2;
+//                 int num_block_normals = 36 * 3;
+
+//                 float vertices[num_block_vertices];
+//                 float texcoords[num_block_texcoords];
+//                 float normals[num_block_normals];
+
+//                 // if(IsBlockVisible(chunk->world_pos, block_world_pos, blockX, blockY, blockZ, hash_table) == false) {
+//                 //     chunk->blocks[blockX][blockY][blockZ].block_type = BLOCK_AIR;
+//                 // }
+
+//                 // if(IsBlockVisibleImproved(block_world_pos, hash_table) == false) {
+//                 //     chunk->blocks[blockX][blockY][blockZ].block_type = BLOCK_AIR;
+//                 // }
+
+
+
+//                 int block_type = chunk->blocks[blockX][blockY][blockZ].block_type;
+
+//                 if(block_type == BLOCK_AIR) {
+//                     mesh->vertexCount += 36;
+//                     mesh->triangleCount += 12;
+//                     continue;
+//                 }
+
+//                 TraceLog(LOG_WARNING, TextFormat("block type: %d", chunk->blocks[blockX][blockY][blockZ].block_type));
+//                 // we will know if block is visible or not by checking all 6 sides
+//                 //front side (Z+)
+//                 if (IsBlockVisibleRework((Vector3) { block_world_pos.x, block_world_pos.y, block_world_pos.z + 1 }, hash_table)) {
+//                     is_visible = true;
+//                     switch (block_type) {
+//                         case BLOCK_GRASS:
+//                             u_min = DIRTGRASS_TEX_COORD_U_MIN;
+//                             u_max = DIRTGRASS_TEX_COORD_U_MAX;
+//                             v_min = DIRTGRASS_TEX_COORD_V_MIN;
+//                             v_max = DIRTGRASS_TEX_COORD_V_MAX;
+//                             break;
+//                         case BLOCK_DIRT:
+//                             u_min = DIRT_DARK_TEX_COORD_U_MIN;
+//                             u_max = DIRT_DARK_TEX_COORD_U_MAX;
+//                             v_min = DIRT_DARK_TEX_COORD_V_MIN;
+//                             v_max = DIRT_DARK_TEX_COORD_V_MAX;
+//                             break;
+//                         case BLOCK_STONE:
+//                             u_min = STONE_TEX_COORD_U_MIN;
+//                             u_max = STONE_TEX_COORD_U_MAX;
+//                             v_min = STONE_TEX_COORD_V_MIN;
+//                             v_max = STONE_TEX_COORD_V_MAX;
+//                             break;
+//                         default:
+//                             // if you see all magma, something went wrong
+//                             u_min = MAGMA_TEX_COORD_U_MIN;
+//                             u_max = MAGMA_TEX_COORD_U_MAX;
+//                             v_min = MAGMA_TEX_COORD_V_MIN;
+//                             v_max = MAGMA_TEX_COORD_V_MAX;
+//                     }
+//                     //this seems like a lot, but we really need to add each face individually
+
+//                     //first front triangle
+//                     //(counter clock wise starting with bottom left)
+//                     float vertices[] = {
+//                         x-size, y-size, z+size,
+//                         x+size, y+size, z+size,
+//                         x-size, y+size, z+size,
+//                         //second front triangle
+//                         x-size, y-size, z+size,
+//                         x+size, y-size, z+size,
+//                         x+size, y+size, z+size,
+//                     };
+
+//                     float texcoords[] = {
+//                         //front
+//                         u_min, v_max,
+//                         u_max, v_min,
+//                         u_min, v_min,
+
+//                         u_min, v_max,
+//                         u_max, v_max,
+//                         u_max, v_min,
+//                     };
+
+//                     float zero = 0.0f;
+//                     float one = 1.0f;
+//                     float normals[] = { 
+//                         //front
+//                         zero, zero, one,
+//                         zero, zero, one,
+//                         zero, zero, one,
+
+//                         zero, zero, one,
+//                         zero, zero, one,
+//                         zero, zero, one,
+//                     };
+
+
+//                     memcpy(vertices + vert_count, vertices, 6*3*sizeof(float));
+                    
+//                     memcpy(texcoords + tex_count, texcoords, 6*2*sizeof(float));
+
+//                     memcpy(normals + norm_count, normals, 6*3*sizeof(float));
+
+//                     vert_count += 6 * 3;
+//                     tex_count += 6 * 2;
+//                     norm_count += 6 * 3;
+
+
+
+//                     // mesh->vertexCount += 6;
+//                     // mesh->triangleCount += 2;
+
+//                     // face_counter++;
+
+//                 } else {
+//                     // mesh->vertexCount += 6;
+//                     // mesh->triangleCount += 2;
+
+//                     // face_counter++;
+//                 }
+
+//                 //just for now
+//                 // mesh->vertexCount += 30;
+//                 // mesh->triangleCount += 10;
+
+//                 //back side (Z-)
+//                 if (IsBlockVisibleRework((Vector3) { block_world_pos.x, block_world_pos.y, block_world_pos.z - 1 }, hash_table)) {
+//                     is_visible = true;
+//                     switch (block_type) {
+//                         case BLOCK_GRASS:
+//                             u_min = DIRTGRASS_TEX_COORD_U_MIN;
+//                             u_max = DIRTGRASS_TEX_COORD_U_MAX;
+//                             v_min = DIRTGRASS_TEX_COORD_V_MIN;
+//                             v_max = DIRTGRASS_TEX_COORD_V_MAX;
+//                             break;
+//                         case BLOCK_DIRT:
+//                             u_min = DIRT_DARK_TEX_COORD_U_MIN;
+//                             u_max = DIRT_DARK_TEX_COORD_U_MAX;
+//                             v_min = DIRT_DARK_TEX_COORD_V_MIN;
+//                             v_max = DIRT_DARK_TEX_COORD_V_MAX;
+//                             break;
+//                         case BLOCK_STONE:
+//                             u_min = STONE_TEX_COORD_U_MIN;
+//                             u_max = STONE_TEX_COORD_U_MAX;
+//                             v_min = STONE_TEX_COORD_V_MIN;
+//                             v_max = STONE_TEX_COORD_V_MAX;
+//                             break;
+//                         default:
+//                             // if you see all magma, something went wrong
+//                             u_min = MAGMA_TEX_COORD_U_MIN;
+//                             u_max = MAGMA_TEX_COORD_U_MAX;
+//                             v_min = MAGMA_TEX_COORD_V_MIN;
+//                             v_max = MAGMA_TEX_COORD_V_MAX;
+//                     }
+
+//                     float vertices[] = {
+//                         //first back triangle
+//                         x+size, y-size, z-size,
+//                         x-size, y+size, z-size,
+//                         x+size, y+size, z-size,
+
+//                         //second back triangle
+//                         x+size, y-size, z-size,
+//                         x-size, y-size, z-size, 
+//                         x-size, y+size, z-size,
+//                     };
+
+//                     float texcoords[] = {
+//                         //back
+//                         u_min, v_max,
+//                         u_max, v_min,
+//                         u_min, v_min,
+
+//                         u_min, v_max,
+//                         u_max, v_max,
+//                         u_max, v_min,
+//                     };
+
+//                     float zero = 0.0f;
+//                     float one = 1.0f;
+//                     float normals[] = { 
+//                         //back
+//                         zero, zero, -one,
+//                         zero, zero, -one,
+//                         zero, zero, -one,
+
+//                         zero, zero, -one,
+//                         zero, zero, -one,
+//                         zero, zero, -one,
+//                     };
+//                     memcpy(vertices + vert_count, vertices, 6*3*sizeof(float));
+                    
+//                     memcpy(texcoords + tex_count, texcoords, 6*2*sizeof(float));
+
+//                     memcpy(normals + norm_count, normals, 6*3*sizeof(float));
+
+//                     vert_count += 6 * 3;
+//                     tex_count += 6 * 2;
+//                     norm_count += 6 * 3;
+
+
+
+//                     // mesh->vertexCount += 6;
+//                     // mesh->triangleCount += 2;
+
+//                     // face_counter++;
+
+//                 } else {
+//                     // mesh->vertexCount += 6;
+//                     // mesh->triangleCount += 2;
+
+//                     // face_counter++;
+//                 }
+
+//                 //top Y+
+//                 if (IsBlockVisibleRework((Vector3) { block_world_pos.x, block_world_pos.y + 1, block_world_pos.z }, hash_table)) {
+//                     is_visible = true;
+//                     switch (block_type) {
+//                         case BLOCK_GRASS:
+//                             u_min = GRASS_LIGHT_TEX_COORD_U_MIN;
+//                             u_max = GRASS_LIGHT_TEX_COORD_U_MAX;
+//                             v_min = GRASS_LIGHT_TEX_COORD_V_MIN;
+//                             v_max = GRASS_LIGHT_TEX_COORD_V_MAX;
+//                             break;
+//                         case BLOCK_DIRT:
+//                             u_min = DIRT_DARK_TEX_COORD_U_MIN;
+//                             u_max = DIRT_DARK_TEX_COORD_U_MAX;
+//                             v_min = DIRT_DARK_TEX_COORD_V_MIN;
+//                             v_max = DIRT_DARK_TEX_COORD_V_MAX;
+//                             break;
+//                         case BLOCK_STONE:
+//                             u_min = STONE_TEX_COORD_U_MIN;
+//                             u_max = STONE_TEX_COORD_U_MAX;
+//                             v_min = STONE_TEX_COORD_V_MIN;
+//                             v_max = STONE_TEX_COORD_V_MAX;
+//                             break;
+//                         default:
+//                             // if you see all magma, something went wrong
+//                             u_min = MAGMA_TEX_COORD_U_MIN;
+//                             u_max = MAGMA_TEX_COORD_U_MAX;
+//                             v_min = MAGMA_TEX_COORD_V_MIN;
+//                             v_max = MAGMA_TEX_COORD_V_MAX;
+//                     }
+
+//                     float vertices[] = {
+//                         //top triangles
+//                         x-size, y+size, z+size,
+//                         x+size, y+size, z-size,
+//                         x-size, y+size, z-size,
+
+//                         x-size, y+size, z+size,
+//                         x+size, y+size, z+size,
+//                         x+size, y+size, z-size,
+//                     };
+
+//                     float texcoords[] = {
+//                         //top
+//                         u_min, v_max,
+//                         u_max, v_min,
+//                         u_min, v_min,
+
+//                         u_min, v_max,
+//                         u_max, v_max,
+//                         u_max, v_min,
+//                     };
+
+//                     float zero = 0.0f;
+//                     float one = 1.0f;
+//                     float normals[] = { 
+//                         //top
+//                         zero, one, zero,
+//                         zero, one, zero,
+//                         zero, one, zero,
+
+//                         zero, one, zero,
+//                         zero, one, zero,
+//                         zero, one, zero,
+//                     };
+//                     memcpy(vertices + vert_count, vertices, 6*3*sizeof(float));
+                    
+//                     memcpy(texcoords + tex_count, texcoords, 6*2*sizeof(float));
+
+//                     memcpy(normals + norm_count, normals, 6*3*sizeof(float));
+
+//                     vert_count += 6 * 3;
+//                     tex_count += 6 * 2;
+//                     norm_count += 6 * 3;
+
+
+
+//                     // mesh->vertexCount += 6;
+//                     // mesh->triangleCount += 2;
+
+//                     // face_counter++;
+
+//                 } else {
+//                     // mesh->vertexCount += 6;
+//                     // mesh->triangleCount += 2;
+
+//                     // face_counter++;
+//                 }
+
+//                 //bottom Y-
+//                 if (IsBlockVisibleRework((Vector3) { block_world_pos.x, block_world_pos.y - 1, block_world_pos.z }, hash_table)) {
+//                     is_visible = true;
+//                     switch (block_type) {
+//                         case BLOCK_GRASS:
+//                             u_min = DIRT_DARK_TEX_COORD_U_MIN;
+//                             u_max = DIRT_DARK_TEX_COORD_U_MAX;
+//                             v_min = DIRT_DARK_TEX_COORD_V_MIN;
+//                             v_max = DIRT_DARK_TEX_COORD_V_MAX;
+//                             break;
+//                         case BLOCK_DIRT:
+//                             u_min = DIRT_DARK_TEX_COORD_U_MIN;
+//                             u_max = DIRT_DARK_TEX_COORD_U_MAX;
+//                             v_min = DIRT_DARK_TEX_COORD_V_MIN;
+//                             v_max = DIRT_DARK_TEX_COORD_V_MAX;
+//                             break;
+//                         case BLOCK_STONE:
+//                             u_min = STONE_TEX_COORD_U_MIN;
+//                             u_max = STONE_TEX_COORD_U_MAX;
+//                             v_min = STONE_TEX_COORD_V_MIN;
+//                             v_max = STONE_TEX_COORD_V_MAX;
+//                             break;
+//                         default:
+//                             // if you see all magma, something went wrong
+//                             u_min = MAGMA_TEX_COORD_U_MIN;
+//                             u_max = MAGMA_TEX_COORD_U_MAX;
+//                             v_min = MAGMA_TEX_COORD_V_MIN;
+//                             v_max = MAGMA_TEX_COORD_V_MAX;
+//                     }
+
+//                     float vertices[] = {
+//                         //bottom
+//                         x-size, y-size, z-size,
+//                         x+size, y-size, z+size,
+//                         x-size, y-size, z+size,
+
+//                         x-size, y-size, z-size,
+//                         x+size, y-size, z-size, 
+//                         x+size, y-size, z+size,
+//                     };
+
+//                     float texcoords[] = {
+//                         //bottom
+//                         u_min, v_max,
+//                         u_max, v_min,
+//                         u_min, v_min,
+
+//                         u_min, v_max,
+//                         u_max, v_max,
+//                         u_max, v_min,
+//                     };
+
+//                     float zero = 0.0f;
+//                     float one = 1.0f;
+//                     float normals[] = { 
+//                         //bottom
+//                         zero, -one, zero,
+//                         zero, -one, zero,
+//                         zero, -one, zero,
+
+//                         zero, -one, zero,
+//                         zero, -one, zero,
+//                         zero, -one, zero,
+//                     };
+//                     memcpy(vertices + vert_count, vertices, 6*3*sizeof(float));
+                    
+//                     memcpy(texcoords + tex_count, texcoords, 6*2*sizeof(float));
+
+//                     memcpy(normals + norm_count, normals, 6*3*sizeof(float));
+
+//                     vert_count += 6 * 3;
+//                     tex_count += 6 * 2;
+//                     norm_count += 6 * 3;
+
+
+
+//                     // mesh->vertexCount += 6;
+//                     // mesh->triangleCount += 2;
+
+//                     // face_counter++;
+
+//                 } else {
+//                     // mesh->vertexCount += 6;
+//                     // mesh->triangleCount += 2;
+
+//                     // face_counter++;
+//                 }
+
+//                 // //left (X-)
+//                 if (IsBlockVisibleRework((Vector3) { block_world_pos.x - 1, block_world_pos.y, block_world_pos.z }, hash_table)) {
+//                     is_visible = true;
+//                     switch (block_type) {
+//                         case BLOCK_GRASS:
+//                             u_min = DIRTGRASS_TEX_COORD_U_MIN;
+//                             u_max = DIRTGRASS_TEX_COORD_U_MAX;
+//                             v_min = DIRTGRASS_TEX_COORD_V_MIN;
+//                             v_max = DIRTGRASS_TEX_COORD_V_MAX;
+//                             break;
+//                         case BLOCK_DIRT:
+//                             u_min = DIRT_DARK_TEX_COORD_U_MIN;
+//                             u_max = DIRT_DARK_TEX_COORD_U_MAX;
+//                             v_min = DIRT_DARK_TEX_COORD_V_MIN;
+//                             v_max = DIRT_DARK_TEX_COORD_V_MAX;
+//                             break;
+//                         case BLOCK_STONE:
+//                             u_min = STONE_TEX_COORD_U_MIN;
+//                             u_max = STONE_TEX_COORD_U_MAX;
+//                             v_min = STONE_TEX_COORD_V_MIN;
+//                             v_max = STONE_TEX_COORD_V_MAX;
+//                             break;
+//                         default:
+//                             // if you see all magma, something went wrong
+//                             u_min = MAGMA_TEX_COORD_U_MIN;
+//                             u_max = MAGMA_TEX_COORD_U_MAX;
+//                             v_min = MAGMA_TEX_COORD_V_MIN;
+//                             v_max = MAGMA_TEX_COORD_V_MAX;
+//                     }
+
+//                     float vertices[] = {
+//                         //left
+//                         x-size, y-size, z-size,
+//                         x-size, y+size, z+size,
+//                         x-size, y+size, z-size,
+
+//                         x-size, y-size, z-size,
+//                         x-size, y-size, z+size,
+//                         x-size, y+size, z+size,
+//                     };
+
+//                     float texcoords[] = {
+//                         //left
+//                         u_min, v_max,
+//                         u_max, v_min,
+//                         u_min, v_min,
+
+//                         u_min, v_max,
+//                         u_max, v_max,
+//                         u_max, v_min,
+//                     };
+
+//                     float zero = 0.0f;
+//                     float one = 1.0f;
+//                     float normals[] = { 
+//                         //left
+//                         -one, zero, zero,
+//                         -one, zero, zero,
+//                         -one, zero, zero,
+
+//                         -one, zero, zero,
+//                         -one, zero, zero,
+//                         -one, zero, zero,
+//                     };
+//                     memcpy(vertices + vert_count, vertices, 6*3*sizeof(float));
+                    
+//                     memcpy(texcoords + tex_count, texcoords, 6*2*sizeof(float));
+
+//                     memcpy(normals + norm_count, normals, 6*3*sizeof(float));
+
+//                     vert_count += 6 * 3;
+//                     tex_count += 6 * 2;
+//                     norm_count += 6 * 3;
+
+
+
+//                     // mesh->vertexCount += 6;
+//                     // mesh->triangleCount += 2;
+
+//                     // face_counter++;
+
+//                 } else {
+//                     // mesh->vertexCount += 6;
+//                     // mesh->triangleCount += 2;
+
+//                     // face_counter++;
+//                 }
+
+
+//                 // //right x+
+//                 if (IsBlockVisibleRework((Vector3) { block_world_pos.x + 1, block_world_pos.y, block_world_pos.z }, hash_table)) {
+//                     is_visible = true;
+//                     switch (block_type) {
+//                         case BLOCK_GRASS:
+//                             u_min = DIRTGRASS_TEX_COORD_U_MIN;
+//                             u_max = DIRTGRASS_TEX_COORD_U_MAX;
+//                             v_min = DIRTGRASS_TEX_COORD_V_MIN;
+//                             v_max = DIRTGRASS_TEX_COORD_V_MAX;
+//                             break;
+//                         case BLOCK_DIRT:
+//                             u_min = DIRT_DARK_TEX_COORD_U_MIN;
+//                             u_max = DIRT_DARK_TEX_COORD_U_MAX;
+//                             v_min = DIRT_DARK_TEX_COORD_V_MIN;
+//                             v_max = DIRT_DARK_TEX_COORD_V_MAX;
+//                             break;
+//                         case BLOCK_STONE:
+//                             u_min = STONE_TEX_COORD_U_MIN;
+//                             u_max = STONE_TEX_COORD_U_MAX;
+//                             v_min = STONE_TEX_COORD_V_MIN;
+//                             v_max = STONE_TEX_COORD_V_MAX;
+//                             break;
+//                         default:
+//                             // if you see all magma, something went wrong
+//                             u_min = MAGMA_TEX_COORD_U_MIN;
+//                             u_max = MAGMA_TEX_COORD_U_MAX;
+//                             v_min = MAGMA_TEX_COORD_V_MIN;
+//                             v_max = MAGMA_TEX_COORD_V_MAX;
+//                     }
+
+//                     float vertices[] = {
+//                         //right
+//                         x+size, y-size, z+size,
+//                         x+size, y+size, z-size,
+//                         x+size, y+size, z+size,
+
+//                         x+size, y-size, z+size,
+//                         x+size, y-size, z-size,
+//                         x+size, y+size, z-size,
+//                     };
+
+//                     float texcoords[] = {
+//                         //right
+//                         u_min, v_max,
+//                         u_max, v_min,
+//                         u_min, v_min,
+
+//                         u_min, v_max,
+//                         u_max, v_max,
+//                         u_max, v_min,
+//                     };
+
+//                     float zero = 0.0f;
+//                     float one = 1.0f;
+//                     float normals[] = { 
+//                         //right
+//                         one, zero, zero,
+//                         one, zero, zero,
+//                         one, zero, zero,
+
+//                         one, zero, zero,
+//                         one, zero, zero,
+//                         one, zero, zero,
+//                     };
+//                     memcpy(vertices + vert_count, vertices, 6*3*sizeof(float));
+                    
+//                     memcpy(texcoords + tex_count, texcoords, 6*2*sizeof(float));
+
+//                     memcpy(normals + norm_count, normals, 6*3*sizeof(float));
+
+//                     vert_count += 6 * 3;
+//                     tex_count += 6 * 2;
+//                     norm_count += 6 * 3;
+
+
+
+//                     // mesh->vertexCount += 6;
+//                     // mesh->triangleCount += 2;
+
+//                     // face_counter++;
+
+//                 } else {
+//                     // mesh->vertexCount += 6;
+//                     // mesh->triangleCount += 2;
+
+//                     // face_counter++;
+//                 }
+
+
+
+//                 if (is_visible = false) {
+//                     TraceLog(LOG_WARNING, "are we even getting here");
+//                     //basically, if we get all the way to the bottom here, the block is not visible
+//                     //is_visible = false;
+//                     chunk->blocks[blockX][blockY][blockZ].block_type = BLOCK_AIR;
+//                 }
+
+
+//                 // int vert_count = block_counter * (36 * 3);
+//                 // int tex_count = block_counter * (36 * 2);
+//                 // int norm_count = block_counter * (36 * 3);
+
+//                 memcpy(mesh->vertices + vert_count, vertices, 36*3*sizeof(float));
+                
+//                 memcpy(mesh->texcoords + tex_count, texcoords, 36*2*sizeof(float));
+
+//                 memcpy(mesh->normals + norm_count, normals, 36*3*sizeof(float));
+
+//                 mesh->vertexCount += 36;
+//                 mesh->triangleCount += 12;
+
+//                 block_counter++;
+//             }
+//         }
+//     }
+// }
 
 /*
 DUH.. seperate the meshing logic from the chunk logic. generate all chunks, mark their block types, then generate meshes.

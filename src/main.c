@@ -37,7 +37,7 @@ int main(void) {
     InitWindow(screenWidth, screenHeight, "NewCraft");
 
     Camera camera = { 0 };
-    camera.position = (Vector3) { 0.0f, PLAYER_HEIGHT-10, 18.0f };
+    camera.position = (Vector3) { 0.0f, PLAYER_HEIGHT+3, 0.0f };
     camera.target = (Vector3) { camera.position.x, camera.position.y, camera.position.z - 1 };
     camera.up = (Vector3) { 0.0f, 1.0f, 0.0f };
     camera.fovy = 70.0f;
@@ -72,32 +72,6 @@ int main(void) {
     int renderZ = 1;
 
 
-
-    // i don't need this right now but will want to do this later
-    //mega_chunk_relative_positions[0] = current_chunk->chunk->world_pos; 
-
-    //MegaChunk* megachunks[MEGA_CHUNKS_MAX];
-
-    //load 27 megachunks in one go
-    // while(mega_chunk_counter < MEGA_CHUNKS_MAX) {
-    //     //working on mega-chunk idea
-    //     megachunks[mega_chunk_counter] = GenMegaChunk(relative_positions[mega_chunk_counter], hash_table);
-    //     for (int i = 0; i < MEGA_CHUNK_SIZE; i++) {
-    //         UploadMesh(megachunks[mega_chunk_counter]->chunkmeshes[i]->mesh, false);
-    //     }
-    //     mega_chunk_counter++;
-    // }
-
-    // load one mega chunk
-    // megachunks[0] = GenMegaChunk(relative_positions[0], hash_table);
-    // for (int i = 0; i < MEGA_CHUNK_SIZE; i++) {
-    //     UploadMesh(megachunks[0]->chunkmeshes[i]->mesh, false);
-    // }
-
-
-    // UploadMesh(megachunks[0]->chunkmeshes[0]->mesh, false);
-    // UploadMesh(megachunks[0]->chunkmeshes[1]->mesh, false);
-
     //first, virtually create all chunkmeshes 
     // int rel_pos_counter = 0;
     // int mult_factor = 1;
@@ -115,18 +89,6 @@ int main(void) {
     //     rel_pos_counter++;
     // }
 
-    // something temporary until i figure out chunk loading sequence + only showing chunks player can see
-    // int count = 0;
-    // for (int x = -RENDER_DISTANCE_X; x <= RENDER_DISTANCE_X; x++) {
-    //     for (int y = -RENDER_DISTANCE_Y; y <= RENDER_DISTANCE_Y; y++) {
-    //         for (int z = -RENDER_DISTANCE_Z; z <= RENDER_DISTANCE_Z; z++) {
-    //             Vector3 chunk_pos = (Vector3) { x * CHUNK_SIZE, y * CHUNK_SIZE, z * CHUNK_SIZE };
-
-    //             chunkmeshes[count] = FetchChunkEntry(chunk_pos, hash_table);
-    //             count += 1;
-    //         }
-    //     }
-    // }
 
     //TraceLog(LOG_WARNING, "size of chunkmeshes: %d", (sizeof(chunkmeshes) / sizeof(chunkmeshes[0])));
 
@@ -145,12 +107,12 @@ int main(void) {
     // }
 
     // generating chunks starting from center
-    // Vector3* coords = (Vector3*)MemAlloc(1000 * sizeof(Vector3));
-    // Vector3 starting_position = (Vector3) { 0.0f, 0.0f, 0.0f };
+    Vector3* coords = (Vector3*)MemAlloc(1000 * sizeof(Vector3));
+    Vector3 starting_position = (Vector3) { 0.0f, 0.0f, 0.0f };
     int depth = 10;
     int count = 0;
-    // int coords_counter = 0;
-    // coords_counter = SpiralTraversal2D(coords, coords_counter, starting_position, depth);
+    int coords_counter = 0;
+    coords_counter = SpiralTraversal2D(coords, coords_counter, starting_position, depth);
     // coords_counter = SpiralTraversal2D(coords, coords_counter, 
     //     (Vector3) {
     //         starting_position.x,
@@ -164,27 +126,29 @@ int main(void) {
     //         starting_position.y - 1,
     //         starting_position.z
     //     }, depth);
-    // create all chunks
-    // for (int i = 0; i < coords_counter; i++) {
-    //     chunkmeshes[i] = FetchChunkEntry((Vector3) { 
-    //         coords[i].x * CHUNK_SIZE,
-    //         coords[i].y * CHUNK_SIZE,
-    //         coords[i].z * CHUNK_SIZE
-    //      }, hash_table);
-    //      count++;
-    // }
 
-    // then create all meshes
-    // for (int i = 0; i < coords_counter; i++) {
-    //     GenMeshChunkRework(chunkmeshes[i]->mesh, chunkmeshes[i]->chunk, hash_table);
-    //     //GenMeshChunk(chunkmeshes[i]->mesh, chunkmeshes[i]->chunk, hash_table);
-    //     UploadMesh(chunkmeshes[i]->mesh, false);
-    // }
 
-    chunkmeshes[0] = FetchChunkEntry(relative_positions[0], hash_table);
-    // GenMeshChunk(chunkmeshes[0]->mesh, chunkmeshes[0]->chunk, hash_table);
-    GenMeshChunkRework(chunkmeshes[0]->mesh, chunkmeshes[0]->chunk, hash_table);
-    UploadMesh(chunkmeshes[0]->mesh, false);
+    //create all chunks
+    for (int i = 0; i < coords_counter; i++) {
+        chunkmeshes[i] = FetchChunkEntry((Vector3) { 
+            coords[i].x * CHUNK_SIZE,
+            coords[i].y * CHUNK_SIZE,
+            coords[i].z * CHUNK_SIZE
+         }, hash_table);
+         count++;
+    }
+
+    //then create all meshes
+    for (int i = 0; i < coords_counter; i++) {
+        GenMeshChunkRework(chunkmeshes[i]->mesh, chunkmeshes[i]->chunk, hash_table);
+        //GenMeshChunk(chunkmeshes[i]->mesh, chunkmeshes[i]->chunk, hash_table);
+        UploadMesh(chunkmeshes[i]->mesh, false);
+    }
+
+    // chunkmeshes[0] = FetchChunkEntry(relative_positions[0], hash_table);
+    // // GenMeshChunk(chunkmeshes[0]->mesh, chunkmeshes[0]->chunk, hash_table);
+    // GenMeshChunkRework(chunkmeshes[0]->mesh, chunkmeshes[0]->chunk, hash_table);
+    // UploadMesh(chunkmeshes[0]->mesh, false);
 
     Model model = LoadModelFromMesh(*chunkmeshes[0]->mesh);
     Ray ray = {0};
@@ -198,19 +162,8 @@ int main(void) {
     while(!WindowShouldClose()) {
         UpdateCamera(&camera, cameraMode);
         UpdatePlayer(&player, &camera, boxes);
-
-        // if(mega_chunk_counter < MEGA_CHUNKS_MAX) {
-        //     //working on mega-chunk idea
-        //     if(test_counter % 1000 == 0) {
-        //         megachunks[mega_chunk_counter] = GenWorld(mega_chunk_relative_positions[mega_chunk_counter], hash_table);
-        //         for (int i = 0; i < MEGA_CHUNK_SIZE; i++) {
-        //             UploadMesh(megachunks[mega_chunk_counter]->chunkmeshes[i]->mesh, false);
-        //         }
-        //         mega_chunk_counter++;
-        //     }
-        // }
         TraceLog(LOG_DEBUG, TextFormat("0starting pos in main y: %.2f", camera.position.y));
-        //nearby_bounding_box_counter = GetNearbyBlocks(boxes, camera.position, hash_table);
+        nearby_bounding_box_counter = GetNearbyBlocks(boxes, camera.position, hash_table);
 
         if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
             // ray = GetScreenToWorldRay(GetMousePosition(), camera);
@@ -228,7 +181,7 @@ int main(void) {
                 if (collision.hit) {
                     //break a block!
                     // BreakBlock(collision.point, hash_table);
-                    //BreakBlock(boxes[box_counter].min, hash_table);
+                    BreakBlock(boxes[box_counter].min, hash_table);
                     break;
                 }
                 box_counter++;
@@ -236,40 +189,40 @@ int main(void) {
         }
 
         // check for dirty chunks to re-make
-        // for (int i = 0; i < coords_counter; i++) {
-        //     if(chunkmeshes[i]->dirty == true) {
+        for (int i = 0; i < coords_counter; i++) {
+            if(chunkmeshes[i]->dirty == true) {
 
-        //         chunkmeshes[i]->dirty = false;
+                chunkmeshes[i]->dirty = false;
 
-        //         UnloadMesh(*chunkmeshes[i]->mesh);
-        //         //do i need to free mesh or will that cause issues?
-        //         MemFree(chunkmeshes[i]->mesh);
-        //         Mesh* mesh = (Mesh*)calloc(1,sizeof(Mesh));
+                UnloadMesh(*chunkmeshes[i]->mesh);
+                //do i need to free mesh or will that cause issues?
+                MemFree(chunkmeshes[i]->mesh);
+                Mesh* mesh = (Mesh*)calloc(1,sizeof(Mesh));
                 
-        //         int num_blocks_in_chunk = CHUNK_CUBED;
+                int num_blocks_in_chunk = CHUNK_CUBED;
 
-        //         int num_block_vertices = 36 * 3;
-        //         int num_block_texcoords = 36 * 2;
-        //         int num_block_normals = 36 * 3;
+                int num_block_vertices = 36 * 3;
+                int num_block_texcoords = 36 * 2;
+                int num_block_normals = 36 * 3;
 
-        //         int num_chunk_vertices = num_block_vertices * num_blocks_in_chunk;
-        //         int num_chunk_texcoords = num_block_texcoords * num_blocks_in_chunk;
-        //         int num_chunk_normals = num_block_normals * num_blocks_in_chunk;
-        //         mesh->vertices = (float *)MemAlloc(num_chunk_vertices * sizeof(float));
+                int num_chunk_vertices = num_block_vertices * num_blocks_in_chunk;
+                int num_chunk_texcoords = num_block_texcoords * num_blocks_in_chunk;
+                int num_chunk_normals = num_block_normals * num_blocks_in_chunk;
+                mesh->vertices = (float *)MemAlloc(num_chunk_vertices * sizeof(float));
     
-        //         mesh->texcoords = (float *)MemAlloc(num_chunk_texcoords * sizeof(float));
+                mesh->texcoords = (float *)MemAlloc(num_chunk_texcoords * sizeof(float));
             
-        //         mesh->normals = (float *)MemAlloc(num_chunk_normals * sizeof(float));
+                mesh->normals = (float *)MemAlloc(num_chunk_normals * sizeof(float));
 
-        //         mesh->vertexCount = 0;
-        //         mesh->triangleCount = 0;
+                mesh->vertexCount = 0;
+                mesh->triangleCount = 0;
 
 
-        //         chunkmeshes[i]->mesh = mesh;
-        //         GenMeshChunkSimplified(chunkmeshes[i]->mesh, chunkmeshes[i]->chunk, hash_table);
-        //         UploadMesh(chunkmeshes[i]->mesh, false);
-        //     }
-        // }
+                chunkmeshes[i]->mesh = mesh;
+                GenMeshChunkSimplified(chunkmeshes[i]->mesh, chunkmeshes[i]->chunk, hash_table);
+                UploadMesh(chunkmeshes[i]->mesh, false);
+            }
+        }
 
         //TraceLog(LOG_WARNING, TextFormat("IN MAIN LOOP what is block type under player: %d", chunkmeshes[0]->chunk->blocks[8][8][8].block_type));
 
@@ -280,27 +233,16 @@ int main(void) {
             BeginMode3D(camera);
             DrawGrid(20, 1);
 
-                // for (int i = 0; i < MEGA_CHUNKS_MAX; i++) {
-                //     for (int j = 0; j < MEGA_CHUNK_SIZE; j++) {
-                //         DrawMesh(*megachunks[i]->chunkmeshes[j]->mesh, material, matrix);
-                //     }
-                // }
+                for(int i = 0; i < coords_counter; i++) {
+                    DrawMesh(*chunkmeshes[i]->mesh, material, matrix);
+                }
 
-                // draw just one mega chunk
-                // for (int j = 0; j < MEGA_CHUNK_SIZE; j++) {
-                //     DrawMesh(*megachunks[0]->chunkmeshes[j]->mesh, material, matrix);
-                // }
-
-                // for(int i = 0; i < coords_counter; i++) {
-                //     DrawMesh(*chunkmeshes[i]->mesh, material, matrix);
-                // }
-
-                DrawMesh(*chunkmeshes[0]->mesh, material, matrix);
+                //DrawMesh(*chunkmeshes[0]->mesh, material, matrix);
 
                 
-                // for(int i = 0; i < nearby_bounding_box_counter; i++) {
-                //     DrawBoundingBox(boxes[i], ORANGE);
-                // }
+                for(int i = 0; i < nearby_bounding_box_counter; i++) {
+                    DrawBoundingBox(boxes[i], ORANGE);
+                }
                 
                 // DrawBoundingBox(boxes[1], PURPLE);
                 // DrawBoundingBox(boxes[2], PURPLE);
@@ -312,10 +254,7 @@ int main(void) {
                 // DrawBoundingBox(boxes[8], PURPLE);
                 // DrawBoundingBox(boxes[9], PURPLE);
 
-                //DrawBoundingBox(boxes[0], PINK);
-
-                // DrawMesh(*megachunks[0]->chunkmeshes[0]->mesh, material, matrix);
-                // DrawMesh(*megachunks[0]->chunkmeshes[1]->mesh, material, matrix);
+                DrawBoundingBox(boxes[0], PINK);
 
                 if (collision.hit) DrawCube(collision.point, 0.3f, 0.3f, 0.3f, RED);
 
@@ -348,23 +287,11 @@ int main(void) {
         EndDrawing();
     }
 
-    // with multiple megachunks
-    // for (int i = 0; i < MEGA_CHUNKS_MAX; i++) {
-    //     for (int j = 0; j < MEGA_CHUNK_SIZE; j++) {
-    //         UnloadMesh(*megachunks[i]->chunkmeshes[j]->mesh);
-    //     }
-    // }
+    for (int i = 0; i < count; i++) {
+        UnloadMesh(*chunkmeshes[i]->mesh);
+    }
 
-    // to unload just one mega chunk
-    // for (int j = 0; j < MEGA_CHUNK_SIZE; j++) {
-    //     UnloadMesh(*megachunks[0]->chunkmeshes[j]->mesh);
-    // }
-
-    // for (int i = 0; i < count; i++) {
-    //     UnloadMesh(*chunkmeshes[i]->mesh);
-    // }
-
-    UnloadMesh(*chunkmeshes[0]->mesh);
+    //UnloadMesh(*chunkmeshes[0]->mesh);
 
     UnloadModel(model);
 
