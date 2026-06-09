@@ -128,6 +128,7 @@ typedef struct Player {
     bool on_ground;
     bool frozen;
     bool flying;
+    float target_offset;
 }Player;
 
 // typedef struct MegaChunk {

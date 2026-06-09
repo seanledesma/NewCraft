@@ -15,6 +15,7 @@ void draw_cube_basic(Vector3 position, Color color, Texture* texture);
 int main(void) {
 
     //SetTraceLogLevel(LOG_DEBUG);
+    float debugging = true;
 
     // Vector3* coords = (Vector3*)MemAlloc(270 * sizeof(Vector3));
     // Vector3 pos = (Vector3) { 10.0f, 0.0f, 10.0f };
@@ -38,7 +39,7 @@ int main(void) {
 
     Camera camera = { 0 };
     camera.position = (Vector3) { 0.0f, PLAYER_HEIGHT+3, 0.0f };
-    camera.target = (Vector3) { camera.position.x, camera.position.y, camera.position.z - 1 };
+    camera.target = (Vector3) { camera.position.x-1000, camera.position.y-1000, camera.position.z - 1000 };
     camera.up = (Vector3) { 0.0f, 1.0f, 0.0f };
     camera.fovy = 70.0f;
     camera.projection = CAMERA_PERSPECTIVE;
@@ -48,6 +49,10 @@ int main(void) {
     Player player = {0};
     InitPlayer(&player, &camera);
 
+    //debugging / xyz color lines
+    Vector3 target_offset = {0};
+    float travel = 0.0f;
+    float distance = 0.0f;
 
 
     // fnl_state noise = fnlCreateState();
@@ -113,12 +118,12 @@ int main(void) {
     int count = 0;
     int coords_counter = 0;
     coords_counter = SpiralTraversal2D(coords, coords_counter, starting_position, depth);
-    // coords_counter = SpiralTraversal2D(coords, coords_counter, 
-    //     (Vector3) {
-    //         starting_position.x,
-    //         starting_position.y + 1,
-    //         starting_position.z
-    //     }, depth);
+    coords_counter = SpiralTraversal2D(coords, coords_counter, 
+        (Vector3) {
+            starting_position.x,
+            starting_position.y + 1,
+            starting_position.z
+        }, depth);
 
     // coords_counter = SpiralTraversal2D(coords, coords_counter, 
     //     (Vector3) {
@@ -226,6 +231,15 @@ int main(void) {
 
         //TraceLog(LOG_WARNING, TextFormat("IN MAIN LOOP what is block type under player: %d", chunkmeshes[0]->chunk->blocks[8][8][8].block_type));
 
+        //trying to figure out debug lines
+        target_offset = (Vector3) { camera.target.x - camera.position.x, camera.target.y - camera.position.y, 
+                                    camera.target.z - camera.position.z };
+        distance = sqrt((target_offset.x * target_offset.x) + (target_offset.y * target_offset.y) + (target_offset.z * target_offset.z));
+        travel = 1 / distance; // to change how far away target is, change n / distance
+        target_offset = (Vector3) { camera.position.x + travel * (camera.target.x - camera.position.x),
+                                    camera.position.y + travel * (camera.target.y - camera.position.y),
+                                    camera.position.z + travel * (camera.target.z - camera.position.z) };
+
         BeginDrawing();
             
             ClearBackground(BLACK);
@@ -258,12 +272,13 @@ int main(void) {
 
                 if (collision.hit) DrawCube(collision.point, 0.3f, 0.3f, 0.3f, RED);
 
-                DrawLine3D((Vector3) { camera.target.x, camera.target.y, camera.target.z }, 
-                            (Vector3) { camera.target.x + 0.1f, camera.target.y, camera.target.z }, RED);
-                DrawLine3D((Vector3) { camera.target.x, camera.target.y, camera.target.z }, 
-                            (Vector3) { camera.target.x, camera.target.y + 0.1f, camera.target.z }, GREEN);
-                DrawLine3D((Vector3) { camera.target.x, camera.target.y, camera.target.z }, 
-                            (Vector3) { camera.target.x, camera.target.y, camera.target.z + 0.1f }, BLUE);
+                if (debugging) {
+                    DrawLine3D(target_offset, (Vector3) { target_offset.x + 0.1f, target_offset.y, target_offset.z }, RED);
+                    DrawLine3D(target_offset, (Vector3) { target_offset.x, target_offset.y + 0.1f, target_offset.z }, GREEN);
+                    DrawLine3D(target_offset, (Vector3) { target_offset.x, target_offset.y, target_offset.z + 0.1f }, BLUE);
+                }
+
+
 
             EndMode3D();
 

@@ -17,6 +17,7 @@ void InitPlayer(Player* player, Camera* camera) {
 
     player->on_ground = false;
     player->flying = true;
+    player->target_offset = 0.0f;
 }
 
 
@@ -41,11 +42,13 @@ void UpdatePlayer(Player* player, Camera* camera, BoundingBox* boxes) {
     float deltatime = GetFrameTime();
 
     //handle falling
-    if(player->flying == false && !player->on_ground) {
+    if(player->flying == false) {
         //gravity, affects camera then player position
         player->velocity.y += GRAVITY * (deltatime / 1); 
         camera->position.y += player->velocity.y * (deltatime / 1);
-        camera->target.y += player->velocity.y * (deltatime / 1);
+        player->target_offset += player->velocity.y * deltatime;
+        //camera->target.y += player->velocity.y * (deltatime / 1);
+        
         TraceLog(LOG_DEBUG, TextFormat("player velocity y: %.2f", player->velocity.y));
         TraceLog(LOG_DEBUG, TextFormat("deltatime: %.2f", deltatime));
     }
@@ -56,8 +59,9 @@ void UpdatePlayer(Player* player, Camera* camera, BoundingBox* boxes) {
     if(CheckCollisionBoxes(player->bounding_box, boxes[0]) && player->flying == false) {
         TraceLog(LOG_DEBUG, TextFormat("hit %.5f", deltatime));
         camera->position.y = ceil(boxes[0].max.y) + PLAYER_HEIGHT + 0.00001f;
-        //camera->target.y = ceil(boxes[0].max.y) + PLAYER_HEIGHT + 0.00001f;
-        camera->target.y -= player->velocity.y * (deltatime / 1);
+        //camera->target.y += 0.00001f;
+        //camera->target.y -= player->target_offset;
+        player->target_offset = 0;
 
 
         //player->position.y = ceil(boxes[0].max.y) + 0.0000001f;
@@ -118,7 +122,7 @@ void UpdatePlayer(Player* player, Camera* camera, BoundingBox* boxes) {
     if (IsKeyPressed(KEY_SPACE) && player->on_ground == true && player->flying == false) {
         player->on_ground = false;
         camera->position.y += 0.1f;
-        camera->target.y += 0.1f;
+        //camera->target.y += 0.1f;
         player->velocity.y = 5;
     }
 
@@ -127,13 +131,14 @@ void UpdatePlayer(Player* player, Camera* camera, BoundingBox* boxes) {
     if (IsKeyPressed(KEY_G)) player->flying = false;
 
     if (player->flying) {
+        player->on_ground = false;
         if (IsKeyDown(KEY_SPACE)) {
             camera->position.y += 0.1f;
-            camera->target.y += 0.1f;
+            //camera->target.y += 0.1f;
         }
         if (IsKeyDown(KEY_LEFT_SHIFT)) {
             camera->position.y -= 0.1f;
-            camera->target.y -= 0.1f;
+            //camera->target.y -= 0.1f;
         }
     }
 
