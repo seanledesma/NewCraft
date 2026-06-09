@@ -83,6 +83,12 @@
 #define MAGMA_TEX_COORD_V_MIN 0.023f
 #define MAGMA_TEX_COORD_V_MAX 0.195f
 
+#define DIRTGRASS_TEX_COORD_U_MIN 0.218f
+#define DIRTGRASS_TEX_COORD_U_MAX 0.391f
+#define DIRTGRASS_TEX_COORD_V_MIN 0.023f
+#define DIRTGRASS_TEX_COORD_V_MAX 0.195f
+
+
 extern Vector3 relative_positions[];
 
 typedef struct Block {

@@ -475,6 +475,9 @@ bool IsBlockVisibleRework(Vector3 block_world_position, HashTable* hash_table) {
     //first make sure the chunk exists
     Vector3 chunk_pos = DeriveChunkPosition(block_world_position, hash_table);
     if (!DoesChunkEntryExist(chunk_pos, hash_table)) {
+        // TraceLog(LOG_WARNING, TextFormat("chunk x: %d", (int)chunk_pos.x));
+        // TraceLog(LOG_WARNING, TextFormat("chunk y: %d", (int)chunk_pos.y));
+        // TraceLog(LOG_WARNING, TextFormat("chunk z: %d", (int)chunk_pos.z));
         return true;
     }
 
@@ -514,11 +517,12 @@ void GenMeshChunkRework(Mesh* mesh, Chunk* chunk, HashTable* hash_table) {
                 float z = chunk->world_pos.z - HALF_CHUNK + blockZ + 0.5f;
                 Vector3 block_world_pos = { x, y, z };
                 bool is_visible = false;
-                int vertex_counter = 0;
-                int tex_counter = 0;
-                int norma_counter = 0;
                 float size = 0.5f;
-                int face_counter = 0;
+                int face_counter = 1;
+
+                int vert_count = block_counter * face_counter * 6 * 3;
+                int tex_count = block_counter * face_counter * 6 * 2;
+                int norm_count = block_counter * face_counter * 6 * 3;
 
                 // if(IsBlockVisible(chunk->world_pos, block_world_pos, blockX, blockY, blockZ, hash_table) == false) {
                 //     chunk->blocks[blockX][blockY][blockZ].block_type = BLOCK_AIR;
@@ -528,17 +532,27 @@ void GenMeshChunkRework(Mesh* mesh, Chunk* chunk, HashTable* hash_table) {
                 //     chunk->blocks[blockX][blockY][blockZ].block_type = BLOCK_AIR;
                 // }
 
+
+
                 int block_type = chunk->blocks[blockX][blockY][blockZ].block_type;
 
+                if(block_type == BLOCK_AIR) {
+                    mesh->vertexCount += 36;
+                    mesh->triangleCount += 12;
+                    continue;
+                }
+
+                TraceLog(LOG_WARNING, TextFormat("block type: %d", chunk->blocks[blockX][blockY][blockZ].block_type));
                 // we will know if block is visible or not by checking all 6 sides
                 //front side (Z+)
                 if (IsBlockVisibleRework((Vector3) { block_world_pos.x, block_world_pos.y, block_world_pos.z + 1 }, hash_table)) {
+                    is_visible = true;
                     switch (block_type) {
                         case BLOCK_GRASS:
-                            u_min = GRASS_LIGHT_TEX_COORD_U_MIN;
-                            u_max = GRASS_LIGHT_TEX_COORD_U_MAX;
-                            v_min = GRASS_LIGHT_TEX_COORD_V_MIN;
-                            v_max = GRASS_LIGHT_TEX_COORD_V_MAX;
+                            u_min = DIRTGRASS_TEX_COORD_U_MIN;
+                            u_max = DIRTGRASS_TEX_COORD_U_MAX;
+                            v_min = DIRTGRASS_TEX_COORD_V_MIN;
+                            v_max = DIRTGRASS_TEX_COORD_V_MAX;
                             break;
                         case BLOCK_DIRT:
                             u_min = DIRT_DARK_TEX_COORD_U_MIN;
@@ -554,10 +568,10 @@ void GenMeshChunkRework(Mesh* mesh, Chunk* chunk, HashTable* hash_table) {
                             break;
                         default:
                             // if you see all magma, something went wrong
-                            float u_min = MAGMA_TEX_COORD_U_MIN;
-                            float u_max = MAGMA_TEX_COORD_U_MAX;
-                            float v_min = MAGMA_TEX_COORD_V_MIN;
-                            float v_max = MAGMA_TEX_COORD_V_MAX;
+                            u_min = MAGMA_TEX_COORD_U_MIN;
+                            u_max = MAGMA_TEX_COORD_U_MAX;
+                            v_min = MAGMA_TEX_COORD_V_MIN;
+                            v_max = MAGMA_TEX_COORD_V_MAX;
                     }
                     //this seems like a lot, but we really need to add each face individually
 
@@ -615,16 +629,23 @@ void GenMeshChunkRework(Mesh* mesh, Chunk* chunk, HashTable* hash_table) {
                 } else {
                     mesh->vertexCount += 6;
                     mesh->triangleCount += 2;
+
+                    face_counter++;
                 }
+
+                //just for now
+                // mesh->vertexCount += 30;
+                // mesh->triangleCount += 10;
 
                 //back side (Z-)
                 if (IsBlockVisibleRework((Vector3) { block_world_pos.x, block_world_pos.y, block_world_pos.z - 1 }, hash_table)) {
+                    is_visible = true;
                     switch (block_type) {
                         case BLOCK_GRASS:
-                            u_min = GRASS_LIGHT_TEX_COORD_U_MIN;
-                            u_max = GRASS_LIGHT_TEX_COORD_U_MAX;
-                            v_min = GRASS_LIGHT_TEX_COORD_V_MIN;
-                            v_max = GRASS_LIGHT_TEX_COORD_V_MAX;
+                            u_min = DIRTGRASS_TEX_COORD_U_MIN;
+                            u_max = DIRTGRASS_TEX_COORD_U_MAX;
+                            v_min = DIRTGRASS_TEX_COORD_V_MIN;
+                            v_max = DIRTGRASS_TEX_COORD_V_MAX;
                             break;
                         case BLOCK_DIRT:
                             u_min = DIRT_DARK_TEX_COORD_U_MIN;
@@ -640,10 +661,10 @@ void GenMeshChunkRework(Mesh* mesh, Chunk* chunk, HashTable* hash_table) {
                             break;
                         default:
                             // if you see all magma, something went wrong
-                            float u_min = MAGMA_TEX_COORD_U_MIN;
-                            float u_max = MAGMA_TEX_COORD_U_MAX;
-                            float v_min = MAGMA_TEX_COORD_V_MIN;
-                            float v_max = MAGMA_TEX_COORD_V_MAX;
+                            u_min = MAGMA_TEX_COORD_U_MIN;
+                            u_max = MAGMA_TEX_COORD_U_MAX;
+                            v_min = MAGMA_TEX_COORD_V_MIN;
+                            v_max = MAGMA_TEX_COORD_V_MAX;
                     }
 
                     float vertices[] = {
@@ -700,10 +721,12 @@ void GenMeshChunkRework(Mesh* mesh, Chunk* chunk, HashTable* hash_table) {
                 } else {
                     mesh->vertexCount += 6;
                     mesh->triangleCount += 2;
+                    face_counter++;
                 }
 
                 //top Y+
                 if (IsBlockVisibleRework((Vector3) { block_world_pos.x, block_world_pos.y + 1, block_world_pos.z }, hash_table)) {
+                    is_visible = true;
                     switch (block_type) {
                         case BLOCK_GRASS:
                             u_min = GRASS_LIGHT_TEX_COORD_U_MIN;
@@ -725,10 +748,10 @@ void GenMeshChunkRework(Mesh* mesh, Chunk* chunk, HashTable* hash_table) {
                             break;
                         default:
                             // if you see all magma, something went wrong
-                            float u_min = MAGMA_TEX_COORD_U_MIN;
-                            float u_max = MAGMA_TEX_COORD_U_MAX;
-                            float v_min = MAGMA_TEX_COORD_V_MIN;
-                            float v_max = MAGMA_TEX_COORD_V_MAX;
+                            u_min = MAGMA_TEX_COORD_U_MIN;
+                            u_max = MAGMA_TEX_COORD_U_MAX;
+                            v_min = MAGMA_TEX_COORD_V_MIN;
+                            v_max = MAGMA_TEX_COORD_V_MAX;
                     }
 
                     float vertices[] = {
@@ -784,16 +807,18 @@ void GenMeshChunkRework(Mesh* mesh, Chunk* chunk, HashTable* hash_table) {
                 } else {
                     mesh->vertexCount += 6;
                     mesh->triangleCount += 2;
+                    face_counter++;
                 }
 
                 //bottom Y-
                 if (IsBlockVisibleRework((Vector3) { block_world_pos.x, block_world_pos.y - 1, block_world_pos.z }, hash_table)) {
+                    is_visible = true;
                     switch (block_type) {
                         case BLOCK_GRASS:
-                            u_min = GRASS_LIGHT_TEX_COORD_U_MIN;
-                            u_max = GRASS_LIGHT_TEX_COORD_U_MAX;
-                            v_min = GRASS_LIGHT_TEX_COORD_V_MIN;
-                            v_max = GRASS_LIGHT_TEX_COORD_V_MAX;
+                            u_min = DIRT_DARK_TEX_COORD_U_MIN;
+                            u_max = DIRT_DARK_TEX_COORD_U_MAX;
+                            v_min = DIRT_DARK_TEX_COORD_V_MIN;
+                            v_max = DIRT_DARK_TEX_COORD_V_MAX;
                             break;
                         case BLOCK_DIRT:
                             u_min = DIRT_DARK_TEX_COORD_U_MIN;
@@ -809,10 +834,10 @@ void GenMeshChunkRework(Mesh* mesh, Chunk* chunk, HashTable* hash_table) {
                             break;
                         default:
                             // if you see all magma, something went wrong
-                            float u_min = MAGMA_TEX_COORD_U_MIN;
-                            float u_max = MAGMA_TEX_COORD_U_MAX;
-                            float v_min = MAGMA_TEX_COORD_V_MIN;
-                            float v_max = MAGMA_TEX_COORD_V_MAX;
+                            u_min = MAGMA_TEX_COORD_U_MIN;
+                            u_max = MAGMA_TEX_COORD_U_MAX;
+                            v_min = MAGMA_TEX_COORD_V_MIN;
+                            v_max = MAGMA_TEX_COORD_V_MAX;
                     }
 
                     float vertices[] = {
@@ -868,16 +893,18 @@ void GenMeshChunkRework(Mesh* mesh, Chunk* chunk, HashTable* hash_table) {
                 } else {
                     mesh->vertexCount += 6;
                     mesh->triangleCount += 2;
+                    face_counter++;
                 }
 
-                //left (X-)
+                // //left (X-)
                 if (IsBlockVisibleRework((Vector3) { block_world_pos.x - 1, block_world_pos.y, block_world_pos.z }, hash_table)) {
+                    is_visible = true;
                     switch (block_type) {
                         case BLOCK_GRASS:
-                            u_min = GRASS_LIGHT_TEX_COORD_U_MIN;
-                            u_max = GRASS_LIGHT_TEX_COORD_U_MAX;
-                            v_min = GRASS_LIGHT_TEX_COORD_V_MIN;
-                            v_max = GRASS_LIGHT_TEX_COORD_V_MAX;
+                            u_min = DIRTGRASS_TEX_COORD_U_MIN;
+                            u_max = DIRTGRASS_TEX_COORD_U_MAX;
+                            v_min = DIRTGRASS_TEX_COORD_V_MIN;
+                            v_max = DIRTGRASS_TEX_COORD_V_MAX;
                             break;
                         case BLOCK_DIRT:
                             u_min = DIRT_DARK_TEX_COORD_U_MIN;
@@ -893,10 +920,10 @@ void GenMeshChunkRework(Mesh* mesh, Chunk* chunk, HashTable* hash_table) {
                             break;
                         default:
                             // if you see all magma, something went wrong
-                            float u_min = MAGMA_TEX_COORD_U_MIN;
-                            float u_max = MAGMA_TEX_COORD_U_MAX;
-                            float v_min = MAGMA_TEX_COORD_V_MIN;
-                            float v_max = MAGMA_TEX_COORD_V_MAX;
+                            u_min = MAGMA_TEX_COORD_U_MIN;
+                            u_max = MAGMA_TEX_COORD_U_MAX;
+                            v_min = MAGMA_TEX_COORD_V_MIN;
+                            v_max = MAGMA_TEX_COORD_V_MAX;
                     }
 
                     float vertices[] = {
@@ -934,9 +961,9 @@ void GenMeshChunkRework(Mesh* mesh, Chunk* chunk, HashTable* hash_table) {
                         -one, zero, zero,
                     };
 
-                    int vert_count = block_counter * (face_counter * 6 * 3);
-                    int tex_count = block_counter * (face_counter * 6 * 2);
-                    int norm_count = block_counter * (face_counter * 6 * 3);
+                    int vert_count = block_counter * face_counter * 6 * 3;
+                    int tex_count = block_counter * face_counter * 6 * 2;
+                    int norm_count = block_counter * face_counter * 6 * 3;
 
                     memcpy(mesh->vertices + vert_count, vertices, 6*3*sizeof(float));
                     
@@ -952,17 +979,19 @@ void GenMeshChunkRework(Mesh* mesh, Chunk* chunk, HashTable* hash_table) {
                 } else {
                     mesh->vertexCount += 6;
                     mesh->triangleCount += 2;
+                    face_counter++;
                 }
 
 
-                //right x+
+                // //right x+
                 if (IsBlockVisibleRework((Vector3) { block_world_pos.x + 1, block_world_pos.y, block_world_pos.z }, hash_table)) {
+                    is_visible = true;
                     switch (block_type) {
                         case BLOCK_GRASS:
-                            u_min = GRASS_LIGHT_TEX_COORD_U_MIN;
-                            u_max = GRASS_LIGHT_TEX_COORD_U_MAX;
-                            v_min = GRASS_LIGHT_TEX_COORD_V_MIN;
-                            v_max = GRASS_LIGHT_TEX_COORD_V_MAX;
+                            u_min = DIRTGRASS_TEX_COORD_U_MIN;
+                            u_max = DIRTGRASS_TEX_COORD_U_MAX;
+                            v_min = DIRTGRASS_TEX_COORD_V_MIN;
+                            v_max = DIRTGRASS_TEX_COORD_V_MAX;
                             break;
                         case BLOCK_DIRT:
                             u_min = DIRT_DARK_TEX_COORD_U_MIN;
@@ -978,10 +1007,10 @@ void GenMeshChunkRework(Mesh* mesh, Chunk* chunk, HashTable* hash_table) {
                             break;
                         default:
                             // if you see all magma, something went wrong
-                            float u_min = MAGMA_TEX_COORD_U_MIN;
-                            float u_max = MAGMA_TEX_COORD_U_MAX;
-                            float v_min = MAGMA_TEX_COORD_V_MIN;
-                            float v_max = MAGMA_TEX_COORD_V_MAX;
+                            u_min = MAGMA_TEX_COORD_U_MIN;
+                            u_max = MAGMA_TEX_COORD_U_MAX;
+                            v_min = MAGMA_TEX_COORD_V_MIN;
+                            v_max = MAGMA_TEX_COORD_V_MAX;
                     }
 
                     float vertices[] = {
@@ -1037,13 +1066,15 @@ void GenMeshChunkRework(Mesh* mesh, Chunk* chunk, HashTable* hash_table) {
                 } else {
                     mesh->vertexCount += 6;
                     mesh->triangleCount += 2;
+                    face_counter++;
                 }
 
 
 
                 if (is_visible = false) {
+                    TraceLog(LOG_WARNING, "are we even getting here");
                     //basically, if we get all the way to the bottom here, the block is not visible
-                    is_visible = false;
+                    //is_visible = false;
                     chunk->blocks[blockX][blockY][blockZ].block_type = BLOCK_AIR;
                 }
 

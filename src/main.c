@@ -37,7 +37,7 @@ int main(void) {
     InitWindow(screenWidth, screenHeight, "NewCraft");
 
     Camera camera = { 0 };
-    camera.position = (Vector3) { 0.0f, PLAYER_HEIGHT-10, 0.0f };
+    camera.position = (Vector3) { 0.0f, PLAYER_HEIGHT-10, 18.0f };
     camera.target = (Vector3) { camera.position.x, camera.position.y, camera.position.z - 1 };
     camera.up = (Vector3) { 0.0f, 1.0f, 0.0f };
     camera.fovy = 70.0f;
