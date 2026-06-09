@@ -54,6 +54,8 @@ int main(void) {
     float travel = 0.0f;
     float distance = 0.0f;
 
+    int box_counter = 0;
+
 
     // fnl_state noise = fnlCreateState();
     // noise.noise_type = FNL_NOISE_OPENSIMPLEX2;
@@ -125,12 +127,12 @@ int main(void) {
             starting_position.z
         }, depth);
 
-    // coords_counter = SpiralTraversal2D(coords, coords_counter, 
-    //     (Vector3) {
-    //         starting_position.x,
-    //         starting_position.y - 1,
-    //         starting_position.z
-    //     }, depth);
+    coords_counter = SpiralTraversal2D(coords, coords_counter, 
+        (Vector3) {
+            starting_position.x,
+            starting_position.y - 1,
+            starting_position.z
+        }, depth);
 
 
     //create all chunks
@@ -161,6 +163,7 @@ int main(void) {
     // make boxes as big as it may ever possibly get
     BoundingBox* boxes = (BoundingBox*)MemAlloc(sizeof(BoundingBox) * depth*depth*5);
     int nearby_bounding_box_counter = 0;
+    BoundingBox target_box = {0};
 
     DisableCursor();
     SetTargetFPS(120);
@@ -168,30 +171,40 @@ int main(void) {
         UpdateCamera(&camera, cameraMode);
         UpdatePlayer(&player, &camera, boxes);
         TraceLog(LOG_DEBUG, TextFormat("0starting pos in main y: %.2f", camera.position.y));
-        nearby_bounding_box_counter = GetNearbyBlocks(boxes, camera.position, hash_table);
+        nearby_bounding_box_counter = GetNearbyBlocks(boxes, camera.position, camera.position, hash_table);
+        // Vector3 lower_upper_position = (Vector3) { camera.position.x, camera.position.y - 1, camera.position.z };
+        // nearby_bounding_box_counter += GetNearbyBlocks(boxes, lower_upper_position, lower_upper_position, hash_table);
+        // lower_upper_position = (Vector3) { camera.position.x, camera.position.y + 1, camera.position.z };
+        // nearby_bounding_box_counter += GetNearbyBlocks(boxes, lower_upper_position, lower_upper_position, hash_table);
 
-        if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
-            // ray = GetScreenToWorldRay(GetMousePosition(), camera);
-            ray = GetScreenToWorldRay((Vector2) { screenWidth/2, screenHeight / 2 }, camera);
-            //collision = GetRayCollisionMesh(ray, model.meshes[0], model.transform);
 
-            ray.direction = Vector3Normalize(ray.direction);
-            //collision = GetRayCollisionMesh(ray, *chunkmeshes[0]->mesh, matrix);
-            // collision = GetRayCollisionBox(ray, boxes[box_counter]);
 
-            //run through all nearby boxes real quick
-            int box_counter = 0;
-            for (int i = 0; i < nearby_bounding_box_counter; i++) {
-                collision = GetRayCollisionBox(ray, boxes[box_counter]);
-                if (collision.hit) {
-                    //break a block!
-                    // BreakBlock(collision.point, hash_table);
+
+        // constantly check which block the player is looking at
+        ray = GetScreenToWorldRay((Vector2) { screenWidth/2, screenHeight / 2 }, camera);
+        ray.direction = Vector3Normalize(ray.direction);
+        box_counter = 0;
+        //run through all nearby boxes real quick
+        for (int i = 0; i < nearby_bounding_box_counter; i++) {
+            collision = GetRayCollisionBox(ray, boxes[box_counter]);
+
+
+            if (collision.hit) {
+                if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
                     BreakBlock(boxes[box_counter].min, hash_table);
                     break;
                 }
-                box_counter++;
+
+                target_box = boxes[box_counter];
+            } else {
+                //target_box = 0;
             }
+
+            box_counter++;
         }
+
+
+
 
         // check for dirty chunks to re-make
         for (int i = 0; i < coords_counter; i++) {
@@ -224,7 +237,7 @@ int main(void) {
 
 
                 chunkmeshes[i]->mesh = mesh;
-                GenMeshChunkSimplified(chunkmeshes[i]->mesh, chunkmeshes[i]->chunk, hash_table);
+                GenMeshChunkRework(chunkmeshes[i]->mesh, chunkmeshes[i]->chunk, hash_table);
                 UploadMesh(chunkmeshes[i]->mesh, false);
             }
         }
@@ -242,7 +255,7 @@ int main(void) {
 
         BeginDrawing();
             
-            ClearBackground(BLACK);
+            ClearBackground(SKYBLUE);
 
             BeginMode3D(camera);
             DrawGrid(20, 1);
@@ -254,11 +267,11 @@ int main(void) {
                 //DrawMesh(*chunkmeshes[0]->mesh, material, matrix);
 
                 
-                for(int i = 0; i < nearby_bounding_box_counter; i++) {
-                    DrawBoundingBox(boxes[i], ORANGE);
-                }
+                // for(int i = 0; i < nearby_bounding_box_counter; i++) {
+                //     DrawBoundingBox(boxes[i], ORANGE);
+                // }
                 
-                // DrawBoundingBox(boxes[1], PURPLE);
+                DrawBoundingBox(target_box, BLACK);
                 // DrawBoundingBox(boxes[2], PURPLE);
                 // DrawBoundingBox(boxes[3], PURPLE);
                 // DrawBoundingBox(boxes[4], PURPLE);
@@ -273,9 +286,9 @@ int main(void) {
                 if (collision.hit) DrawCube(collision.point, 0.3f, 0.3f, 0.3f, RED);
 
                 if (debugging) {
-                    DrawLine3D(target_offset, (Vector3) { target_offset.x + 0.1f, target_offset.y, target_offset.z }, RED);
-                    DrawLine3D(target_offset, (Vector3) { target_offset.x, target_offset.y + 0.1f, target_offset.z }, GREEN);
-                    DrawLine3D(target_offset, (Vector3) { target_offset.x, target_offset.y, target_offset.z + 0.1f }, BLUE);
+                    DrawLine3D(target_offset, (Vector3) { target_offset.x + 0.05f, target_offset.y, target_offset.z }, RED);
+                    DrawLine3D(target_offset, (Vector3) { target_offset.x, target_offset.y + 0.05f, target_offset.z }, GREEN);
+                    DrawLine3D(target_offset, (Vector3) { target_offset.x, target_offset.y, target_offset.z + 0.05f }, BLUE);
                 }
 
 
@@ -291,8 +304,8 @@ int main(void) {
             // DrawText(TextFormat("Current Chunk Position x:%.2f, y:%.2f, z:%.2f", 
             //                     current_chunk_pos.x, current_chunk_pos.y, current_chunk_pos.z), 
             //             640, 10, 20, YELLOW);
-            DrawText(TextFormat("counter: %d", test_counter), 10, 50, 12, YELLOW);
-            test_counter++;
+            //DrawText(TextFormat("counter: %d", test_counter), 10, 50, 12, YELLOW);
+            //test_counter++;
 
             if(collision.hit) DrawText("hit!", 900, 10, 50, YELLOW);
 

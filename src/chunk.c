@@ -88,8 +88,8 @@ Block gen_block(Vector3 world_pos, int blockX, int blockY, int blockZ, int count
 
 
 void BreakBlock(Vector3 point, HashTable* hash_table) {
-    TraceLog(LOG_WARNING, TextFormat("hit breakblock"));
-    TraceLog(LOG_WARNING, TextFormat("point x:%.2f, y:%.2f, z:%.2f", point.x, point.y, point.z));
+    TraceLog(LOG_DEBUG, TextFormat("hit breakblock"));
+    TraceLog(LOG_DEBUG, TextFormat("point x:%.2f, y:%.2f, z:%.2f", point.x, point.y, point.z));
     ChunkMesh* chunkmesh = DeriveChunkMesh(point, hash_table);
 
     chunkmesh->dirty = true;

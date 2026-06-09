@@ -149,7 +149,7 @@ int SpiralTraversal2D(Vector3* coords, int coords_index, Vector3 pos, int depth)
     return coords_index;
 }
 // return an integer representing number of nearby blocks
-int GetNearbyBlocks(BoundingBox* boxes, Vector3 player_pos, HashTable* hash_table) {
+int GetNearbyBlocks(BoundingBox* boxes, Vector3 camera_pos, Vector3 player_pos, HashTable* hash_table) {
     /*
     this is dumb.. do i even want to use a bunch of bounding boxes around the player? 
     it might be a better idea to .. i mean, the goal is to have ray collisions hit the right
@@ -167,11 +167,24 @@ int GetNearbyBlocks(BoundingBox* boxes, Vector3 player_pos, HashTable* hash_tabl
         floor(player_pos.z)
     };
 
+    if (IsBlockAir(base_block_world, hash_table)) {
+        //TraceLog(LOG_WARNING, "base block is air!");
+        if(base_block_world.y >= camera_pos.y - 5) {
+            base_block_world.y -= 1.0f;
+        } else {
+            return 0;
+        }
+        
+
+        return GetNearbyBlocks(boxes, camera_pos, base_block_world, hash_table);
+    }
+
     //Vector3 base_block_index = ConvertWorldBlockPosToChunkIndex(base_block_world, hash_table);
 
     int depth = 8;
     // make sure to make coords array as big as it may ever possibly get
-    Vector3* coords = (Vector3*)MemAlloc((depth*depth*5) * sizeof(Vector3));
+    //Vector3* coords = (Vector3*)MemAlloc((depth*depth*5) * sizeof(Vector3));
+    Vector3 coords[depth*depth*5];
     int coords_counter = 0;
     coords_counter = SpiralTraversal2D(coords, coords_counter, base_block_world, depth);
     //then get coords for y-1
@@ -247,7 +260,7 @@ int GetNearbyBlocks(BoundingBox* boxes, Vector3 player_pos, HashTable* hash_tabl
 
 
 
-    free(coords);
+    //free(coords);
     return coords_counter;
 }
 
