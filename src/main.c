@@ -116,7 +116,7 @@ int main(void) {
     // generating chunks starting from center
     Vector3* coords = (Vector3*)MemAlloc(1000 * sizeof(Vector3));
     Vector3 starting_position = (Vector3) { 0.0f, 0.0f, 0.0f };
-    int depth = 10;
+    int depth = 5;
     int count = 0;
     int coords_counter = 0;
     coords_counter = SpiralTraversal2D(coords, coords_counter, starting_position, depth);

@@ -30,6 +30,8 @@ ChunkMesh* gen_chunk_mesh(Vector3 world_pos, HashTable* hash_table) {
    
     chunk_mesh->mesh->normals = (float *)MemAlloc(num_chunk_normals * sizeof(float));
 
+    chunk_mesh->mesh->colors = (unsigned char*)MemAlloc(num_chunk_vertices * 4 * sizeof(unsigned char));
+
     chunk_mesh->mesh->vertexCount = 0;
     chunk_mesh->mesh->triangleCount = 0;
    
