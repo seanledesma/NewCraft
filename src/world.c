@@ -95,47 +95,11 @@ int SpiralTraversal2D(Vector3* coords, int coords_index, Vector3 pos, int depth)
     for(int i = 0; i < maxI; i++) {
 
         if ((-depth/2 <= posX) && (posX <= depth/2) && (-depth/2 <= posZ) && (posZ <= depth/2)) {
-            // for(int j = -1; j < 1; j++) {
-            //     coords[coord_counter++] = (Vector3) {
-            //         pos.x + posX,
-            //         pos.y + j,
-            //         pos.z + posZ
-            //     };
-            // }
-
-            // for(int j = -depth/2; j < -1; j++) {
-            //     coords[coord_counter++] = (Vector3) {
-            //         pos.x + posX,
-            //         pos.y + j,
-            //         pos.z + posZ
-            //     };
-            // }
-
-            // for(int j = 1; j < depth/2; j++) {
-            //     coords[coord_counter++] = (Vector3) {
-            //         pos.x + posX,
-            //         pos.y + j,
-            //         pos.z + posZ
-            //     };
-            // }
-
             coords[coords_index++] = (Vector3) {
                 pos.x + posX,
                 pos.y,
                 pos.z + posZ
             };
-
-            // coords[coord_counter++] = (Vector3) {
-            //     pos.x + posX,
-            //     pos.y-1,
-            //     pos.z + posZ
-            // };
-
-            // coords[coord_counter++] = (Vector3) {
-            //     pos.x + posX,
-            //     pos.y+1,
-            //     pos.z + posZ
-            // };
         }
 
         if ( (posX == posZ) || ((posX < 0) && (posX == -posZ)) || ((posX > 0) && (posX == 1-posZ)) ) {

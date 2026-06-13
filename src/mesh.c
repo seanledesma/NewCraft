@@ -33,7 +33,7 @@ void GenMeshChunkRework(Mesh* mesh, Chunk* chunk, HashTable* hash_table) {
     float u_max = MAGMA_TEX_COORD_U_MAX;
     float v_min = MAGMA_TEX_COORD_V_MIN;
     float v_max = MAGMA_TEX_COORD_V_MAX;
-    int shade = 10;
+    int shade = 215;
 
     for (int blockX = 0; blockX < CHUNK_SIZE; blockX++) {
         for (int blockY = 0; blockY < CHUNK_SIZE; blockY++) {
@@ -121,26 +121,15 @@ void GenMeshChunkRework(Mesh* mesh, Chunk* chunk, HashTable* hash_table) {
                         zero, zero, one,
                         zero, zero, one,
                     };
-                    // unsigned char colors[] = {
-                    //     //2 triangles, 6 vertices, 4 rgba values per vertex
-                        
-                    //     100, 100, 100, 255,
-                    //     255, 255, 255, 255,
-                    //     255, 255, 255, 255,
-
-                    //     100, 100, 100, 255,
-                    //     100, 100, 100, 255,
-                    //     255, 255, 255, 255,
-                    // };
                     unsigned char colors[] = {
                         //2 triangles, 6 vertices, 4 rgba values per vertex
-                        255, 255, 255, 255,
-                        255, 255, 255, 255,
-                        255, 255, 255, 255,
+                        255, 255, 255, 255, //0 - 3     #1
+                        255, 255, 255, 255, //4 - 7     #2
+                        255, 255, 255, 255, //8 - 11    #3
 
-                        255, 255, 255, 255,
-                        255, 255, 255, 255,
-                        255, 255, 255, 255,
+                        255, 255, 255, 255, //12 - 15   #4
+                        255, 255, 255, 255, //16 - 19   #5
+                        255, 255, 255, 255, //20 - 23   #6
                     };
                     // if the block above is NOT air, we need to alter colors for ambient occlusion
                     if(!IsBlockVisibleRework((Vector3) { block_world_pos.x, block_world_pos.y + 1, block_world_pos.z + 1 }, hash_table)) {
@@ -261,13 +250,13 @@ void GenMeshChunkRework(Mesh* mesh, Chunk* chunk, HashTable* hash_table) {
 
                     unsigned char colors[] = {
                         //2 triangles, 6 vertices, 4 rgba values per vertex
-                        255, 255, 255, 255,
-                        255, 255, 255, 255,
-                        255, 255, 255, 255,
+                        255, 255, 255, 255, //0 - 3     #1
+                        255, 255, 255, 255, //4 - 7     #2
+                        255, 255, 255, 255, //8 - 11    #3
 
-                        255, 255, 255, 255,
-                        255, 255, 255, 255,
-                        255, 255, 255, 255,
+                        255, 255, 255, 255, //12 - 15   #4
+                        255, 255, 255, 255, //16 - 19   #5
+                        255, 255, 255, 255, //20 - 23   #6
                     };
                     if(!IsBlockVisibleRework((Vector3) { block_world_pos.x, block_world_pos.y + 1, block_world_pos.z - 1 }, hash_table)) {
                         colors[4]=shade; colors[5]=shade; colors[6]=shade; 
@@ -416,6 +405,25 @@ void GenMeshChunkRework(Mesh* mesh, Chunk* chunk, HashTable* hash_table) {
                         colors[20]=shade; colors[21]=shade; colors[22]=shade;
                     }
 
+                    // going to need to check all four corners as well
+                    if(!IsBlockVisibleRework((Vector3) { block_world_pos.x+1, block_world_pos.y + 1, block_world_pos.z+1 }, hash_table)) {
+                        colors[16]=shade; colors[17]=shade; colors[18]=shade;
+                    }
+                    //
+                    if(!IsBlockVisibleRework((Vector3) { block_world_pos.x-1, block_world_pos.y + 1, block_world_pos.z+1 }, hash_table)) {
+                        colors[0]=shade; colors[1]=shade; colors[2]=shade; 
+                        colors[12]=shade; colors[13]=shade; colors[14]=shade;
+                    }
+                    //
+                    if(!IsBlockVisibleRework((Vector3) { block_world_pos.x+1, block_world_pos.y+1, block_world_pos.z-1 }, hash_table)) {
+                        colors[4]=shade; colors[5]=shade; colors[6]=shade; 
+                        colors[20]=shade; colors[21]=shade; colors[22]=shade;
+                    }
+                    //
+                    if(!IsBlockVisibleRework((Vector3) { block_world_pos.x-1, block_world_pos.y+1, block_world_pos.z-1 }, hash_table)) {
+                        colors[8]=shade; colors[9]=shade; colors[10]=shade;
+                    }
+
                     int vert_count = (face_counter * 6 * 3);
                     int tex_count = (face_counter * 6 * 2);
                     int norm_count = (face_counter * 6 * 3);
@@ -505,15 +513,53 @@ void GenMeshChunkRework(Mesh* mesh, Chunk* chunk, HashTable* hash_table) {
                         zero, -one, zero,
                     };
 
+                    unsigned char colors[] = {
+                        //2 triangles, 6 vertices, 4 rgba values per vertex
+                        255, 255, 255, 255, //0 - 3     #1
+                        255, 255, 255, 255, //4 - 7     #2
+                        255, 255, 255, 255, //8 - 11    #3
+
+                        255, 255, 255, 255, //12 - 15   #4
+                        255, 255, 255, 255, //16 - 19   #5
+                        255, 255, 255, 255, //20 - 23   #6
+                    };
+                    //
+                    if(!IsBlockVisibleRework((Vector3) { block_world_pos.x+1, block_world_pos.y-1, block_world_pos.z }, hash_table)) {
+                        colors[4]=shade; colors[5]=shade; colors[6]=shade; 
+                        colors[8]=shade; colors[9]=shade; colors[10]=shade;
+                        colors[20]=shade; colors[21]=shade; colors[22]=shade;
+                    }
+                    //
+                    if(!IsBlockVisibleRework((Vector3) { block_world_pos.x-1, block_world_pos.y-1, block_world_pos.z }, hash_table)) {
+                        colors[0]=shade; colors[1]=shade; colors[2]=shade; 
+                        colors[12]=shade; colors[13]=shade; colors[14]=shade;
+                        colors[16]=shade; colors[17]=shade; colors[18]=shade;
+                    }
+                    //
+                    if(!IsBlockVisibleRework((Vector3) { block_world_pos.x, block_world_pos.y-1, block_world_pos.z+1 }, hash_table)) {
+                        colors[4]=shade; colors[5]=shade; colors[6]=shade;  
+                        colors[16]=shade; colors[17]=shade; colors[18]=shade;
+                        colors[20]=shade; colors[21]=shade; colors[22]=shade;
+                    }
+                    //
+                    if(!IsBlockVisibleRework((Vector3) { block_world_pos.x, block_world_pos.y-1, block_world_pos.z-1 }, hash_table)) {
+                        colors[0]=shade; colors[1]=shade; colors[2]=shade;  
+                        colors[8]=shade; colors[9]=shade; colors[10]=shade;
+                        colors[12]=shade; colors[13]=shade; colors[14]=shade;
+                    }
+
                     int vert_count = (face_counter * 6 * 3);
                     int tex_count = (face_counter * 6 * 2);
                     int norm_count = (face_counter * 6 * 3);
+                    int color_count = face_counter * 6 * 4;
 
                     memcpy(mesh->vertices + vert_count, vertices, 6*3*sizeof(float));
                     
                     memcpy(mesh->texcoords + tex_count, texcoords, 6*2*sizeof(float));
 
                     memcpy(mesh->normals + norm_count, normals, 6*3*sizeof(float));
+
+                    memcpy(mesh->colors + color_count, colors, 6*4*sizeof(unsigned char));
 
                     mesh->vertexCount += 6;
                     mesh->triangleCount += 2;
@@ -590,16 +636,53 @@ void GenMeshChunkRework(Mesh* mesh, Chunk* chunk, HashTable* hash_table) {
                         -one, zero, zero,
                         -one, zero, zero,
                     };
+                    unsigned char colors[] = {
+                        //2 triangles, 6 vertices, 4 rgba values per vertex
+                        255, 255, 255, 255, //0 - 3     #1
+                        255, 255, 255, 255, //4 - 7     #2
+                        255, 255, 255, 255, //8 - 11    #3
+
+                        255, 255, 255, 255, //12 - 15   #4
+                        255, 255, 255, 255, //16 - 19   #5
+                        255, 255, 255, 255, //20 - 23   #6
+                    };
+                    //
+                    if(!IsBlockVisibleRework((Vector3) { block_world_pos.x-1, block_world_pos.y+1, block_world_pos.z }, hash_table)) {
+                        colors[4]=shade; colors[5]=shade; colors[6]=shade; 
+                        colors[8]=shade; colors[9]=shade; colors[10]=shade;
+                        colors[20]=shade; colors[21]=shade; colors[22]=shade;
+                    }
+                    //
+                    if(!IsBlockVisibleRework((Vector3) { block_world_pos.x-1, block_world_pos.y-1, block_world_pos.z }, hash_table)) {
+                        colors[0]=shade; colors[1]=shade; colors[2]=shade; 
+                        colors[12]=shade; colors[13]=shade; colors[14]=shade;
+                        colors[16]=shade; colors[17]=shade; colors[18]=shade;
+                    }
+                    //
+                    if(!IsBlockVisibleRework((Vector3) { block_world_pos.x-1, block_world_pos.y, block_world_pos.z+1 }, hash_table)) {
+                        colors[4]=shade; colors[5]=shade; colors[6]=shade;  
+                        colors[16]=shade; colors[17]=shade; colors[18]=shade;
+                        colors[20]=shade; colors[21]=shade; colors[22]=shade;
+                    }
+                    //
+                    if(!IsBlockVisibleRework((Vector3) { block_world_pos.x-1, block_world_pos.y, block_world_pos.z-1 }, hash_table)) {
+                        colors[0]=shade; colors[1]=shade; colors[2]=shade;  
+                        colors[8]=shade; colors[9]=shade; colors[10]=shade;
+                        colors[12]=shade; colors[13]=shade; colors[14]=shade;
+                    }
 
                     int vert_count = (face_counter * 6 * 3);
                     int tex_count = (face_counter * 6 * 2);
                     int norm_count = (face_counter * 6 * 3);
+                    int color_count = face_counter * 6 * 4;
 
                     memcpy(mesh->vertices + vert_count, vertices, 6*3*sizeof(float));
                     
                     memcpy(mesh->texcoords + tex_count, texcoords, 6*2*sizeof(float));
 
                     memcpy(mesh->normals + norm_count, normals, 6*3*sizeof(float));
+
+                    memcpy(mesh->colors + color_count, colors, 6*4*sizeof(unsigned char));
 
                     mesh->vertexCount += 6;
                     mesh->triangleCount += 2;
@@ -678,15 +761,53 @@ void GenMeshChunkRework(Mesh* mesh, Chunk* chunk, HashTable* hash_table) {
                         one, zero, zero,
                     };
 
+                    unsigned char colors[] = {
+                        //2 triangles, 6 vertices, 4 rgba values per vertex
+                        255, 255, 255, 255, //0 - 3     #1
+                        255, 255, 255, 255, //4 - 7     #2
+                        255, 255, 255, 255, //8 - 11    #3
+
+                        255, 255, 255, 255, //12 - 15   #4
+                        255, 255, 255, 255, //16 - 19   #5
+                        255, 255, 255, 255, //20 - 23   #6
+                    };
+                    //
+                    if(!IsBlockVisibleRework((Vector3) { block_world_pos.x+1, block_world_pos.y+1, block_world_pos.z }, hash_table)) {
+                        colors[4]=shade; colors[5]=shade; colors[6]=shade; 
+                        colors[8]=shade; colors[9]=shade; colors[10]=shade;
+                        colors[20]=shade; colors[21]=shade; colors[22]=shade;
+                    }
+                    //
+                    if(!IsBlockVisibleRework((Vector3) { block_world_pos.x+1, block_world_pos.y-1, block_world_pos.z }, hash_table)) {
+                        colors[0]=shade; colors[1]=shade; colors[2]=shade; 
+                        colors[12]=shade; colors[13]=shade; colors[14]=shade;
+                        colors[16]=shade; colors[17]=shade; colors[18]=shade;
+                    }
+                    //
+                    if(!IsBlockVisibleRework((Vector3) { block_world_pos.x+1, block_world_pos.y, block_world_pos.z-1 }, hash_table)) {
+                        colors[4]=shade; colors[5]=shade; colors[6]=shade;  
+                        colors[16]=shade; colors[17]=shade; colors[18]=shade;
+                        colors[20]=shade; colors[21]=shade; colors[22]=shade;
+                    }
+                    //
+                    if(!IsBlockVisibleRework((Vector3) { block_world_pos.x+1, block_world_pos.y, block_world_pos.z+1 }, hash_table)) {
+                        colors[0]=shade; colors[1]=shade; colors[2]=shade;  
+                        colors[8]=shade; colors[9]=shade; colors[10]=shade;
+                        colors[12]=shade; colors[13]=shade; colors[14]=shade;
+                    }
+
                     int vert_count = (face_counter * 6 * 3);
                     int tex_count = (face_counter * 6 * 2);
                     int norm_count = (face_counter * 6 * 3);
+                    int color_count = face_counter * 6 * 4;
 
                     memcpy(mesh->vertices + vert_count, vertices, 6*3*sizeof(float));
                     
                     memcpy(mesh->texcoords + tex_count, texcoords, 6*2*sizeof(float));
 
                     memcpy(mesh->normals + norm_count, normals, 6*3*sizeof(float));
+
+                    memcpy(mesh->colors + color_count, colors, 6*4*sizeof(unsigned char));
 
                     mesh->vertexCount += 6;
                     mesh->triangleCount += 2;
