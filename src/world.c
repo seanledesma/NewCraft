@@ -244,7 +244,6 @@ Chunk* GetCurrentChunk(Vector3 player_pos, HashTable* hash_table) {
 }
 
 Vector3 DeriveChunkPosition(Vector3 starting_pos, HashTable* hash_table) {
-    //ChunkMesh* chunkmesh = (ChunkMesh*)calloc(1,sizeof(ChunkMesh));
 
     int chunkX = (int)floor((starting_pos.x + 8) / 16) * 16;
     int chunkY = (int)floor((starting_pos.y + 8) / 16) * 16;
@@ -278,43 +277,15 @@ ChunkMesh* DeriveChunkMesh(Vector3 starting_pos, HashTable* hash_table) {
     return chunkmesh;
 }
 
-// ChunkMesh* DeriveChunkMesh(Vector3 starting_pos, HashTable* hash_table) {
-//     ChunkMesh* chunkmesh = (ChunkMesh*)calloc(1,sizeof(ChunkMesh));
-
-//     int chunkX = (int)floor((starting_pos.x + 8) / 16) * 16;
-//     int chunkY = (int)floor((starting_pos.y + 8) / 16) * 16;
-//     int chunkZ = (int)floor((starting_pos.z + 8) / 16) * 16;
-//     if(DoesChunkEntryExist((Vector3) { chunkX, chunkY, chunkZ }, hash_table)){
-//         chunkmesh = FetchChunkEntry((Vector3) { chunkX, chunkY, chunkZ }, hash_table);
-//     } else {
-//         TraceLog(LOG_ERROR, "DERIVE CHUNK DID NOT FIND CHUNK");
-//     }
-
-//     if(chunkX % CHUNK_SIZE != 0) {
-//         TraceLog(LOG_ERROR, "Incorrect chunk position, check world.c");
-//     }
-
-//     return chunkmesh;
-// }
-
 
 bool IsBlockAir(Vector3 block_world_pos, HashTable* hash_table) {
-    // TraceLog(LOG_WARNING, TextFormat("0-isblockair blockX: %.2f", block_world_pos.x));
     //allll we're gonna do is see if this block, at the given coords, is air, or no.
     Vector3 index = ConvertWorldBlockPosToChunkIndex(block_world_pos, hash_table);
     ChunkMesh* chunkmesh = DeriveChunkMesh(block_world_pos, hash_table);
-    // TraceLog(LOG_WARNING, TextFormat("index x: %d", (int)index.x));
-    // TraceLog(LOG_WARNING, TextFormat("index y: %d", (int)index.y));
-    // TraceLog(LOG_WARNING, TextFormat("index z: %d", (int)index.z));
-    // TraceLog(LOG_WARNING, TextFormat("of chunk x:%.2f, y:%.2f, z:%.2f", chunk->world_pos.x, 
-    //             chunk->world_pos.y, chunk->world_pos.z));
     if(chunkmesh->chunk->blocks[(int)index.x][(int)index.y][(int)index.z].block_type == BLOCK_AIR) {
-        //TraceLog(LOG_WARNING, "hit true");
-        //TraceLog(LOG_WARNING, TextFormat("index y when hitting block air: %d", (int)index.y));
         chunkmesh = NULL;
         return true;
     }else{
-        //TraceLog(LOG_WARNING, "hit false");
         chunkmesh = NULL;
         return false;
     }
@@ -325,33 +296,12 @@ Vector3 ConvertWorldBlockPosToChunkIndex(Vector3 block_world_pos, HashTable* has
     Vector3 chunk_index = {0};
 
     // first need to get the chunk the block pertains to
-    // Chunk* curr_chunk = (Chunk*)MemAlloc(sizeof(Chunk));
-    // curr_chunk = DeriveChunk(block_world_pos, hash_table);
-
-    // I actually don't need that chunk, we are just converting to an index
     Vector3 world_pos = DeriveChunkPosition(block_world_pos, hash_table);
 
     // then figure out the block index
-
     float blockX = block_world_pos.x;
     float blockY = block_world_pos.y;
     float blockZ = block_world_pos.z;
-
-    // if(world_pos.x < 0 || blockX < 0) {
-    //     if(world_pos.x < 0 && blockX < 0) {
-    //         if(world_pos.x < blockX) {
-    //             chunk_index.x = floor((world_pos.x - blockX) + 8);
-    //         } else {
-    //             chunk_index.x = floor((world_pos.x + blockX) + 8);
-    //         }
-    //     }
-    //     if(world_pos.x < 0 && blockX >= 0) {
-    //         // literally impossible?
-    //     }
-    //     if(blockX < 0 && world_pos.x >= 0) {
-    //         chunk_index.x = floor((world_pos.x + blockX) + 8);
-    //     }
-    // }
 
     if(world_pos.x < 0 || blockX < 0) {
         if(world_pos.x < 0 && blockX < 0) {
@@ -405,8 +355,6 @@ Vector3 ConvertWorldBlockPosToChunkIndex(Vector3 block_world_pos, HashTable* has
         
         TraceLog(LOG_ERROR, "Index out of bounds, check ConvertWorldBlockPosToChunkIndex");
     }
-
-
     return chunk_index;
 }
 
@@ -419,67 +367,4 @@ Vector3 ConvertChunkIndexToWorldBlockPos(Vector3 chunk_index, Vector3 chunk_worl
     block_world_pos.z = chunk_world_pos.z + (chunk_index.z - HALF_CHUNK);
 
     return block_world_pos;
-}
-
-//i'm coming back to this later.. some bad assumptions when making this
-bool IsBlockVisibleImproved(Vector3 block_world_pos, HashTable* hash_table) {
-    // first check if that block is in a chunk that even exists
-    Vector3 chunk_world_pos = DeriveChunkPosition(block_world_pos, hash_table);
-    if(!DoesChunkEntryExist(chunk_world_pos, hash_table)) return false;
-
-    //now we know it exists, just grab the index of the block and check its neighbors
-    Vector3 base_index = ConvertWorldBlockPosToChunkIndex(block_world_pos, hash_table);
-    //not going to use decide block type here, because player may have added blocks 
-    //but first just see if we are on the border of unexplored chunks
-    //DID THIS WRONG! AM CHECKING BLOCK POS, NOT CHUNK WORLD POS :((k ---- FIXED
-    if(!DoesChunkEntryExist(DeriveChunkPosition((Vector3) { block_world_pos.x+1, block_world_pos.y, block_world_pos.z }, hash_table), hash_table)) return true;
-    if(!DoesChunkEntryExist(DeriveChunkPosition((Vector3) { block_world_pos.x-1, block_world_pos.y, block_world_pos.z }, hash_table), hash_table)) return true;
-    if(!DoesChunkEntryExist(DeriveChunkPosition((Vector3) { block_world_pos.x, block_world_pos.y+1, block_world_pos.z }, hash_table), hash_table)) return true;
-    if(!DoesChunkEntryExist(DeriveChunkPosition((Vector3) { block_world_pos.x, block_world_pos.y-1, block_world_pos.z }, hash_table), hash_table)) return true;
-    if(!DoesChunkEntryExist(DeriveChunkPosition((Vector3) { block_world_pos.x, block_world_pos.y, block_world_pos.z+1 }, hash_table), hash_table)) return true;
-    if(!DoesChunkEntryExist(DeriveChunkPosition((Vector3) { block_world_pos.x, block_world_pos.y, block_world_pos.z-1 }, hash_table), hash_table)) return true;
-
-    //so by now we know the block exists, and it's not on the end of the world.
-    //next we gotta decide if this is when we are first setting up a chunk and the player hasn't had the chance
-    //to add blocks, or if this is after. because if it's the first time, then we just poll DecideBlockType. But that
-    //method doesn't work anymore once player has been around and may have manipulated terrain.
-    //wait... if we know the chunk exists, even if the player has had time to mess with it, we can just check the surrounding
-    //neighbors type. We already know we aren't on the edge of the world, but we may still be on a border.
-    //it shouldn't matter if we are on a border or not, just check each neighbor using world coords
-    //get the chunk for this block, then the index
-    Chunk* temp_chunk = (Chunk*)MemAlloc(sizeof(Chunk));
-    Vector3 temp_pos = (Vector3) { block_world_pos.x + 1, block_world_pos.y, block_world_pos.z };
-    // temp_chunk = DeriveChunk(temp_pos, hash_table);
-    // Vector3 temp_index = ConvertWorldBlockPosToChunkIndex(temp_pos, hash_table);
-    // if(temp_chunk->blocks[(int)temp_index.x][(int)temp_index.y][(int)temp_index.z].block_type == BLOCK_AIR) return true;
-
-    // //gonna do this a few more time
-    // temp_pos = (Vector3) { block_world_pos.x - 1, block_world_pos.y, block_world_pos.z };
-    // temp_chunk = DeriveChunk(temp_pos, hash_table);
-    // temp_index = ConvertWorldBlockPosToChunkIndex(temp_pos, hash_table);
-    // if(temp_chunk->blocks[(int)temp_index.x][(int)temp_index.y][(int)temp_index.z].block_type == BLOCK_AIR) return true;
-
-    // temp_pos = (Vector3) { block_world_pos.x, block_world_pos.y+1, block_world_pos.z };
-    // temp_chunk = DeriveChunk(temp_pos, hash_table);
-    // temp_index = ConvertWorldBlockPosToChunkIndex(temp_pos, hash_table);
-    // if(temp_chunk->blocks[(int)temp_index.x][(int)temp_index.y][(int)temp_index.z].block_type == BLOCK_AIR) return true;
-
-    // temp_pos = (Vector3) { block_world_pos.x, block_world_pos.y-1, block_world_pos.z };
-    // temp_chunk = DeriveChunk(temp_pos, hash_table);
-    // temp_index = ConvertWorldBlockPosToChunkIndex(temp_pos, hash_table);
-    // if(temp_chunk->blocks[(int)temp_index.x][(int)temp_index.y][(int)temp_index.z].block_type == BLOCK_AIR) return true;
-
-    // temp_pos = (Vector3) { block_world_pos.x, block_world_pos.y, block_world_pos.z+1 };
-    // temp_chunk = DeriveChunk(temp_pos, hash_table);
-    // temp_index = ConvertWorldBlockPosToChunkIndex(temp_pos, hash_table);
-    // if(temp_chunk->blocks[(int)temp_index.x][(int)temp_index.y][(int)temp_index.z].block_type == BLOCK_AIR) return true;
-
-    // temp_pos = (Vector3) { block_world_pos.x, block_world_pos.y, block_world_pos.z-1 };
-    // temp_chunk = DeriveChunk(temp_pos, hash_table);
-    // temp_index = ConvertWorldBlockPosToChunkIndex(temp_pos, hash_table);
-    // if(temp_chunk->blocks[(int)temp_index.x][(int)temp_index.y][(int)temp_index.z].block_type == BLOCK_AIR) return true;
-
-    //if all else fails, it's not visible
-    return false;
-
 }
