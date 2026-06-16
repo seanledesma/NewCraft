@@ -34,6 +34,11 @@ if (player gets to new chunk) {
 }
 */
 
+/*
+    thinking out loud again.. I should be silently loading / creating chunks in the background so the data is there
+    when it's time to make the actual mesh when the player gets close enough.
+*/
+
 int main(void) {
 
     //SetTraceLogLevel(LOG_DEBUG);
@@ -49,8 +54,8 @@ int main(void) {
     // free(coords);
     // return(0);
 
-    const int screenWidth = 2560;
-    const int screenHeight = 1440;
+    const int screenWidth = 1920;
+    const int screenHeight = 1080;
     // const int screenWidth = GetMonitorWidth(0);
     // const int screenHeight = GetMonitorHeight(0);
     // const int cross_hair_width = screenWidth * 0.01f;
@@ -60,7 +65,7 @@ int main(void) {
     InitWindow(screenWidth, screenHeight, "NewCraft");
 
     Camera camera = { 0 };
-    camera.position = (Vector3) { 0.0f, PLAYER_HEIGHT, 0.0f };
+    camera.position = (Vector3) { 100.0f, PLAYER_HEIGHT, 100.0f };
     camera.target = (Vector3) { camera.position.x-1000, camera.position.y-1000, camera.position.z - 1000 };
     camera.up = (Vector3) { 0.0f, 1.0f, 0.0f };
     camera.fovy = 70.0f;
@@ -92,8 +97,8 @@ int main(void) {
 
     HashTable* hash_table = InitializeTable(TABLE_CAPACITY);
 
-    ChunkMesh* chunkmeshes[hash_table->capacity];
-    //ChunkMesh* chunkmeshes = (ChunkMesh*)MemAlloc(sizeof(ChunkMesh));
+    //ChunkMesh* chunkmeshes[hash_table->capacity];
+    ChunkMesh** chunkmeshes = (ChunkMesh*)MemAlloc(hash_table->capacity * sizeof(ChunkMesh));
     //chunkmeshes[0] = current_chunk;
     int chunkcounter = 1;
     int test_counter = 0;
@@ -138,11 +143,10 @@ int main(void) {
 
     // generating chunks starting from center
     Vector3* inner_coords = (Vector3*)MemAlloc(1000 * sizeof(Vector3));
-    Vector3 starting_position = (Vector3) { 0.0f, 0.0f, 0.0f };
-    int depth = 2;
-    int count = 0;
+    Vector3 starting_position = DeriveChunkPosition(camera.position, hash_table);
+    int depth = 4;
     int coords_counter = 0;
-    // coords_counter = SpiralTraversal2D(inner_coords, coords_counter, starting_position, depth);
+    coords_counter = SpiralTraversal2DChunks(inner_coords, coords_counter, starting_position, depth);
     // // coords_counter = SpiralTraversal2D(inner_coords, coords_counter, 
     // //     (Vector3) {
     // //         starting_position.x,
@@ -158,32 +162,28 @@ int main(void) {
     // //     }, depth);
 
 
-    // //create all chunks closet to player
-    // for (int i = 0; i < coords_counter; i++) {
-    //     chunkmeshes[i] = FetchChunkEntry((Vector3) { 
-    //         inner_coords[i].x * CHUNK_SIZE,
-    //         inner_coords[i].y * CHUNK_SIZE,
-    //         inner_coords[i].z * CHUNK_SIZE
-    //      }, hash_table);
-    //      count++;
-    // }
+    //create all chunks closet to player
+    for (int i = 0; i < coords_counter; i++) {
+        chunkmeshes[i] = FetchChunkEntry((Vector3) { 
+            inner_coords[i].x,
+            inner_coords[i].y,
+            inner_coords[i].z
+         }, hash_table);
+    }
 
-    // //then create all meshes
-    // for (int i = 0; i < coords_counter; i++) {
-    //     GenMeshChunkRework(chunkmeshes[i]->mesh, chunkmeshes[i]->chunk, hash_table);
-    //     //GenMeshChunk(chunkmeshes[i]->mesh, chunkmeshes[i]->chunk, hash_table);
-    //     UploadMesh(chunkmeshes[i]->mesh, false);
-    // }
+    //then create all meshes
+    for (int i = 0; i < coords_counter; i++) {
+        GenMeshChunkRework(chunkmeshes[i]->mesh, chunkmeshes[i]->chunk, hash_table);
+        chunkmeshes[i]->dirty = false;
+        UploadMesh(chunkmeshes[i]->mesh, false);
+    }
 
     Vector3 current_chunk_pos = starting_position;
 
-    chunkmeshes[0] = FetchChunkEntry(relative_positions[0], hash_table);
+    //chunkmeshes[0] = FetchChunkEntry(starting_position, hash_table);
     // GenMeshChunk(chunkmeshes[0]->mesh, chunkmeshes[0]->chunk, hash_table);
-    GenMeshChunkRework(chunkmeshes[0]->mesh, chunkmeshes[0]->chunk, hash_table);
-    UploadMesh(chunkmeshes[0]->mesh, false);
-
-    ChunkMesh* newchunkmeshes = (ChunkMesh*)MemAlloc(sizeof(ChunkMesh));
-    newchunkmeshes[0] = *chunkmeshes[0];
+    // GenMeshChunkRework(chunkmeshes[0]->mesh, chunkmeshes[0]->chunk, hash_table);
+    // UploadMesh(chunkmeshes[0]->mesh, false);
 
     //Model model = LoadModelFromMesh(*chunkmeshes[0]->mesh);
     Ray ray = {0};
@@ -198,6 +198,52 @@ int main(void) {
     while(!WindowShouldClose()) {
         UpdateCamera(&camera, cameraMode);
         UpdatePlayer(&player, &camera, boxes);
+
+
+
+
+        Vector3 temp_chunk_pos = DeriveChunkPosition(camera.position, hash_table);
+        //TraceLog(LOG_WARNING, TextFormat("temp chunk x: %.2f", temp_chunk_pos.x));
+        if ( temp_chunk_pos.x != current_chunk_pos.x 
+            || temp_chunk_pos.y != current_chunk_pos.y 
+            || temp_chunk_pos.z != current_chunk_pos.z ) 
+        {
+            current_chunk_pos = temp_chunk_pos;
+            TraceLog(LOG_WARNING, TextFormat("current chunk x: %.2f", current_chunk_pos.x));
+            TraceLog(LOG_WARNING, TextFormat("current chunk z: %.2f", current_chunk_pos.z));
+
+            coords_counter = 0;
+            coords_counter = SpiralTraversal2DChunks(inner_coords, coords_counter, current_chunk_pos, depth);
+
+            //create all chunks closet to player
+            for (int i = 0; i < coords_counter; i++) {
+                TraceLog(LOG_WARNING, TextFormat("fetching chunk x: %.2f", inner_coords[i].x));
+                TraceLog(LOG_WARNING, TextFormat("fetching chunk z: %.2f", inner_coords[i].z));
+                chunkmeshes[i] = FetchChunkEntry((Vector3) { 
+                    inner_coords[i].x,
+                    inner_coords[i].y,
+                    inner_coords[i].z
+                }, hash_table);
+            }
+
+            //then create all meshes IF there are any new ones
+            for (int i = 0; i < coords_counter; i++) {
+                if (chunkmeshes[i]->dirty) {
+                    chunkmeshes[i]->dirty = false;
+                    GenMeshChunkRework(chunkmeshes[i]->mesh, chunkmeshes[i]->chunk, hash_table);
+                    UploadMesh(chunkmeshes[i]->mesh, false);
+                }
+            }
+        }
+
+
+
+
+
+
+
+
+
         TraceLog(LOG_DEBUG, TextFormat("0starting pos in main y: %.2f", camera.position.y));
         //nearby_bounding_box_counter = GetNearbyBlocks(boxes, camera.position, camera.position, hash_table);
         // Vector3 lower_upper_position = (Vector3) { camera.position.x, camera.position.y - 1, camera.position.z };
@@ -209,98 +255,113 @@ int main(void) {
 
 
         // constantly check which block the player is looking at
-        ray = GetScreenToWorldRay((Vector2) { screenWidth/2, screenHeight / 2 }, camera);
-        ray.direction = Vector3Normalize(ray.direction);
-        box_counter = 0;
-        //run through all nearby boxes real quick
-        for (int i = 0; i < nearby_bounding_box_counter; i++) {
-            collision = GetRayCollisionBox(ray, boxes[box_counter]);
+        // ray = GetScreenToWorldRay((Vector2) { screenWidth/2, screenHeight / 2 }, camera);
+        // ray.direction = Vector3Normalize(ray.direction);
+        // box_counter = 0;
+        // //run through all nearby boxes real quick
+        // for (int i = 0; i < nearby_bounding_box_counter; i++) {
+        //     collision = GetRayCollisionBox(ray, boxes[box_counter]);
 
 
-            if (collision.hit) {
-                if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
-                    BreakBlock(boxes[box_counter].min, hash_table);
-                    break;
-                }
+        //     if (collision.hit) {
+        //         if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+        //             BreakBlock(boxes[box_counter].min, hash_table);
+        //             break;
+        //         }
 
-                target_box = boxes[box_counter];
-            } else {
-                //target_box = 0;
-            }
+        //         target_box = boxes[box_counter];
+        //     } else {
+        //         //target_box = 0;
+        //     }
 
-            box_counter++;
-        }
+        //     box_counter++;
+        // }
         
-        Vector3 temp_chunk_pos = DeriveChunkPosition(camera.position, hash_table);
-        //TraceLog(LOG_WARNING, TextFormat("temp chunk x: %.2f", temp_chunk_pos.x));
-        if ( temp_chunk_pos.x != current_chunk_pos.x 
-            || temp_chunk_pos.y != current_chunk_pos.y 
-            || temp_chunk_pos.z != current_chunk_pos.z ) 
-        {
-            TraceLog(LOG_WARNING, "do we ever hit here");
-            free(inner_coords);
-            free(newchunkmeshes);
-            inner_coords = (Vector3*)MemAlloc(sizeof(Vector3));
-            newchunkmeshes = (ChunkMesh*)MemAlloc(sizeof(ChunkMesh));
-            current_chunk_pos = temp_chunk_pos;
-            int depth = 2;
-            coords_counter = SpiralTraversal2D(inner_coords, coords_counter, current_chunk_pos, depth);
+        // Vector3 temp_chunk_pos = DeriveChunkPosition(camera.position, hash_table);
+        // //TraceLog(LOG_WARNING, TextFormat("temp chunk x: %.2f", temp_chunk_pos.x));
+        // if ( temp_chunk_pos.x != current_chunk_pos.x 
+        //     || temp_chunk_pos.y != current_chunk_pos.y 
+        //     || temp_chunk_pos.z != current_chunk_pos.z ) 
+        // {
+        //     TraceLog(LOG_WARNING, "do we ever hit here");
+        //     free(inner_coords);
+        //     free(chunkmeshes);
+        //     inner_coords = (Vector3*)MemAlloc(1000 * sizeof(Vector3));
+        //     chunkmeshes = (ChunkMesh*)MemAlloc(hash_table->capacity * sizeof(ChunkMesh));
+        //     current_chunk_pos = temp_chunk_pos;
+        //     int depth = 4;
+        //     coords_counter = 0;
+        //     coords_counter = SpiralTraversal2DChunks(inner_coords, coords_counter, temp_chunk_pos, depth);
 
-            for (int i = 0; i < coords_counter; i++) {
-                newchunkmeshes[i] = *FetchChunkEntry((Vector3) {
-                    inner_coords[i].x * CHUNK_SIZE,
-                    inner_coords[i].y * CHUNK_SIZE, 
-                    inner_coords[i].z * CHUNK_SIZE
-                }, hash_table);
-            }
-            //then check for new meshes (subject to change pending outer_coords)
-            for (int i = 0; i < coords_counter; i++) {
-                if (newchunkmeshes[i].new) {
-                    newchunkmeshes[i].new = false;
-                    GenMeshChunkRework(newchunkmeshes[i].mesh, newchunkmeshes[i].chunk, hash_table);
-                    UploadMesh(newchunkmeshes[i].mesh, false);
-                }
-            }
-            
-        }
+        //     // chunkmeshes[0] = FetchChunkEntry((Vector3) {
+        //     //     inner_coords[0].x,
+        //     //     inner_coords[0].y, 
+        //     //     inner_coords[0].z
+        //     // }, hash_table);
+        //     for (int i = 0; i < coords_counter; i++) {
+        //         chunkmeshes[i] = FetchChunkEntry((Vector3) {
+        //             inner_coords[i].x,
+        //             inner_coords[i].y, 
+        //             inner_coords[i].z
+        //         }, hash_table);
+        //     }
+        //     //then check for new meshes (subject to change pending outer_coords)
+        //     for (int i = 0; i < coords_counter; i++) {
+        //         if (chunkmeshes[i]->new) {
+        //             chunkmeshes[i]->new = false;
+        //             GenMeshChunkRework(chunkmeshes[i]->mesh, chunkmeshes[i]->chunk, hash_table);
+        //             UploadMesh(chunkmeshes[i]->mesh, false);
+        //         }
+        //         TraceLog(LOG_WARNING, TextFormat("inner_coords[%d] x pos: %.2f", i, inner_coords[i].x));
+        //         TraceLog(LOG_WARNING, TextFormat("inner_coords[%d] z pos: %.2f", i, inner_coords[i].z));
+        //     }
+        //     // TraceLog(LOG_WARNING, TextFormat("chunkmesh[0] x pos: %.2f", chunkmeshes[0]->chunk->world_pos.x));
+        //     // TraceLog(LOG_WARNING, TextFormat("chunkmesh[1] x pos: %.2f", chunkmeshes[1]->chunk->world_pos.x));
+        //     // TraceLog(LOG_WARNING, TextFormat("chunkmesh[2] x pos: %.2f", chunkmeshes[2]->chunk->world_pos.x));
+        //     // TraceLog(LOG_WARNING, TextFormat("inner_coords[0] x pos: %.2f", inner_coords[0].x));
+        //     // TraceLog(LOG_WARNING, TextFormat("inner_coords[0] z pos: %.2f", inner_coords[0].z));
+        //     // TraceLog(LOG_WARNING, TextFormat("inner_coords[1] x pos: %.2f", inner_coords[1].x));
+        //     // TraceLog(LOG_WARNING, TextFormat("inner_coords[1] z pos: %.2f", inner_coords[1].z));
+        // }
+
 
 
 
         // check for dirty chunks to re-make
-        for (int i = 0; i < coords_counter; i++) {
-            if(chunkmeshes[i]->dirty == true) {
+        // for (int i = 0; i < coords_counter; i++) {
+        //     if(chunkmeshes[i]->dirty == true) {
 
-                chunkmeshes[i]->dirty = false;
+        //         chunkmeshes[i]->dirty = false;
 
-                UnloadMesh(*chunkmeshes[i]->mesh);
-                //do i need to free mesh or will that cause issues?
-                MemFree(chunkmeshes[i]->mesh);
-                Mesh* mesh = (Mesh*)calloc(1,sizeof(Mesh));
+        //         UnloadMesh(*chunkmeshes[i]->mesh);
+        //         //do i need to free mesh or will that cause issues?
+        //         MemFree(chunkmeshes[i]->mesh);
+        //         Mesh* mesh = (Mesh*)calloc(1,sizeof(Mesh));
                 
-                int num_blocks_in_chunk = CHUNK_CUBED;
+        //         int num_blocks_in_chunk = CHUNK_CUBED;
 
-                int num_block_vertices = 36 * 3;
-                int num_block_texcoords = 36 * 2;
-                int num_block_normals = 36 * 3;
+        //         int num_block_vertices = 36 * 3;
+        //         int num_block_texcoords = 36 * 2;
+        //         int num_block_normals = 36 * 3;
 
-                int num_chunk_vertices = num_block_vertices * num_blocks_in_chunk;
-                int num_chunk_texcoords = num_block_texcoords * num_blocks_in_chunk;
-                int num_chunk_normals = num_block_normals * num_blocks_in_chunk;
-                mesh->vertices = (float *)MemAlloc(num_chunk_vertices * sizeof(float));
+        //         int num_chunk_vertices = num_block_vertices * num_blocks_in_chunk;
+        //         int num_chunk_texcoords = num_block_texcoords * num_blocks_in_chunk;
+        //         int num_chunk_normals = num_block_normals * num_blocks_in_chunk;
+        //         mesh->vertices = (float *)MemAlloc(num_chunk_vertices * sizeof(float));
     
-                mesh->texcoords = (float *)MemAlloc(num_chunk_texcoords * sizeof(float));
+        //         mesh->texcoords = (float *)MemAlloc(num_chunk_texcoords * sizeof(float));
             
-                mesh->normals = (float *)MemAlloc(num_chunk_normals * sizeof(float));
+        //         mesh->normals = (float *)MemAlloc(num_chunk_normals * sizeof(float));
 
-                mesh->vertexCount = 0;
-                mesh->triangleCount = 0;
+        //         mesh->vertexCount = 0;
+        //         mesh->triangleCount = 0;
 
 
-                chunkmeshes[i]->mesh = mesh;
-                GenMeshChunkRework(chunkmeshes[i]->mesh, chunkmeshes[i]->chunk, hash_table);
-                UploadMesh(chunkmeshes[i]->mesh, false);
-            }
-        }
+        //         chunkmeshes[i]->mesh = mesh;
+        //         GenMeshChunkRework(chunkmeshes[i]->mesh, chunkmeshes[i]->chunk, hash_table);
+        //         UploadMesh(chunkmeshes[i]->mesh, false);
+        //     }
+        // }
 
         //TraceLog(LOG_WARNING, TextFormat("IN MAIN LOOP what is block type under player: %d", chunkmeshes[0]->chunk->blocks[8][8][8].block_type));
 
@@ -320,10 +381,10 @@ int main(void) {
             BeginMode3D(camera);
             DrawGrid(20, 1);
 
-                // for(int i = 0; i < coords_counter; i++) {
-                //     DrawMesh(*chunkmeshes[i]->mesh, material, matrix);
-                // }
-                DrawMesh(*newchunkmeshes[0].mesh, material, matrix);
+                for(int i = 0; i < coords_counter; i++) {
+                    DrawMesh(*chunkmeshes[i]->mesh, material, matrix);
+                }
+                //DrawMesh(*chunkmeshes[0]->mesh, material, matrix);
 
                 //DrawMesh(*chunkmeshes[0]->mesh, material, matrix);
 
@@ -376,7 +437,7 @@ int main(void) {
         EndDrawing();
     }
 
-    for (int i = 0; i < count; i++) {
+    for (int i = 0; i < coords_counter; i++) {
         UnloadMesh(*chunkmeshes[i]->mesh);
     }
 

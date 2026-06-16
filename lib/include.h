@@ -154,6 +154,7 @@ bool DoesChunkEntryExist(Vector3 pos, HashTable* hash_table);
 void InitWorld();
 int8_t DecideBlockType(Vector3 block_world_pos);
 int SpiralTraversal2D(Vector3* coords, int coords_index, Vector3 pos, int depth);
+int SpiralTraversal2DChunks(Vector3* coords, int coords_index, Vector3 pos, int depth);
 Chunk* GetCurrentChunk(Vector3 player_pos, HashTable* hash_table);
 Vector3 DeriveChunkPosition(Vector3 starting_pos, HashTable* hash_table);
 ChunkMesh* DeriveChunkMesh(Vector3 starting_pos, HashTable* hash_table);

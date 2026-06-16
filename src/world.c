@@ -96,9 +96,9 @@ int SpiralTraversal2D(Vector3* coords, int coords_index, Vector3 pos, int depth)
 
         if ((-depth/2 <= posX) && (posX <= depth/2) && (-depth/2 <= posZ) && (posZ <= depth/2)) {
             coords[coords_index++] = (Vector3) {
-                pos.x + posX,
+                pos.x + (posX ),
                 pos.y,
-                pos.z + posZ
+                pos.z + (posZ )
             };
         }
 
@@ -112,6 +112,39 @@ int SpiralTraversal2D(Vector3* coords, int coords_index, Vector3 pos, int depth)
     }
     return coords_index;
 }
+
+int SpiralTraversal2DChunks(Vector3* coords, int coords_index, Vector3 pos, int depth) {
+    // this does relative spiraling, need to add to acutal position at the end
+    int posX = 0;
+    int posZ = 0;
+    int dx = 0;
+    int dz = -1;
+    int temp = 0;
+    int maxI = depth * depth;
+    Vector3 base_pos = {0};
+
+    for(int i = 0; i < maxI; i++) {
+
+        if ((-depth/2 <= posX) && (posX <= depth/2) && (-depth/2 <= posZ) && (posZ <= depth/2)) {
+            coords[coords_index++] = (Vector3) {
+                (base_pos.x + (posX * CHUNK_SIZE)) + pos.x,
+                pos.y,
+                (base_pos.z + (posZ * CHUNK_SIZE)) + pos.z
+            };
+        }
+
+        if ( (posX == posZ) || ((posX < 0) && (posX == -posZ)) || ((posX > 0) && (posX == 1-posZ)) ) {
+            temp = dx;
+            dx = -dz;
+            dz = temp;
+        }
+        posX += dx;
+        posZ += dz;
+    }
+    return coords_index;
+}
+
+
 // return an integer representing number of nearby blocks
 int GetNearbyBlocks(BoundingBox* boxes, Vector3 camera_pos, Vector3 player_pos, HashTable* hash_table) {
     /*

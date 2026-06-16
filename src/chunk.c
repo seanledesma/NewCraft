@@ -37,6 +37,8 @@ ChunkMesh* gen_chunk_mesh(Vector3 world_pos, HashTable* hash_table) {
    
     chunk_mesh->chunk = gen_chunk(world_pos, hash_table);
 
+    chunk_mesh->dirty = true;
+
     return chunk_mesh;
 }
 
