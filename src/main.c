@@ -30,7 +30,7 @@ if (player gets to new chunk) {
     //i won't draw them because they aren't in new_coords, but I'm thinking of having a second
     //array of chunkmeshes on the outskirts, not immediate to the player, that I slowly load / deload
     //for the outer array, i just need to request greater depth from spiraltraversal and then use my 
-    //previous coords_counter as the starting position for my outer_coords
+    //previous inner_coords_counter as the starting position for my outer_coords
 }
 */
 
@@ -142,19 +142,28 @@ int main(void) {
     // }
 
     // generating chunks starting from center
-    Vector3* inner_coords = (Vector3*)MemAlloc(1000 * sizeof(Vector3));
     Vector3 starting_position = DeriveChunkPosition(camera.position, hash_table);
     int depth = 4;
-    int coords_counter = 0;
-    coords_counter = SpiralTraversal2DChunks(inner_coords, coords_counter, starting_position, depth);
-    // // coords_counter = SpiralTraversal2D(inner_coords, coords_counter, 
+    int outer_depth = 8;
+    Vector3* inner_coords = (Vector3*)MemAlloc(depth * depth * depth * sizeof(Vector3));
+    Vector3* outer_coords = (Vector3*)MemAlloc(outer_depth * outer_depth * outer_depth * sizeof(Vector3));
+    int inner_coords_counter = 0;
+    int outer_coords_counter = 0;
+    inner_coords_counter = SpiralTraversal2DChunks(inner_coords, inner_coords_counter, starting_position, depth);
+    outer_coords_counter = SpiralTraversal2DChunks(outer_coords, outer_coords_counter, starting_position, outer_depth);
+    float timer = 0.0f;
+    int outer_chunks = 0;
+    int total_visible_chunks = 0;
+
+
+    // // inner_coords_counter = SpiralTraversal2D(inner_coords, inner_coords_counter, 
     // //     (Vector3) {
     // //         starting_position.x,
     // //         starting_position.y + 1,
     // //         starting_position.z
     // //     }, depth);
 
-    // // coords_counter = SpiralTraversal2D(inner_coords, coords_counter, 
+    // // inner_coords_counter = SpiralTraversal2D(inner_coords, inner_coords_counter, 
     // //     (Vector3) {
     // //         starting_position.x,
     // //         starting_position.y - 1,
@@ -163,7 +172,7 @@ int main(void) {
 
 
     //create all chunks closet to player
-    for (int i = 0; i < coords_counter; i++) {
+    for (int i = 0; i < inner_coords_counter; i++) {
         chunkmeshes[i] = FetchChunkEntry((Vector3) { 
             inner_coords[i].x,
             inner_coords[i].y,
@@ -172,7 +181,7 @@ int main(void) {
     }
 
     //then create all meshes
-    for (int i = 0; i < coords_counter; i++) {
+    for (int i = 0; i < inner_coords_counter; i++) {
         GenMeshChunkRework(chunkmeshes[i]->mesh, chunkmeshes[i]->chunk, hash_table);
         chunkmeshes[i]->dirty = false;
         UploadMesh(chunkmeshes[i]->mesh, false);
@@ -203,7 +212,7 @@ int main(void) {
 
 
         Vector3 temp_chunk_pos = DeriveChunkPosition(camera.position, hash_table);
-        //TraceLog(LOG_WARNING, TextFormat("temp chunk x: %.2f", temp_chunk_pos.x));
+        // the following creates chunks and meshes immediately surrounding player
         if ( temp_chunk_pos.x != current_chunk_pos.x 
             || temp_chunk_pos.y != current_chunk_pos.y 
             || temp_chunk_pos.z != current_chunk_pos.z ) 
@@ -212,11 +221,13 @@ int main(void) {
             TraceLog(LOG_WARNING, TextFormat("current chunk x: %.2f", current_chunk_pos.x));
             TraceLog(LOG_WARNING, TextFormat("current chunk z: %.2f", current_chunk_pos.z));
 
-            coords_counter = 0;
-            coords_counter = SpiralTraversal2DChunks(inner_coords, coords_counter, current_chunk_pos, depth);
+            inner_coords_counter = 0;
+            inner_coords_counter = SpiralTraversal2DChunks(inner_coords, inner_coords_counter, current_chunk_pos, depth);
+            // outer_coords = 0;
+            // outer_coords_counter = SpiralTraversal2DChunks(outer_coords, outer_coords_counter, current_chunk_pos, outer_depth);
 
             //create all chunks closet to player
-            for (int i = 0; i < coords_counter; i++) {
+            for (int i = 0; i < inner_coords_counter; i++) {
                 TraceLog(LOG_WARNING, TextFormat("fetching chunk x: %.2f", inner_coords[i].x));
                 TraceLog(LOG_WARNING, TextFormat("fetching chunk z: %.2f", inner_coords[i].z));
                 chunkmeshes[i] = FetchChunkEntry((Vector3) { 
@@ -227,7 +238,7 @@ int main(void) {
             }
 
             //then create all meshes IF there are any new ones
-            for (int i = 0; i < coords_counter; i++) {
+            for (int i = 0; i < inner_coords_counter; i++) {
                 if (chunkmeshes[i]->dirty) {
                     chunkmeshes[i]->dirty = false;
                     GenMeshChunkRework(chunkmeshes[i]->mesh, chunkmeshes[i]->chunk, hash_table);
@@ -236,8 +247,56 @@ int main(void) {
             }
         }
 
+        // in the background, slowly generate chunk data without generating meshes yet
+        timer += GetFrameTime();
+        if (timer > 0.5) {
+            timer = 0.0f;
+            // outer_coords = 0;
+            // outer_coords_counter = SpiralTraversal2DChunks(outer_coords, outer_coords_counter, current_chunk_pos, outer_depth);
+            
+            chunkmeshes[inner_coords_counter] = FetchChunkEntry((Vector3) { 
+                outer_coords[inner_coords_counter].x,
+                outer_coords[inner_coords_counter].y,
+                outer_coords[inner_coords_counter].z
+            }, hash_table);
 
 
+            if (chunkmeshes[inner_coords_counter]->dirty) {
+                chunkmeshes[inner_coords_counter]->dirty = false;
+                GenMeshChunkRework(chunkmeshes[inner_coords_counter]->mesh, chunkmeshes[inner_coords_counter]->chunk, hash_table);
+                UploadMesh(chunkmeshes[inner_coords_counter]->mesh, false);
+            }
+            inner_coords_counter++;
+
+
+            TraceLog(LOG_WARNING, TextFormat("inner coords counter: %d", inner_coords_counter));
+
+
+
+
+
+            // int i = inner_coords_counter + outer_chunks;
+            // if (i <= outer_coords_counter) {
+            //     TraceLog(LOG_WARNING, "fetching outer chunk");
+            //     // i'm just making them here, assigning to throw-away variable
+            //     ChunkMesh* throw_away = FetchChunkEntry((Vector3) { 
+            //         outer_coords[i].x,
+            //         outer_coords[i].y,
+            //         outer_coords[i].z
+            //     }, hash_table);
+
+            //     // silently (without adding to visible chunkmeshes array) gen meshes
+            //     if (throw_away->dirty) {
+            //         //throw_away->dirty = false;
+            //         GenMeshChunkRework(throw_away->mesh, throw_away->chunk, hash_table);
+            //         //UploadMesh(throw_away, false);
+            //     }
+            // } else {
+            //     outer_coords_counter = 0;
+            //     outer_coords_counter = SpiralTraversal2DChunks(outer_coords, outer_coords_counter, current_chunk_pos, outer_depth);
+            // }
+            // outer_chunks++;
+        }
 
 
 
@@ -290,15 +349,15 @@ int main(void) {
         //     chunkmeshes = (ChunkMesh*)MemAlloc(hash_table->capacity * sizeof(ChunkMesh));
         //     current_chunk_pos = temp_chunk_pos;
         //     int depth = 4;
-        //     coords_counter = 0;
-        //     coords_counter = SpiralTraversal2DChunks(inner_coords, coords_counter, temp_chunk_pos, depth);
+        //     inner_coords_counter = 0;
+        //     inner_coords_counter = SpiralTraversal2DChunks(inner_coords, inner_coords_counter, temp_chunk_pos, depth);
 
         //     // chunkmeshes[0] = FetchChunkEntry((Vector3) {
         //     //     inner_coords[0].x,
         //     //     inner_coords[0].y, 
         //     //     inner_coords[0].z
         //     // }, hash_table);
-        //     for (int i = 0; i < coords_counter; i++) {
+        //     for (int i = 0; i < inner_coords_counter; i++) {
         //         chunkmeshes[i] = FetchChunkEntry((Vector3) {
         //             inner_coords[i].x,
         //             inner_coords[i].y, 
@@ -306,7 +365,7 @@ int main(void) {
         //         }, hash_table);
         //     }
         //     //then check for new meshes (subject to change pending outer_coords)
-        //     for (int i = 0; i < coords_counter; i++) {
+        //     for (int i = 0; i < inner_coords_counter; i++) {
         //         if (chunkmeshes[i]->new) {
         //             chunkmeshes[i]->new = false;
         //             GenMeshChunkRework(chunkmeshes[i]->mesh, chunkmeshes[i]->chunk, hash_table);
@@ -328,7 +387,7 @@ int main(void) {
 
 
         // check for dirty chunks to re-make
-        // for (int i = 0; i < coords_counter; i++) {
+        // for (int i = 0; i < inner_coords_counter; i++) {
         //     if(chunkmeshes[i]->dirty == true) {
 
         //         chunkmeshes[i]->dirty = false;
@@ -381,7 +440,7 @@ int main(void) {
             BeginMode3D(camera);
             DrawGrid(20, 1);
 
-                for(int i = 0; i < coords_counter; i++) {
+                for(int i = 0; i < inner_coords_counter; i++) {
                     DrawMesh(*chunkmeshes[i]->mesh, material, matrix);
                 }
                 //DrawMesh(*chunkmeshes[0]->mesh, material, matrix);
@@ -437,7 +496,7 @@ int main(void) {
         EndDrawing();
     }
 
-    for (int i = 0; i < coords_counter; i++) {
+    for (int i = 0; i < inner_coords_counter; i++) {
         UnloadMesh(*chunkmeshes[i]->mesh);
     }
 
