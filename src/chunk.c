@@ -3,13 +3,9 @@
 // here we create and return a chunk_mesh pointer which has two nested pointers,
 // one to what is returned by gen_chunk and the other to the mesh we create in this 
 // function using the pointer to the chunk returned by gen_chunk.
-ChunkMesh* gen_chunk_mesh(Vector3 world_pos, HashTable* hash_table) {
+void gen_chunk_mesh(Vector3 world_pos, ChunkMesh* chunk_mesh) {    
 
-    ChunkMesh* chunk_mesh = calloc(1, sizeof(ChunkMesh));
-    
     chunk_mesh->chunk = (Chunk*)calloc(1,sizeof(Chunk));
-
-    //TraceLog(LOG_WARNING, "gen chunk with world y: %.2f", world_pos.y);
 
     int num_blocks_in_chunk = CHUNK_CUBED;
 
@@ -35,45 +31,36 @@ ChunkMesh* gen_chunk_mesh(Vector3 world_pos, HashTable* hash_table) {
     chunk_mesh->mesh->vertexCount = 0;
     chunk_mesh->mesh->triangleCount = 0;
    
-    chunk_mesh->chunk = gen_chunk(world_pos, hash_table);
+    gen_chunk(world_pos, chunk_mesh->chunk);
 
     chunk_mesh->dirty = true;
-
-    return chunk_mesh;
 }
 
-// takes chunk world position to pass to block gen function. 
-// we create and return a pointer to a chunk strut which now
-// has blocks array full of pointers to blocks created in gen_block.
-Chunk* gen_chunk(Vector3 world_pos, HashTable* hash_table) {
-    Chunk* chunk = (Chunk*)calloc(1,sizeof(Chunk));
+/// takes chunk world position to pass to block gen function. 
+/// we create and return a pointer to a chunk strut which now
+/// has blocks array full of pointers to blocks created in gen_block.
+void gen_chunk(Vector3 world_pos, Chunk* chunk) {
 
     chunk->world_pos = world_pos;
-
-    int block_counter = 0;
 
     for (int i = 0; i < CHUNK_SIZE; i++) {
         //create all the conceptual blocks
         for (int j = 0; j < CHUNK_SIZE; j++) {
             for (int k = 0; k < CHUNK_SIZE; k++) {
-                chunk->blocks[i][j][k] = gen_block(world_pos, i, j, k, block_counter, hash_table);   
-                block_counter++;
-
+                chunk->blocks[i][j][k] = gen_block(world_pos, i, j, k);   
             }
         }
     }
-    //TraceLog(LOG_WARNING, "hit gen chunk");
-    return chunk;
 }
 
-// takes world position and three loop positions to get block position.
-// culling should take place here since block textures are set here.
-// vertices are set from top left triangle, then bottom right triangle,
-// in a counter clockwise rotation starting from bottom left corner.
-// tex coords were not too hard, just upside down due to difference between
-// png and opengl. This is the lowest it goes, we return a pointer to the 
-// data generated here.
-Block gen_block(Vector3 world_pos, int blockX, int blockY, int blockZ, int counter, HashTable* hash_table) {
+/// takes world position and three loop positions to get block position.
+/// culling should take place here since block textures are set here.
+/// vertices are set from top left triangle, then bottom right triangle,
+/// in a counter clockwise rotation starting from bottom left corner.
+/// tex coords were not too hard, just upside down due to difference between
+/// png and opengl. This is the lowest it goes, we return a pointer to the 
+/// data generated here.
+Block gen_block(Vector3 world_pos, int blockX, int blockY, int blockZ) {
     float posX = world_pos.x - HALF_CHUNK + blockX + 0.5f; //have to add 0.5 so it lines up.. for reasons..
     float posY = world_pos.y - HALF_CHUNK + blockY;
     float posZ = world_pos.z - HALF_CHUNK + blockZ + 0.5f;
@@ -82,10 +69,6 @@ Block gen_block(Vector3 world_pos, int blockX, int blockY, int blockZ, int count
     Block block = {0};
     
     block.block_type = DecideBlockType(blockpos);
-
-    // if(IsBlockVisible(world_pos, blockpos, blockX, blockY, blockZ, hash_table) == false) {
-    //     block.block_type = BLOCK_AIR;
-    // }
 
     return block;
 }
@@ -98,7 +81,7 @@ void BreakBlock(Vector3 point, HashTable* hash_table) {
 
     chunkmesh->dirty = true;
 
-    Vector3 chunk_index = ConvertWorldBlockPosToChunkIndex(point, hash_table);
+    Vector3 chunk_index = ConvertWorldBlockPosToChunkIndex(point);
 
     TraceLog(LOG_WARNING, TextFormat("index x:%d, y:%d, z:%d", (int)chunk_index.x, (int)chunk_index.y, (int)chunk_index.z));
     chunkmesh->chunk->blocks[(int)chunk_index.x][(int)chunk_index.y][(int)chunk_index.z].block_type = BLOCK_AIR;

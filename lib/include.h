@@ -137,13 +137,13 @@ typedef struct Player {
 // }MegaChunk;
 
 // chunk.c
-ChunkMesh* gen_chunk_mesh(Vector3 world_pos, HashTable* hash_table);
-Chunk* gen_chunk(Vector3 world_pos, HashTable* hash_table);
-Block gen_block(Vector3 world_pos, int blockX, int blockY, int blockZ, int counter, HashTable* hash_table);
+void gen_chunk_mesh(Vector3 world_pos, ChunkMesh* chunk_mesh);
+void gen_chunk(Vector3 world_pos, Chunk* chunk);
+Block gen_block(Vector3 world_pos, int blockX, int blockY, int blockZ);
 void BreakBlock(Vector3 point, HashTable* hash_table);
 
 // hash.c
-HashTable* InitializeTable(uint32_t capacity);
+HashTable* InitializeTable(int capacity);
 void DestroyTable(HashTable* hash_table);
 int32_t Hash(int32_t x, int32_t y, int32_t z, int32_t size);
 ChunkMesh* CreateChunkEntry(Vector3 pos, HashTable* hash_table);
@@ -156,11 +156,11 @@ int8_t DecideBlockType(Vector3 block_world_pos);
 int SpiralTraversal2D(Vector3* coords, int coords_index, Vector3 pos, int depth);
 int SpiralTraversal2DChunks(Vector3* coords, int coords_index, Vector3 pos, int depth);
 Chunk* GetCurrentChunk(Vector3 player_pos, HashTable* hash_table);
-Vector3 DeriveChunkPosition(Vector3 starting_pos, HashTable* hash_table);
+Vector3 DeriveChunkPosition(Vector3 starting_pos);
 ChunkMesh* DeriveChunkMesh(Vector3 starting_pos, HashTable* hash_table);
 int GetNearbyBlocks(BoundingBox* boxes, Vector3 camera_pos, Vector3 player_pos, HashTable* hash_table);
-Vector3 ConvertWorldBlockPosToChunkIndex(Vector3 block_world_pos, HashTable* hash_table);
-Vector3 ConvertChunkIndexToWorldBlockPos(Vector3 chunk_index, Vector3 chunk_world_pos, HashTable* hash_table);
+Vector3 ConvertWorldBlockPosToChunkIndex(Vector3 block_world_pos);
+Vector3 ConvertChunkIndexToWorldBlockPos(Vector3 chunk_index, Vector3 chunk_world_pos);
 bool IsBlockVisibleImproved(Vector3 block_world_pos, HashTable* hash_table);
 bool IsBlockAir(Vector3 block_world_pos, HashTable* hash_table);
 

@@ -3,54 +3,6 @@
 #include "FastNoiseLite.h"
 fnl_state noise;
 
-Vector3 relative_positions[] = {
-    // home mega chunk
-    (Vector3){0.0f, 0.0f, 0.0f},
-    // left and right mega chunk (facing towards -Z)
-    (Vector3){-1.0f, 0.0f, 0.0f},
-    (Vector3){1.0f, 0.0f, 0.0f},
-    //front and back
-    (Vector3){0.0f, 0.0f, -1.0f},
-    (Vector3){0.0f, 0.0f, 1.0f},
-    //top and bottom
-    (Vector3){0.0f, 1.0f, 0.0f},
-    (Vector3){0.0f, -1.0f, 0.0f},
-
-    // up left and right mega chunk (facing towards -Z)
-    (Vector3){-1.0f, 1.0f, 0.0f},
-    (Vector3){1.0f, 1.0f, 0.0f},
-    // down left and right mega chunk (facing towards -Z)
-    (Vector3){-1.0f, -1.0f, 0.0f},
-    (Vector3){1.0f, -1.0f, 0.0f},
-    //up front and back
-    (Vector3){0.0f, 1.0f, -1.0f},
-    (Vector3){0.0f, 1.0f, 1.0f},
-    //down front and back
-    (Vector3){0.0f, -1.0f, -1.0f},
-    (Vector3){0.0f, -1.0f, 1.0f},
-
-    //continues diagonally..
-    (Vector3){-1.0f, 0.0f, -1.0f},
-    (Vector3){1.0f, 0.0f, -1.0f},
-
-    (Vector3){-1.0f, 0.0f, 1.0f},
-    (Vector3){1.0f, 0.0f, 1.0f},
-
-    (Vector3){-1.0f, 1.0f, -1.0f},
-    (Vector3){1.0f, 1.0f, -1.0f},
-
-    (Vector3){-1.0f, 1.0f, 1.0f},
-    (Vector3){1.0f, 1.0f, 1.0f},
-
-    (Vector3){-1.0f, -1.0f, -1.0f},
-    (Vector3){1.0f, -1.0f, -1.0f},
-
-    (Vector3){-1.0f, -1.0f, 1.0f},
-    (Vector3){1.0f, -1.0f, 1.0f},
-};
-
-//fnl_state noise;
-
 void InitWorld() {
     //setup noise
 
@@ -276,7 +228,7 @@ Chunk* GetCurrentChunk(Vector3 player_pos, HashTable* hash_table) {
     return curr_chunkmesh->chunk;
 }
 
-Vector3 DeriveChunkPosition(Vector3 starting_pos, HashTable* hash_table) {
+Vector3 DeriveChunkPosition(Vector3 starting_pos) {
 
     int chunkX = (int)floor((starting_pos.x + 8) / 16) * 16;
     int chunkY = (int)floor((starting_pos.y + 8) / 16) * 16;
@@ -313,7 +265,7 @@ ChunkMesh* DeriveChunkMesh(Vector3 starting_pos, HashTable* hash_table) {
 
 bool IsBlockAir(Vector3 block_world_pos, HashTable* hash_table) {
     //allll we're gonna do is see if this block, at the given coords, is air, or no.
-    Vector3 index = ConvertWorldBlockPosToChunkIndex(block_world_pos, hash_table);
+    Vector3 index = ConvertWorldBlockPosToChunkIndex(block_world_pos);
     ChunkMesh* chunkmesh = DeriveChunkMesh(block_world_pos, hash_table);
     if(chunkmesh->chunk->blocks[(int)index.x][(int)index.y][(int)index.z].block_type == BLOCK_AIR) {
         chunkmesh = NULL;
@@ -325,11 +277,11 @@ bool IsBlockAir(Vector3 block_world_pos, HashTable* hash_table) {
 }
 
 
-Vector3 ConvertWorldBlockPosToChunkIndex(Vector3 block_world_pos, HashTable* hash_table) {
+Vector3 ConvertWorldBlockPosToChunkIndex(Vector3 block_world_pos) {
     Vector3 chunk_index = {0};
 
     // first need to get the chunk the block pertains to
-    Vector3 world_pos = DeriveChunkPosition(block_world_pos, hash_table);
+    Vector3 world_pos = DeriveChunkPosition(block_world_pos);
 
     // then figure out the block index
     float blockX = block_world_pos.x;
@@ -392,7 +344,7 @@ Vector3 ConvertWorldBlockPosToChunkIndex(Vector3 block_world_pos, HashTable* has
 }
 
 
-Vector3 ConvertChunkIndexToWorldBlockPos(Vector3 chunk_index, Vector3 chunk_world_pos, HashTable* hash_table) {
+Vector3 ConvertChunkIndexToWorldBlockPos(Vector3 chunk_index, Vector3 chunk_world_pos) {
     Vector3 block_world_pos = {0};
 
     block_world_pos.x = chunk_world_pos.x + (chunk_index.x - HALF_CHUNK);

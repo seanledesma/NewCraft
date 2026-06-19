@@ -2,7 +2,7 @@
 
 bool IsBlockVisibleRework(Vector3 block_world_position, HashTable* hash_table) {
     //first make sure the chunk exists
-    Vector3 chunk_pos = DeriveChunkPosition(block_world_position, hash_table);
+    Vector3 chunk_pos = DeriveChunkPosition(block_world_position);
     if (!DoesChunkEntryExist(chunk_pos, hash_table)) {
         // TraceLog(LOG_WARNING, TextFormat("chunk x: %d", (int)chunk_pos.x));
         // TraceLog(LOG_WARNING, TextFormat("chunk y: %d", (int)chunk_pos.y));
@@ -13,7 +13,7 @@ bool IsBlockVisibleRework(Vector3 block_world_position, HashTable* hash_table) {
     //we have the block in question. all we need to do is get the chunk, then then block index, then check
     ChunkMesh* chunkmesh = DeriveChunkMesh(block_world_position, hash_table);
 
-    Vector3 block_index = ConvertWorldBlockPosToChunkIndex(block_world_position, hash_table);
+    Vector3 block_index = ConvertWorldBlockPosToChunkIndex(block_world_position);
 
     TraceLog(LOG_DEBUG, TextFormat("index x: %d", (int)block_index.x));
     if (chunkmesh->chunk->blocks[(int)block_index.x][(int)block_index.y][(int)block_index.z].block_type == BLOCK_AIR) {
@@ -42,7 +42,6 @@ void GenMeshChunkRework(Mesh* mesh, Chunk* chunk, HashTable* hash_table) {
                 float y = chunk->world_pos.y - HALF_CHUNK + blockY + 0.5f;
                 float z = chunk->world_pos.z - HALF_CHUNK + blockZ + 0.5f;
                 Vector3 block_world_pos = { x, y, z };
-                bool is_visible = false;
                 float size = 0.5f;
 
                 int block_type = chunk->blocks[blockX][blockY][blockZ].block_type;
@@ -57,7 +56,6 @@ void GenMeshChunkRework(Mesh* mesh, Chunk* chunk, HashTable* hash_table) {
                 // we will know if block is visible or not by checking all 6 sides
                 //front side (Z+)
                 if (IsBlockVisibleRework((Vector3) { block_world_pos.x, block_world_pos.y, block_world_pos.z + 1 }, hash_table)) {
-                    is_visible = true;
                     switch (block_type) {
                         case BLOCK_GRASS:
                             u_min = DIRTGRASS_TEX_COORD_U_MIN;
@@ -184,7 +182,6 @@ void GenMeshChunkRework(Mesh* mesh, Chunk* chunk, HashTable* hash_table) {
 
                 //back side (Z-)
                 if (IsBlockVisibleRework((Vector3) { block_world_pos.x, block_world_pos.y, block_world_pos.z - 1 }, hash_table)) {
-                    is_visible = true;
                     switch (block_type) {
                         case BLOCK_GRASS:
                             u_min = DIRTGRASS_TEX_COORD_U_MIN;
@@ -308,7 +305,6 @@ void GenMeshChunkRework(Mesh* mesh, Chunk* chunk, HashTable* hash_table) {
 
                 //top Y+
                 if (IsBlockVisibleRework((Vector3) { block_world_pos.x, block_world_pos.y + 1, block_world_pos.z }, hash_table)) {
-                    is_visible = true;
                     switch (block_type) {
                         case BLOCK_GRASS:
                             u_min = GRASS_LIGHT_TEX_COORD_U_MIN;
@@ -450,7 +446,6 @@ void GenMeshChunkRework(Mesh* mesh, Chunk* chunk, HashTable* hash_table) {
 
                 //bottom Y-
                 if (IsBlockVisibleRework((Vector3) { block_world_pos.x, block_world_pos.y - 1, block_world_pos.z }, hash_table)) {
-                    is_visible = true;
                     switch (block_type) {
                         case BLOCK_GRASS:
                             u_min = DIRT_DARK_TEX_COORD_U_MIN;
@@ -574,7 +569,6 @@ void GenMeshChunkRework(Mesh* mesh, Chunk* chunk, HashTable* hash_table) {
 
                 // //left (X-)
                 if (IsBlockVisibleRework((Vector3) { block_world_pos.x - 1, block_world_pos.y, block_world_pos.z }, hash_table)) {
-                    is_visible = true;
                     switch (block_type) {
                         case BLOCK_GRASS:
                             u_min = DIRTGRASS_TEX_COORD_U_MIN;
@@ -698,7 +692,6 @@ void GenMeshChunkRework(Mesh* mesh, Chunk* chunk, HashTable* hash_table) {
 
                 // //right x+
                 if (IsBlockVisibleRework((Vector3) { block_world_pos.x + 1, block_world_pos.y, block_world_pos.z }, hash_table)) {
-                    is_visible = true;
                     switch (block_type) {
                         case BLOCK_GRASS:
                             u_min = DIRTGRASS_TEX_COORD_U_MIN;
@@ -818,14 +811,6 @@ void GenMeshChunkRework(Mesh* mesh, Chunk* chunk, HashTable* hash_table) {
                     mesh->vertexCount += 6;
                     mesh->triangleCount += 2;
                     face_counter++;
-                }
-
-
-
-                if (is_visible = false) {
-                    TraceLog(LOG_WARNING, "is visible is false for some reason in GenMeshChunkRework");
-                    //basically, if we get all the way to the bottom here, the block is not visible
-                    chunk->blocks[blockX][blockY][blockZ].block_type = BLOCK_AIR;
                 }
             }
         }

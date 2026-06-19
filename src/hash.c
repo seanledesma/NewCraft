@@ -2,7 +2,7 @@
 
 //initialize all table entry keys to improbable coordinate
 //this makes it easy to tell if table entry is "open" or not later
-HashTable* InitializeTable(uint32_t capacity) {
+HashTable* InitializeTable(int capacity) {
     HashTable* hash_table = (HashTable*)calloc(1, sizeof(HashTable));
     hash_table->capacity = capacity;
     hash_table->length = 1;
@@ -25,9 +25,27 @@ HashTable* InitializeTable(uint32_t capacity) {
 }
 
 void DestroyTable(HashTable* hash_table) {
-    // for(int i = 0; i < hash_table->capacity; i++) {
-    //     free(hash_table->entries[i]);
+    // for (int i = 0; i < 100; i++) {
+    //             free(hash_table->entries[i]->chunk_mesh->mesh);
+    //     free(hash_table->entries[i]->chunk_mesh->chunk);
     // }
+
+    for (int i = 0; i < hash_table->capacity; i++) {
+        // if the entries WAS touched, key won't be 1.234
+        if (hash_table->entries[i]->key.x != 1.234f) {
+            free(hash_table->entries[i]->chunk_mesh->mesh);
+            free(hash_table->entries[i]->chunk_mesh->chunk);
+            free(hash_table->entries[i]->chunk_mesh);
+        }
+    }
+
+    // we allocated memory for all entries, but not all entries have chunkmeshes 
+    for(int i = 0; i < hash_table->capacity; i++) {
+        // free(hash_table->entries[i]->chunk_mesh->mesh);
+        // free(hash_table->entries[i]->chunk_mesh->chunk);
+        // free(hash_table->entries[i]->chunk_mesh);
+        free(hash_table->entries[i]);
+    }
     free(hash_table->entries);
     free(hash_table); //is this enough?
 }
@@ -53,28 +71,31 @@ int32_t Hash(int32_t x, int32_t y, int32_t z, int32_t size) {
 //create / add chunk to table
 ChunkMesh* CreateChunkEntry(Vector3 pos, HashTable* hash_table) {
     hash_table->length += 1;
-    TableEntry* table_entry = (TableEntry*)calloc(1, sizeof(TableEntry));
-    table_entry->chunk_mesh = gen_chunk_mesh(pos, hash_table);
-    table_entry->key = pos;
-    table_entry->empty = false;
+    // TableEntry* table_entry;
+    // table_entry->chunk_mesh = gen_chunk_mesh(pos);
+    // table_entry->key = pos;
+    // table_entry->empty = false;
 
-    table_entry->value = Hash(pos.x, pos.y, pos.z, TABLE_CAPACITY/5);
+    //table_entry->value = 
 
-    int32_t index = table_entry->value; 
+    int32_t index = Hash(pos.x, pos.y, pos.z, TABLE_CAPACITY/5); 
     //TraceLog(LOG_WARNING, "current x key before: %.2f", hash_table->entries[index]->key.x);
     while(hash_table->entries[index]->key.x != 1.234f) index++;
     //first see if that spot is taken
     if(hash_table->entries[index]->key.x == 1.234f) {
-        hash_table->entries[index] = table_entry;
-        //TraceLog(LOG_WARNING, "found spot at index: %d", index);
-        table_entry->chunk_mesh->new = true;
+        hash_table->entries[index]->chunk_mesh = (ChunkMesh*)MemAlloc(sizeof(ChunkMesh));
+        gen_chunk_mesh(pos, hash_table->entries[index]->chunk_mesh);
+        hash_table->entries[index]->key = pos;
+        hash_table->entries[index]->empty = false;
+        hash_table->entries[index]->value = index;
+        hash_table->entries[index]->chunk_mesh->new = true;
         return hash_table->entries[index]->chunk_mesh;
     } else {
         TraceLog(LOG_ERROR, "not supposed to get here, check create chunk entry");
     }
 
     TraceLog(LOG_ERROR, "something went wrong in create chunk entry");
-    return table_entry->chunk_mesh;
+    return hash_table->entries[0]->chunk_mesh;
 }
 
 //destroy chunk from table
