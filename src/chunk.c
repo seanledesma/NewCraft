@@ -7,29 +7,29 @@ void gen_chunk_mesh(Vector3 world_pos, ChunkMesh* chunk_mesh) {
 
     chunk_mesh->chunk = (Chunk*)calloc(1,sizeof(Chunk));
 
-    int num_blocks_in_chunk = CHUNK_CUBED;
+    // int num_blocks_in_chunk = CHUNK_CUBED;
 
-    int num_block_vertices = 36 * 3;
-    int num_block_texcoords = 36 * 2;
-    int num_block_normals = 36 * 3;
+    // int num_block_vertices = 36 * 3;
+    // int num_block_texcoords = 36 * 2;
+    // int num_block_normals = 36 * 3;
 
-    int num_chunk_vertices = num_block_vertices * num_blocks_in_chunk;
-    int num_chunk_texcoords = num_block_texcoords * num_blocks_in_chunk;
-    int num_chunk_normals = num_block_normals * num_blocks_in_chunk;
+    // int num_chunk_vertices = num_block_vertices * num_blocks_in_chunk;
+    // int num_chunk_texcoords = num_block_texcoords * num_blocks_in_chunk;
+    // int num_chunk_normals = num_block_normals * num_blocks_in_chunk;
 
-    //put it all together in a chunk mesh
-    chunk_mesh->mesh = (Mesh*)MemAlloc(sizeof(Mesh));
+    // //put it all together in a chunk mesh
+    // chunk_mesh->mesh = (Mesh*)MemAlloc(sizeof(Mesh));
 
-    chunk_mesh->mesh->vertices = (float *)MemAlloc(num_chunk_vertices * sizeof(float));
+    // chunk_mesh->mesh->vertices = (float *)MemAlloc(num_chunk_vertices * sizeof(float));
     
-    chunk_mesh->mesh->texcoords = (float *)MemAlloc(num_chunk_texcoords * sizeof(float));
+    // chunk_mesh->mesh->texcoords = (float *)MemAlloc(num_chunk_texcoords * sizeof(float));
    
-    chunk_mesh->mesh->normals = (float *)MemAlloc(num_chunk_normals * sizeof(float));
+    // chunk_mesh->mesh->normals = (float *)MemAlloc(num_chunk_normals * sizeof(float));
 
-    chunk_mesh->mesh->colors = (unsigned char*)MemAlloc(num_chunk_vertices * 4 * sizeof(unsigned char));
+    // chunk_mesh->mesh->colors = (unsigned char*)MemAlloc(num_chunk_vertices * 4 * sizeof(unsigned char));
 
-    chunk_mesh->mesh->vertexCount = 0;
-    chunk_mesh->mesh->triangleCount = 0;
+    // chunk_mesh->mesh->vertexCount = 0;
+    // chunk_mesh->mesh->triangleCount = 0;
    
     gen_chunk(world_pos, chunk_mesh->chunk);
 
@@ -85,6 +85,9 @@ void BreakBlock(Vector3 point, HashTable* hash_table) {
 
     TraceLog(LOG_WARNING, TextFormat("index x:%d, y:%d, z:%d", (int)chunk_index.x, (int)chunk_index.y, (int)chunk_index.z));
     chunkmesh->chunk->blocks[(int)chunk_index.x][(int)chunk_index.y][(int)chunk_index.z].block_type = BLOCK_AIR;
+    GenMeshChunkRework(chunkmesh, hash_table);
+    UploadMesh(chunkmesh->mesh, false);
+    chunkmesh->uploaded = true;
 
     chunkmesh = NULL;
 }

@@ -8,8 +8,8 @@ int main(void) {
     //SetTraceLogLevel(LOG_DEBUG);
     float debugging = true;
 
-    const int screenWidth = 2560;
-    const int screenHeight = 1440;
+    const int screenWidth = 1920;
+    const int screenHeight = 1080;
     SetConfigFlags(FLAG_WINDOW_UNDECORATED);
     //SetConfigFlags(FLAG_WINDOW_HIGHDPI);
     InitWindow(screenWidth, screenHeight, "NewCraft");
@@ -84,8 +84,8 @@ int main(void) {
 
     //then create all meshes
     for (int i = 0; i < number_of_chunkmeshes; i++) {
-        GenMeshChunkRework(chunkmeshes[i]->mesh, chunkmeshes[i]->chunk, hash_table);
-        chunkmeshes[i]->dirty = false;
+        GenMeshChunkRework(chunkmeshes[i], hash_table);
+        chunkmeshes[i]->uploaded = true;
         UploadMesh(chunkmeshes[i]->mesh, false);
     }
 
@@ -137,9 +137,9 @@ int main(void) {
             for (int i = 0; i < number_of_chunkmeshes; i++) {
                 if(DoesChunkEntryExist((Vector3) { coords[i].x, coords[i].y, coords[i].z }, hash_table)) {
                     if (chunkmeshes[i]->dirty) {
-                        chunkmeshes[i]->dirty = false;
-                        GenMeshChunkRework(chunkmeshes[i]->mesh, chunkmeshes[i]->chunk, hash_table);
+                        GenMeshChunkRework(chunkmeshes[i], hash_table);
                         UploadMesh(chunkmeshes[i]->mesh, false);
+                        chunkmeshes[i]->uploaded = true;
                     }
                 }
             }
@@ -173,14 +173,20 @@ int main(void) {
                 //make sure we are checking a chunk that exists
                 if(DoesChunkEntryExist((Vector3) { coords[i].x, coords[i].y, coords[i].z }, hash_table)) {
                     if(chunkmeshes[i]->dirty) {
-                        chunkmeshes[i]->dirty = false;
-                        GenMeshChunkRework(chunkmeshes[i]->mesh, chunkmeshes[i]->chunk, hash_table);
+                        GenMeshChunkRework(chunkmeshes[i], hash_table);
                         UploadMesh(chunkmeshes[i]->mesh, false);
+                        chunkmeshes[i]->uploaded = true;
                         break;
                     }
                 }
             }
         }
+
+        nearby_bounding_box_counter = GetNearbyBlocks(boxes, camera.position, camera.position, hash_table);
+        // Vector3 lower_upper_position = (Vector3) { camera.position.x, camera.position.y - 1, camera.position.z };
+        // nearby_bounding_box_counter += GetNearbyBlocks(boxes, lower_upper_position, lower_upper_position, hash_table);
+        // lower_upper_position = (Vector3) { camera.position.x, camera.position.y + 1, camera.position.z };
+        // nearby_bounding_box_counter += GetNearbyBlocks(boxes, lower_upper_position, lower_upper_position, hash_table);
 
         // constantly check which block the player is looking at
         ray = GetScreenToWorldRay((Vector2) { screenWidth/2, screenHeight / 2 }, camera);
@@ -204,45 +210,6 @@ int main(void) {
 
             box_counter++;
         }
-    
-        // check for dirty chunks to re-make
-        // for (int i = 0; i < number_of_chunkmeshes; i++) {
-        //     // make sure that chunk has even been made
-        //     if (DoesChunkEntryExist(coords[i], hash_table)) {
-        //         if(chunkmeshes[i]->dirty == true) {
-
-        //             chunkmeshes[i]->dirty = false;
-
-        //             UnloadMesh(*chunkmeshes[i]->mesh);
-        //             //do i need to free mesh or will that cause issues?
-        //             MemFree(chunkmeshes[i]->mesh);
-        //             Mesh* mesh = (Mesh*)calloc(1,sizeof(Mesh));
-                    
-        //             int num_blocks_in_chunk = CHUNK_CUBED;
-
-        //             int num_block_vertices = 36 * 3;
-        //             int num_block_texcoords = 36 * 2;
-        //             int num_block_normals = 36 * 3;
-
-        //             int num_chunk_vertices = num_block_vertices * num_blocks_in_chunk;
-        //             int num_chunk_texcoords = num_block_texcoords * num_blocks_in_chunk;
-        //             int num_chunk_normals = num_block_normals * num_blocks_in_chunk;
-        //             mesh->vertices = (float *)MemAlloc(num_chunk_vertices * sizeof(float));
-        
-        //             mesh->texcoords = (float *)MemAlloc(num_chunk_texcoords * sizeof(float));
-                
-        //             mesh->normals = (float *)MemAlloc(num_chunk_normals * sizeof(float));
-
-        //             mesh->vertexCount = 0;
-        //             mesh->triangleCount = 0;
-
-
-        //             chunkmeshes[i]->mesh = mesh;
-        //             GenMeshChunkRework(chunkmeshes[i]->mesh, chunkmeshes[i]->chunk, hash_table);
-        //             UploadMesh(chunkmeshes[i]->mesh, false);
-        //         }
-        //     }
-        // }
 
         //trying to figure out debug lines
         target_offset = (Vector3) { camera.target.x - camera.position.x, camera.target.y - camera.position.y, 
@@ -277,18 +244,18 @@ int main(void) {
                 // }
                 
                 DrawBoundingBox(target_box, BLACK);
-                // DrawBoundingBox(boxes[2], PURPLE);
-                // DrawBoundingBox(boxes[3], PURPLE);
-                // DrawBoundingBox(boxes[4], PURPLE);
-                // DrawBoundingBox(boxes[5], PURPLE);
-                // DrawBoundingBox(boxes[6], PURPLE);
-                // DrawBoundingBox(boxes[7], PURPLE);
-                // DrawBoundingBox(boxes[8], PURPLE);
-                // DrawBoundingBox(boxes[9], PURPLE);
+                DrawBoundingBox(boxes[2], PURPLE);
+                DrawBoundingBox(boxes[3], PURPLE);
+                DrawBoundingBox(boxes[4], PURPLE);
+                DrawBoundingBox(boxes[5], PURPLE);
+                DrawBoundingBox(boxes[6], PURPLE);
+                DrawBoundingBox(boxes[7], PURPLE);
+                DrawBoundingBox(boxes[8], PURPLE);
+                DrawBoundingBox(boxes[9], PURPLE);
 
                 DrawBoundingBox(boxes[0], PINK);
 
-                if (collision.hit) DrawCube(collision.point, 0.3f, 0.3f, 0.3f, RED);
+                //if (collision.hit) DrawCube(collision.point, 0.3f, 0.3f, 0.3f, RED);
 
                 if (debugging) {
                     DrawLine3D(target_offset, (Vector3) { target_offset.x + 0.05f, target_offset.y, target_offset.z }, RED);
@@ -312,7 +279,7 @@ int main(void) {
             //DrawText(TextFormat("counter: %d", test_counter), 10, 50, 12, YELLOW);
             //test_counter++;
 
-            if(collision.hit) DrawText("hit!", 900, 10, 50, YELLOW);
+            //if(collision.hit) DrawText("hit!", 900, 10, 50, YELLOW);
 
             // DrawRectangle((screenWidth/2) - 20, (screenHeight / 2), 45, 5, GRAY);
             // DrawRectangle((screenWidth/2), (screenHeight / 2) - 20, 5, 45, GRAY);

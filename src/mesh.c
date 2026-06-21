@@ -26,7 +26,32 @@ bool IsBlockVisibleRework(Vector3 block_world_position, HashTable* hash_table) {
     }
 }
 
-void GenMeshChunkRework(Mesh* mesh, Chunk* chunk, HashTable* hash_table) {
+void GenMeshChunkRework(ChunkMesh* chunk_mesh, HashTable* hash_table) {
+
+    chunk_mesh->dirty = false;
+
+    if(chunk_mesh->uploaded) {
+        UnloadMesh(*chunk_mesh->mesh);
+        //do i need to free mesh or will that cause issues?
+        //MemFree(chunkmeshes[i]->mesh);
+    }
+
+
+
+    //put it all together in a chunk mesh
+    chunk_mesh->mesh = (Mesh*)MemAlloc(sizeof(Mesh));
+
+    chunk_mesh->mesh->vertices = (float *)MemAlloc(NUM_CHUNK_VERTICES * sizeof(float));
+    
+    chunk_mesh->mesh->texcoords = (float *)MemAlloc(NUM_CHUNK_TEXCOORDS * sizeof(float));
+   
+    chunk_mesh->mesh->normals = (float *)MemAlloc(NUM_CHUNK_NORMALS * sizeof(float));
+
+    chunk_mesh->mesh->colors = (unsigned char*)MemAlloc(NUM_CHUNK_VERTICES * 4 * sizeof(unsigned char));
+
+    chunk_mesh->mesh->vertexCount = 0;
+    chunk_mesh->mesh->triangleCount = 0;
+
     int face_counter = 0;
     // if you see all magma, something went wrong
     float u_min = MAGMA_TEX_COORD_U_MIN;
@@ -38,17 +63,17 @@ void GenMeshChunkRework(Mesh* mesh, Chunk* chunk, HashTable* hash_table) {
     for (int blockX = 0; blockX < CHUNK_SIZE; blockX++) {
         for (int blockY = 0; blockY < CHUNK_SIZE; blockY++) {
             for (int blockZ = 0; blockZ < CHUNK_SIZE; blockZ++) {
-                float x = chunk->world_pos.x - HALF_CHUNK + blockX + 0.5f;
-                float y = chunk->world_pos.y - HALF_CHUNK + blockY + 0.5f;
-                float z = chunk->world_pos.z - HALF_CHUNK + blockZ + 0.5f;
+                float x = chunk_mesh->chunk->world_pos.x - HALF_CHUNK + blockX + 0.5f;
+                float y = chunk_mesh->chunk->world_pos.y - HALF_CHUNK + blockY + 0.5f;
+                float z = chunk_mesh->chunk->world_pos.z - HALF_CHUNK + blockZ + 0.5f;
                 Vector3 block_world_pos = { x, y, z };
                 float size = 0.5f;
 
-                int block_type = chunk->blocks[blockX][blockY][blockZ].block_type;
+                int block_type = chunk_mesh->chunk->blocks[blockX][blockY][blockZ].block_type;
 
                 if(block_type == BLOCK_AIR) {
-                    mesh->vertexCount += 36;
-                    mesh->triangleCount += 12;
+                    chunk_mesh->mesh->vertexCount += 36;
+                    chunk_mesh->mesh->triangleCount += 12;
                     continue;
                 }
 
@@ -160,22 +185,22 @@ void GenMeshChunkRework(Mesh* mesh, Chunk* chunk, HashTable* hash_table) {
                     int norm_count = (face_counter * 6 * 3);
                     int color_count = face_counter * 6 * 4;
 
-                    memcpy(mesh->vertices + vert_count, vertices, 6*3*sizeof(float));
+                    memcpy(chunk_mesh->mesh->vertices + vert_count, vertices, 6*3*sizeof(float));
                     
-                    memcpy(mesh->texcoords + tex_count, texcoords, 6*2*sizeof(float));
+                    memcpy(chunk_mesh->mesh->texcoords + tex_count, texcoords, 6*2*sizeof(float));
 
-                    memcpy(mesh->normals + norm_count, normals, 6*3*sizeof(float));
+                    memcpy(chunk_mesh->mesh->normals + norm_count, normals, 6*3*sizeof(float));
 
-                    memcpy(mesh->colors + color_count, colors, 6*4*sizeof(unsigned char));
+                    memcpy(chunk_mesh->mesh->colors + color_count, colors, 6*4*sizeof(unsigned char));
 
-                    mesh->vertexCount += 6;
-                    mesh->triangleCount += 2;
+                    chunk_mesh->mesh->vertexCount += 6;
+                    chunk_mesh->mesh->triangleCount += 2;
 
                     face_counter++;
 
                 } else {
-                    mesh->vertexCount += 6;
-                    mesh->triangleCount += 2;
+                    chunk_mesh->mesh->vertexCount += 6;
+                    chunk_mesh->mesh->triangleCount += 2;
 
                     face_counter++;
                 }
@@ -284,22 +309,23 @@ void GenMeshChunkRework(Mesh* mesh, Chunk* chunk, HashTable* hash_table) {
                     int norm_count = (face_counter * 6 * 3);
                     int color_count = face_counter * 6 * 4;
 
-                    memcpy(mesh->vertices + vert_count, vertices, 6*3*sizeof(float));
+                    memcpy(chunk_mesh->mesh->vertices + vert_count, vertices, 6*3*sizeof(float));
                     
-                    memcpy(mesh->texcoords + tex_count, texcoords, 6*2*sizeof(float));
+                    memcpy(chunk_mesh->mesh->texcoords + tex_count, texcoords, 6*2*sizeof(float));
 
-                    memcpy(mesh->normals + norm_count, normals, 6*3*sizeof(float));
+                    memcpy(chunk_mesh->mesh->normals + norm_count, normals, 6*3*sizeof(float));
 
-                    memcpy(mesh->colors + color_count, colors, 6*4*sizeof(unsigned char));
+                    memcpy(chunk_mesh->mesh->colors + color_count, colors, 6*4*sizeof(unsigned char));
 
-                    mesh->vertexCount += 6;
-                    mesh->triangleCount += 2;
+                    chunk_mesh->mesh->vertexCount += 6;
+                    chunk_mesh->mesh->triangleCount += 2;
 
                     face_counter++;
 
                 } else {
-                    mesh->vertexCount += 6;
-                    mesh->triangleCount += 2;
+                    chunk_mesh->mesh->vertexCount += 6;
+                    chunk_mesh->mesh->triangleCount += 2;
+
                     face_counter++;
                 }
 
@@ -425,22 +451,23 @@ void GenMeshChunkRework(Mesh* mesh, Chunk* chunk, HashTable* hash_table) {
                     int norm_count = (face_counter * 6 * 3);
                     int color_count = face_counter * 6 * 4;
 
-                    memcpy(mesh->vertices + vert_count, vertices, 6*3*sizeof(float));
+                    memcpy(chunk_mesh->mesh->vertices + vert_count, vertices, 6*3*sizeof(float));
                     
-                    memcpy(mesh->texcoords + tex_count, texcoords, 6*2*sizeof(float));
+                    memcpy(chunk_mesh->mesh->texcoords + tex_count, texcoords, 6*2*sizeof(float));
 
-                    memcpy(mesh->normals + norm_count, normals, 6*3*sizeof(float));
+                    memcpy(chunk_mesh->mesh->normals + norm_count, normals, 6*3*sizeof(float));
 
-                    memcpy(mesh->colors + color_count, colors, 6*4*sizeof(unsigned char));
+                    memcpy(chunk_mesh->mesh->colors + color_count, colors, 6*4*sizeof(unsigned char));
 
-                    mesh->vertexCount += 6;
-                    mesh->triangleCount += 2;
+                    chunk_mesh->mesh->vertexCount += 6;
+                    chunk_mesh->mesh->triangleCount += 2;
 
                     face_counter++;
 
                 } else {
-                    mesh->vertexCount += 6;
-                    mesh->triangleCount += 2;
+                    chunk_mesh->mesh->vertexCount += 6;
+                    chunk_mesh->mesh->triangleCount += 2;
+
                     face_counter++;
                 }
 
@@ -548,22 +575,23 @@ void GenMeshChunkRework(Mesh* mesh, Chunk* chunk, HashTable* hash_table) {
                     int norm_count = (face_counter * 6 * 3);
                     int color_count = face_counter * 6 * 4;
 
-                    memcpy(mesh->vertices + vert_count, vertices, 6*3*sizeof(float));
+                    memcpy(chunk_mesh->mesh->vertices + vert_count, vertices, 6*3*sizeof(float));
                     
-                    memcpy(mesh->texcoords + tex_count, texcoords, 6*2*sizeof(float));
+                    memcpy(chunk_mesh->mesh->texcoords + tex_count, texcoords, 6*2*sizeof(float));
 
-                    memcpy(mesh->normals + norm_count, normals, 6*3*sizeof(float));
+                    memcpy(chunk_mesh->mesh->normals + norm_count, normals, 6*3*sizeof(float));
 
-                    memcpy(mesh->colors + color_count, colors, 6*4*sizeof(unsigned char));
+                    memcpy(chunk_mesh->mesh->colors + color_count, colors, 6*4*sizeof(unsigned char));
 
-                    mesh->vertexCount += 6;
-                    mesh->triangleCount += 2;
+                    chunk_mesh->mesh->vertexCount += 6;
+                    chunk_mesh->mesh->triangleCount += 2;
 
                     face_counter++;
 
                 } else {
-                    mesh->vertexCount += 6;
-                    mesh->triangleCount += 2;
+                    chunk_mesh->mesh->vertexCount += 6;
+                    chunk_mesh->mesh->triangleCount += 2;
+
                     face_counter++;
                 }
 
@@ -670,22 +698,23 @@ void GenMeshChunkRework(Mesh* mesh, Chunk* chunk, HashTable* hash_table) {
                     int norm_count = (face_counter * 6 * 3);
                     int color_count = face_counter * 6 * 4;
 
-                    memcpy(mesh->vertices + vert_count, vertices, 6*3*sizeof(float));
+                    memcpy(chunk_mesh->mesh->vertices + vert_count, vertices, 6*3*sizeof(float));
                     
-                    memcpy(mesh->texcoords + tex_count, texcoords, 6*2*sizeof(float));
+                    memcpy(chunk_mesh->mesh->texcoords + tex_count, texcoords, 6*2*sizeof(float));
 
-                    memcpy(mesh->normals + norm_count, normals, 6*3*sizeof(float));
+                    memcpy(chunk_mesh->mesh->normals + norm_count, normals, 6*3*sizeof(float));
 
-                    memcpy(mesh->colors + color_count, colors, 6*4*sizeof(unsigned char));
+                    memcpy(chunk_mesh->mesh->colors + color_count, colors, 6*4*sizeof(unsigned char));
 
-                    mesh->vertexCount += 6;
-                    mesh->triangleCount += 2;
+                    chunk_mesh->mesh->vertexCount += 6;
+                    chunk_mesh->mesh->triangleCount += 2;
 
                     face_counter++;
 
                 } else {
-                    mesh->vertexCount += 6;
-                    mesh->triangleCount += 2;
+                    chunk_mesh->mesh->vertexCount += 6;
+                    chunk_mesh->mesh->triangleCount += 2;
+
                     face_counter++;
                 }
 
@@ -794,22 +823,23 @@ void GenMeshChunkRework(Mesh* mesh, Chunk* chunk, HashTable* hash_table) {
                     int norm_count = (face_counter * 6 * 3);
                     int color_count = face_counter * 6 * 4;
 
-                    memcpy(mesh->vertices + vert_count, vertices, 6*3*sizeof(float));
+                    memcpy(chunk_mesh->mesh->vertices + vert_count, vertices, 6*3*sizeof(float));
                     
-                    memcpy(mesh->texcoords + tex_count, texcoords, 6*2*sizeof(float));
+                    memcpy(chunk_mesh->mesh->texcoords + tex_count, texcoords, 6*2*sizeof(float));
 
-                    memcpy(mesh->normals + norm_count, normals, 6*3*sizeof(float));
+                    memcpy(chunk_mesh->mesh->normals + norm_count, normals, 6*3*sizeof(float));
 
-                    memcpy(mesh->colors + color_count, colors, 6*4*sizeof(unsigned char));
+                    memcpy(chunk_mesh->mesh->colors + color_count, colors, 6*4*sizeof(unsigned char));
 
-                    mesh->vertexCount += 6;
-                    mesh->triangleCount += 2;
+                    chunk_mesh->mesh->vertexCount += 6;
+                    chunk_mesh->mesh->triangleCount += 2;
 
                     face_counter++;
 
                 } else {
-                    mesh->vertexCount += 6;
-                    mesh->triangleCount += 2;
+                    chunk_mesh->mesh->vertexCount += 6;
+                    chunk_mesh->mesh->triangleCount += 2;
+
                     face_counter++;
                 }
             }

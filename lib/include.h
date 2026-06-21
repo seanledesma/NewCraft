@@ -30,6 +30,13 @@
 
 #define PLAYER_HEIGHT 1.8f
 
+#define NUM_BLOCK_VERTICES 36 * 3
+#define NUM_BLOCK_TEXCOORDS 36 * 2
+#define NUM_BLOCK_NORMALS 36 * 3
+#define NUM_CHUNK_VERTICES NUM_BLOCK_VERTICES * CHUNK_CUBED
+#define NUM_CHUNK_TEXCOORDS NUM_BLOCK_TEXCOORDS * CHUNK_CUBED
+#define NUM_CHUNK_NORMALS NUM_BLOCK_NORMALS * CHUNK_CUBED
+
 #define BLOCK_AIR (int8_t)0
 #define BLOCK_GRASS (int8_t)1
 #define BLOCK_DIRT (int8_t)2
@@ -101,10 +108,11 @@ typedef struct Chunk {
 } Chunk;
 
 typedef struct ChunkMesh {
-    Mesh* mesh;
-    Chunk* chunk;
     bool new;
     bool dirty;
+    bool uploaded;
+    Mesh* mesh;
+    Chunk* chunk;
 } ChunkMesh;
 
 typedef struct TableEntry {
@@ -167,7 +175,7 @@ bool IsBlockAir(Vector3 block_world_pos, HashTable* hash_table);
 //mesh.c
 void GenMeshChunk(Mesh* mesh, Chunk* chunk, HashTable* hash_table);
 void GenMeshChunkSimplified(Mesh* mesh, Chunk* chunk, HashTable* hash_table);
-void GenMeshChunkRework(Mesh* mesh, Chunk* chunk, HashTable* hash_table);
+void GenMeshChunkRework(ChunkMesh* chunk_mesh, HashTable* hash_table);
 bool IsBlockVisible(Vector3 chunk_pos, Vector3 block_pos, int blockX, int blockY, int blockZ, HashTable* hash_table);
 bool IsBlockVisibleRework(Vector3 block_world_position, HashTable* hash_table);
 //player.c

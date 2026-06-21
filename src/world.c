@@ -250,12 +250,12 @@ ChunkMesh* DeriveChunkMesh(Vector3 starting_pos, HashTable* hash_table) {
     int chunkX = (int)floor((starting_pos.x + 8) / 16) * 16;
     int chunkY = (int)floor((starting_pos.y + 8) / 16) * 16;
     int chunkZ = (int)floor((starting_pos.z + 8) / 16) * 16;
-    if(DoesChunkEntryExist((Vector3) { chunkX, chunkY, chunkZ }, hash_table)){
-        chunkmesh = FetchChunkEntry((Vector3) { chunkX, chunkY, chunkZ }, hash_table);
-    } else {
-        TraceLog(LOG_ERROR, "DERIVE CHUNK DID NOT FIND CHUNK");
-    }
-
+    // if(DoesChunkEntryExist((Vector3) { chunkX, chunkY, chunkZ }, hash_table)){
+    //     chunkmesh = FetchChunkEntry((Vector3) { chunkX, chunkY, chunkZ }, hash_table);
+    // } else {
+    //     TraceLog(LOG_ERROR, "DERIVE CHUNK DID NOT FIND CHUNK");
+    // }
+    chunkmesh = FetchChunkEntry((Vector3) { chunkX, chunkY, chunkZ }, hash_table);
     if(chunkX % CHUNK_SIZE != 0) {
         TraceLog(LOG_ERROR, "Incorrect chunk position, check world.c");
     }
@@ -267,6 +267,7 @@ bool IsBlockAir(Vector3 block_world_pos, HashTable* hash_table) {
     //allll we're gonna do is see if this block, at the given coords, is air, or no.
     Vector3 index = ConvertWorldBlockPosToChunkIndex(block_world_pos);
     ChunkMesh* chunkmesh = DeriveChunkMesh(block_world_pos, hash_table);
+    //if(DoesChunkEntryExist())
     if(chunkmesh->chunk->blocks[(int)index.x][(int)index.y][(int)index.z].block_type == BLOCK_AIR) {
         chunkmesh = NULL;
         return true;
