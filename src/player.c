@@ -8,11 +8,16 @@ void InitPlayer(Player* player, Camera* camera) {
         camera->position.z
     };
 
-    player->bounding_box.min = player->position;
+    player->bounding_box.min = (Vector3) {
+        player->position.x - (PLAYER_WIDTH / 2),
+        player->position.y,
+        player->position.z - (PLAYER_DEPTH / 2)
+    };
+
     player->bounding_box.max = (Vector3) {
-        player->position.x + 1.0,
-        player->position.y + 2.0,
-        player->position.z + 1.0
+        player->position.x + (PLAYER_WIDTH / 2),
+        player->position.y + PLAYER_HEIGHT,
+        player->position.z + (PLAYER_WIDTH / 2)
     };
 
     player->on_ground = false;
@@ -21,21 +26,33 @@ void InitPlayer(Player* player, Camera* camera) {
 }
 
 
-void UpdatePlayer(Player* player, Camera* camera, BoundingBox* boxes) {
+void UpdatePlayer(Player* player, Camera* camera, BoundingBox* boxes, int nearby_boxes_count) {
     TraceLog(LOG_DEBUG, TextFormat("camera y: %.2f", camera->position.y));
     TraceLog(LOG_DEBUG, TextFormat("player y: %.2f", player->position.y));
 
     //must update bounding box with camera's position to check if bounding box will hit
     //if bounding box hits, need to roll both camera position and bounding box position back
+    // player->bounding_box.min = (Vector3) {
+    //     camera->position.x,
+    //     camera->position.y - PLAYER_HEIGHT,
+    //     camera->position.z
+    // };
+    // player->bounding_box.max = (Vector3) {
+    //     camera->position.x + 1.0,
+    //     camera->position.y - PLAYER_HEIGHT + 2.0,
+    //     camera->position.z + 1.0
+    // };
+
     player->bounding_box.min = (Vector3) {
-        camera->position.x,
+        camera->position.x - (PLAYER_WIDTH / 2),
         camera->position.y - PLAYER_HEIGHT,
-        camera->position.z
+        camera->position.z - (PLAYER_DEPTH / 2)
     };
+
     player->bounding_box.max = (Vector3) {
-        camera->position.x + 1.0,
-        camera->position.y - PLAYER_HEIGHT + 2.0,
-        camera->position.z + 1.0
+        camera->position.x + (PLAYER_WIDTH / 2),
+        camera->position.y,
+        camera->position.z + (PLAYER_WIDTH / 2)
     };
 
 
@@ -59,46 +76,34 @@ void UpdatePlayer(Player* player, Camera* camera, BoundingBox* boxes) {
     if(CheckCollisionBoxes(player->bounding_box, boxes[0]) && player->flying == false) {
         TraceLog(LOG_DEBUG, TextFormat("hit %.5f", deltatime));
         camera->position.y = ceil(boxes[0].max.y) + PLAYER_HEIGHT + 0.00001f;
-        //camera->target.y += 0.00001f;
-        //camera->target.y -= player->target_offset;
         player->target_offset = 0;
-
-
-        //player->position.y = ceil(boxes[0].max.y) + 0.0000001f;
-        // camera->position = (Vector3) {
-        //     player->position.x,
-        //     player->position.y + PLAYER_HEIGHT,
-        //     player->position.z
-        // };
-        // player->bounding_box.min = (Vector3) {
-        //     player->position.x,
-        //     player->position.y,
-        //     player->position.z
-        // };
-        // player->bounding_box.max = (Vector3) {
-        //     player->position.x + 1.0,
-        //     player->position.y + 2.0,
-        //     player->position.z + 1.0
-        // };
-        // player->bounding_box.min = (Vector3) {
-        //     camera->position.x,
-        //     camera->position.y - PLAYER_HEIGHT,
-        //     camera->position.z
-        // };
-        // player->bounding_box.max = (Vector3) {
-        //     camera->position.x + 1.0,
-        //     camera->position.y - PLAYER_HEIGHT + 2.0,
-        //     camera->position.z + 1.0
-        // };
         player->velocity.y = 0;
         player->on_ground = true;
-    } else {
-        // player->position = (Vector3) {
-        //     camera->position.x,
-        //     camera->position.y - PLAYER_HEIGHT,
-        //     camera->position.z
-        // };
     }
+
+    // for (int i = 1; i < nearby_boxes_count; i++) {
+    //     if (CheckCollisionBoxes(player->bounding_box, boxes[i]) && player->flying == false) {
+    //         camera->position.x = player->position.x;
+    //         camera->position.z = player->position.z;
+    //     }
+    // }
+
+    /*
+        thinking.. the player needs to slide along the borders / blocks he's collided into instead of just stopping in all
+        directions. Could somehow check which face of the block the player hit so i only stop x or z, not both... how?
+    */
+    for (int i = 1; i < nearby_boxes_count; i++) {
+        if (boxes[i].min.y > camera->position.y - PLAYER_HEIGHT) {
+            if (CheckCollisionBoxes(player->bounding_box, boxes[i]) && player->flying == false) {
+                camera->position.x = player->position.x;
+                camera->position.z = player->position.z;
+                //DrawBoundingBox(boxes[i], BLUE);
+            }
+        }
+    }
+
+
+
 
     // for (int i = 0; i < 10*10*5; i++) {
     //     if(CheckCollisionBoxes(player->bounding_box, boxes[i])) {

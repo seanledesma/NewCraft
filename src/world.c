@@ -130,57 +130,54 @@ int GetNearbyBlocks(BoundingBox* boxes, Vector3 camera_pos, Vector3 player_pos, 
 
     //Vector3 base_block_index = ConvertWorldBlockPosToChunkIndex(base_block_world, hash_table);
 
-    int depth = 8;
+    //int depth = 8;
     // make sure to make coords array as big as it may ever possibly get
     //Vector3* coords = (Vector3*)MemAlloc((depth*depth*5) * sizeof(Vector3));
-    Vector3 coords[depth*depth*5];
+    Vector3 coords[MAX_NEARBY_BOXES];
     int coords_counter = 0;
-    coords_counter = SpiralTraversal2D(coords, coords_counter, base_block_world, depth);
+    coords_counter = SpiralTraversal2D(coords, coords_counter, base_block_world, NEARBY_BOX_DEPTH);
     //then get coords for y-1
-    // coords_counter = SpiralTraversal2D(coords, coords_counter, (Vector3) {
-    //     base_block_world.x,
-    //     base_block_world.y - 1,
-    //     base_block_world.z
-    // }, depth);
-    // //then get coords for y+1
-    // coords_counter = SpiralTraversal2D(coords, coords_counter, (Vector3) {
-    //     base_block_world.x,
-    //     base_block_world.y + 1,
-    //     base_block_world.z
-    // }, depth);
-    // //then get coords for y+2
-    // coords_counter = SpiralTraversal2D(coords, coords_counter, (Vector3) {
-    //     base_block_world.x,
-    //     base_block_world.y + 2,
-    //     base_block_world.z
-    // }, depth);
-    // //then get coords for y+3
-    // coords_counter = SpiralTraversal2D(coords, coords_counter, (Vector3) {
-    //     base_block_world.x,
-    //     base_block_world.y + 3,
-    //     base_block_world.z
-    // }, depth);
+    coords_counter = SpiralTraversal2D(coords, coords_counter, (Vector3) {
+        base_block_world.x,
+        base_block_world.y - 1,
+        base_block_world.z
+    }, NEARBY_BOX_DEPTH);
+    //then get coords for y+1
+    coords_counter = SpiralTraversal2D(coords, coords_counter, (Vector3) {
+        base_block_world.x,
+        base_block_world.y + 1,
+        base_block_world.z
+    }, NEARBY_BOX_DEPTH);
+    //then get coords for y+2
+    coords_counter = SpiralTraversal2D(coords, coords_counter, (Vector3) {
+        base_block_world.x,
+        base_block_world.y + 2,
+        base_block_world.z
+    }, NEARBY_BOX_DEPTH);
+    //then get coords for y+3
+    coords_counter = SpiralTraversal2D(coords, coords_counter, (Vector3) {
+        base_block_world.x,
+        base_block_world.y + 3,
+        base_block_world.z
+    }, NEARBY_BOX_DEPTH);
 
-
-    for(int i = 0; i < coords_counter; i++) {
-
-        // Vector3 index = ConvertWorldBlockPosToChunkIndex(coords[i], hash_table);
-        /*
-            I WAS THINKING... i might do this instead of is block air then skip, so it's just
-            skipping all the blocks the player can't see..
-            BUT that may require a big refactor in IsBlockVisible...
-        */
-        // if(!IsBlockVisible())
-
-        if(IsBlockAir(coords[i], hash_table) == true) {
-            continue;
+    // get how many nearby boxes there actually are (air doesn't count)
+    int nearby_boxes_count = 0;
+    Vector3 nearby_boxes_arr[MAX_NEARBY_BOXES];
+    for (int i = 0; i < coords_counter; i++) {
+        if(IsBlockAir(coords[i], hash_table) != true) {
+            nearby_boxes_arr[nearby_boxes_count] = coords[i];
+            nearby_boxes_count++;
         }
+    }
+    // add boxes to boxes array
+    for(int i = 0; i < nearby_boxes_count; i++) {
 
-        boxes[i].min = coords[i];
+        boxes[i].min = nearby_boxes_arr[i];
         boxes[i].max = (Vector3) { 
-            coords[i].x + 1.0f,
-            coords[i].y + 1.0f,
-            coords[i].z + 1.0f
+            nearby_boxes_arr[i].x + 1.0f,
+            nearby_boxes_arr[i].y + 1.0f,
+            nearby_boxes_arr[i].z + 1.0f
         };
     }
     // TraceLog(LOG_WARNING, TextFormat("block type under player: %d", DecideBlockType(coords[0])));
@@ -210,7 +207,7 @@ int GetNearbyBlocks(BoundingBox* boxes, Vector3 camera_pos, Vector3 player_pos, 
 
 
     //free(coords);
-    return coords_counter;
+    return nearby_boxes_count;
 }
 
 Chunk* GetCurrentChunk(Vector3 player_pos, HashTable* hash_table) {

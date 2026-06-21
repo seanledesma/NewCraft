@@ -57,6 +57,7 @@ int main(void) {
     total_coords = SpiralTraversal2DChunks(coords, total_coords, starting_position, depth);
     float timer_chunks = 0.0f;
     float timer_mesh = 0.0f;
+    float timer_player = 0.0f;
 
     // // inner_coords_counter = SpiralTraversal2D(inner_coords, inner_coords_counter, 
     // //     (Vector3) {
@@ -99,7 +100,7 @@ int main(void) {
     Ray ray = {0};
     RayCollision collision = {0};
     // make boxes as big as it may ever possibly get
-    BoundingBox* boxes = (BoundingBox*)MemAlloc(sizeof(BoundingBox) * depth*depth*5);
+    BoundingBox* boxes = (BoundingBox*)MemAlloc(sizeof(BoundingBox) * MAX_NEARBY_BOXES);
     int nearby_bounding_box_counter = 0;
     BoundingBox target_box = {0};
 
@@ -107,7 +108,14 @@ int main(void) {
     SetTargetFPS(120);
     while(!WindowShouldClose()) {
         UpdateCamera(&camera, cameraMode);
-        UpdatePlayer(&player, &camera, boxes);
+        UpdatePlayer(&player, &camera, boxes, nearby_bounding_box_counter);
+
+        // every tenth of a second update player location
+        timer_player += GetFrameTime();
+        if (timer_player >= 0.1f) {
+            timer_player = 0.0f;
+            player.position = camera.position;
+        }
 
         Vector3 temp_chunk_pos = DeriveChunkPosition(camera.position);
 
@@ -239,21 +247,31 @@ int main(void) {
                 //DrawMesh(*chunkmeshes[0]->mesh, material, matrix);
 
                 
-                // for(int i = 0; i < nearby_bounding_box_counter; i++) {
-                //     DrawBoundingBox(boxes[i], ORANGE);
-                // }
+                for(int i = 0; i < nearby_bounding_box_counter; i++) {
+                    DrawBoundingBox(boxes[i], WHITE);
+                }
                 
-                DrawBoundingBox(target_box, BLACK);
-                DrawBoundingBox(boxes[2], PURPLE);
-                DrawBoundingBox(boxes[3], PURPLE);
-                DrawBoundingBox(boxes[4], PURPLE);
-                DrawBoundingBox(boxes[5], PURPLE);
-                DrawBoundingBox(boxes[6], PURPLE);
-                DrawBoundingBox(boxes[7], PURPLE);
-                DrawBoundingBox(boxes[8], PURPLE);
-                DrawBoundingBox(boxes[9], PURPLE);
+                //DrawBoundingBox(target_box, RED);
+                // DrawBoundingBox(boxes[2], PURPLE);
+                // DrawBoundingBox(boxes[3], PURPLE);
+                // DrawBoundingBox(boxes[4], PURPLE);
+                // DrawBoundingBox(boxes[5], PURPLE);
+                // DrawBoundingBox(boxes[6], PURPLE);
+                // DrawBoundingBox(boxes[7], PURPLE);
+                // DrawBoundingBox(boxes[8], PURPLE);
+                // DrawBoundingBox(boxes[9], PURPLE);
 
-                DrawBoundingBox(boxes[0], PINK);
+                //DrawBoundingBox(boxes[0], PINK);
+
+                for (int i = 1; i < nearby_bounding_box_counter; i++) {
+                    if (boxes[i].min.y > camera.position.y - PLAYER_HEIGHT) {
+                        if (CheckCollisionBoxes(player.bounding_box, boxes[i]) && player.flying == false) {
+                            // camera.position.x = player.position.x;
+                            // camera.position.z = player.position.z;
+                            DrawBoundingBox(boxes[i], BLUE);
+                        }
+                    }
+                }
 
                 //if (collision.hit) DrawCube(collision.point, 0.3f, 0.3f, 0.3f, RED);
 

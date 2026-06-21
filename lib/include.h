@@ -29,6 +29,8 @@
 #define DISTANCE_BETWEEN_MEGA_CHUNKS 48
 
 #define PLAYER_HEIGHT 1.8f
+#define PLAYER_WIDTH 0.8f
+#define PLAYER_DEPTH 0.5f
 
 #define NUM_BLOCK_VERTICES 36 * 3
 #define NUM_BLOCK_TEXCOORDS 36 * 2
@@ -36,6 +38,9 @@
 #define NUM_CHUNK_VERTICES NUM_BLOCK_VERTICES * CHUNK_CUBED
 #define NUM_CHUNK_TEXCOORDS NUM_BLOCK_TEXCOORDS * CHUNK_CUBED
 #define NUM_CHUNK_NORMALS NUM_BLOCK_NORMALS * CHUNK_CUBED
+
+#define NEARBY_BOX_DEPTH 10
+#define MAX_NEARBY_BOXES NEARBY_BOX_DEPTH*NEARBY_BOX_DEPTH*5
 
 #define BLOCK_AIR (int8_t)0
 #define BLOCK_GRASS (int8_t)1
@@ -178,8 +183,9 @@ void GenMeshChunkSimplified(Mesh* mesh, Chunk* chunk, HashTable* hash_table);
 void GenMeshChunkRework(ChunkMesh* chunk_mesh, HashTable* hash_table);
 bool IsBlockVisible(Vector3 chunk_pos, Vector3 block_pos, int blockX, int blockY, int blockZ, HashTable* hash_table);
 bool IsBlockVisibleRework(Vector3 block_world_position, HashTable* hash_table);
+
 //player.c
 void InitPlayer(Player* player, Camera* camera);
-void UpdatePlayer(Player* player, Camera* camera, BoundingBox* boxes);
+void UpdatePlayer(Player* player, Camera* camera, BoundingBox* boxes, int nearby_boxes_count);
 
 #endif
