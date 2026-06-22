@@ -42,6 +42,19 @@
 #define NEARBY_BOX_DEPTH 10
 #define MAX_NEARBY_BOXES NEARBY_BOX_DEPTH*NEARBY_BOX_DEPTH*5
 
+//----------------------------------------------------------------------------------
+// RCAMERA Defines and Macros
+//----------------------------------------------------------------------------------
+#define CAMERA_MOVE_SPEED                           5.4f       // Units per second
+#define CAMERA_ROTATION_SPEED                       0.03f
+#define CAMERA_PAN_SPEED                            2.0f
+
+// Camera mouse movement sensitivity
+#define CAMERA_MOUSE_MOVE_SENSITIVITY               0.003f
+
+// Camera orbital speed in CAMERA_ORBITAL mode
+#define CAMERA_ORBITAL_SPEED                        0.5f       // Radians per second
+
 #define BLOCK_AIR (int8_t)0
 #define BLOCK_GRASS (int8_t)1
 #define BLOCK_DIRT (int8_t)2
