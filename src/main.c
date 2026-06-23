@@ -108,7 +108,7 @@ int main(void) {
     SetTargetFPS(120);
     while(!WindowShouldClose()) {
         //UpdateCameraCustom(&camera, cameraMode);
-        UpdatePlayer(&player, &camera, boxes, nearby_bounding_box_counter);
+        UpdatePlayer(&player, &camera, boxes, nearby_bounding_box_counter, hash_table);
 
         // every tenth of a second update player location
         // timer_player += GetFrameTime();

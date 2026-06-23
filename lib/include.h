@@ -29,8 +29,8 @@
 #define DISTANCE_BETWEEN_MEGA_CHUNKS 48
 
 #define PLAYER_HEIGHT 1.8f
-#define PLAYER_WIDTH 0.5f
-#define PLAYER_DEPTH 0.5f
+#define PLAYER_WIDTH 0.8f
+#define PLAYER_DEPTH 0.8f
 
 #define NUM_BLOCK_VERTICES 36 * 3
 #define NUM_BLOCK_TEXCOORDS 36 * 2
@@ -208,7 +208,7 @@ Vector3 GetPlayerUp(Player* player);
 void PlayerMoveUp(Player* player, float distance);
 void PlayerMoveForward(Player* player, float distance);
 void PlayerMoveRight(Player* player, float distance);
-void UpdatePlayer(Player* player, Camera* camera, BoundingBox* boxes, int nearby_boxes_count);
+void UpdatePlayer(Player* player, Camera* camera, BoundingBox* boxes, int nearby_boxes_count, HashTable* hash_table);
 void PlayerYaw(Player* player, float angle);
 void PlayerPitch(Player* player, float angle);
 

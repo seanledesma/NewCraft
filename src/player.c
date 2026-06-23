@@ -94,7 +94,7 @@ void PlayerMoveUp(Player* player, float distance) {
 }
 
 // to do: update camera only after updating player position, checking collisions
-void UpdatePlayer(Player* player, Camera* camera, BoundingBox* boxes, int nearby_boxes_count) {
+void UpdatePlayer(Player* player, Camera* camera, BoundingBox* boxes, int nearby_boxes_count, HashTable* hash_table) {
     float playerMoveSpeed = CAMERA_MOVE_SPEED*GetFrameTime();
     float deltatime = GetFrameTime();
 
@@ -163,7 +163,8 @@ void UpdatePlayer(Player* player, Camera* camera, BoundingBox* boxes, int nearby
     //else update player position to align with camera
     if(CheckCollisionBoxes(player->bounding_box, boxes[0]) && player->flying == false) {
         TraceLog(LOG_DEBUG, TextFormat("hit %.5f", deltatime));
-        player->position.y = ceil(boxes[0].max.y) + 0.00001f;
+        //player->position.y = ceil(boxes[0].max.y) + 0.00001f;
+        player->position.y = camera->position.y - PLAYER_HEIGHT;
         player->target_offset = 0;
         player->velocity.y = 0;
         player->on_ground = true;
@@ -184,11 +185,20 @@ void UpdatePlayer(Player* player, Camera* camera, BoundingBox* boxes, int nearby
         do some basic math to figure out where the cube is in relation to the player. or... i just do that math using the 
         bounding box and the player's location, like we know we hit, so if the box.pos.x > player.pos.x but box.pos.z (floor)
         is not then we know the player is hitting a box in the positive x direction.
+
+        flash forward a bit, player now slides along z wall, but only slides a bit on x wall. because a soon as 
+        the bounding box colliding with player is diagonal, z wall logic takes over and skips x wall logic.
+        however, seems like there's no way ...
+        well, why is it colliding diagonal on a straight wall? should always just be checking block right before, not diagonal..
+        cuz player bounding box goes further out than player, so it crosses into the next block over before the base block updates.
+        going to have to deal with diagonal cases
+
+        what if.. what if we checked all the boxes for collision, and only proceed if the box has the same x or z pos 
     */
 //    bool check_collision_x = false;
 //    bool check_collision_z = false;
     for (int i = 1; i < nearby_boxes_count; i++) {
-        if (boxes[i].min.y > player->position.y) {
+        if (boxes[i].min.y >= player->bounding_box.min.y) {
             if (CheckCollisionBoxes(player->bounding_box, boxes[i]) && player->flying == false) {
                 // i could use boxes[0] if this sticks around 
                 Vector3 base_block_world = (Vector3) {
@@ -197,29 +207,74 @@ void UpdatePlayer(Player* player, Camera* camera, BoundingBox* boxes, int nearby
                     floor(player->position.z)
                 };
                 float z_point = (boxes[i].min.z);  //find middle point
-                float x_point = (boxes[i].min.x + boxes[i].max.x) / 2;
+                float x_point = (boxes[i].min.x);
+
+                // check if we have the box right in front of player
+                if (z_point == base_block_world.z) {
+                    if (x_point < base_block_world.x) {
+                        TraceLog(LOG_WARNING, "hit x point");
+                        TraceLog(LOG_WARNING, TextFormat("player x: %.2f", base_block_world.x));
+                        player->collision_x = true;
+                        player->position.x = camera->position.x;
+                        //player->position.x = x_point + 0.0001;
+                    }
+                    if (x_point > base_block_world.x) { 
+                        TraceLog(LOG_WARNING, "hit x point prt 2");
+                        player->collision_x = true;
+                        player->position.x = camera->position.x;
+                        //player->position.x = x_point - 0.0001;
+                    }
+                }
+
+                if (x_point ==base_block_world.x) {
+                    if (z_point < base_block_world.z) {
+                        TraceLog(LOG_WARNING, "hit z point");
+                        TraceLog(LOG_WARNING, TextFormat("zPOint: %.2f", z_point));
+                        TraceLog(LOG_WARNING, TextFormat("player z: %.2f", base_block_world.z));
+                        TraceLog(LOG_WARNING, TextFormat("Xpoint: %.2f", x_point));
+                        TraceLog(LOG_WARNING, TextFormat("player x: %.2f", base_block_world.x));
+                        player->collision_z = true;
+                        player->position.z = camera->position.z;    // idea here is to keep player from going into mesh
+                    }
+                    if (z_point > base_block_world.z) {
+                        TraceLog(LOG_WARNING, "hit z point prt 2");
+                        TraceLog(LOG_WARNING, TextFormat("zPOint: %.2f", z_point));
+                        TraceLog(LOG_WARNING, TextFormat("player z: %.2f", base_block_world.z));
+                        TraceLog(LOG_WARNING, TextFormat("Xpoint: %.2f", x_point));
+                        TraceLog(LOG_WARNING, TextFormat("player x: %.2f", base_block_world.x));
+                        player->collision_z = true;
+                        player->position.z = camera->position.z;
+                    }
+                }
+
+
                 // text for positive z face of bounding box
-                if (z_point < base_block_world.z) {
-                    TraceLog(LOG_WARNING, "hit z point");
-                    TraceLog(LOG_WARNING, TextFormat("zPOint: %.2f", z_point));
-                    TraceLog(LOG_WARNING, TextFormat("player z: %.2f", base_block_world.z));
-                    player->collision_z = true;
-                    player->position.z = camera->position.z;    // idea here is to keep player from going into mesh
-                } else if (z_point > base_block_world.z) {
-                    TraceLog(LOG_WARNING, "hit z point prt 2");
-                    TraceLog(LOG_WARNING, TextFormat("zPOint: %.2f", z_point));
-                    TraceLog(LOG_WARNING, TextFormat("player z: %.2f", base_block_world.z));
-                    player->collision_z = true;
-                    player->position.z = camera->position.z;
-                } else if (x_point < base_block_world.x) {
-                    TraceLog(LOG_WARNING, "hit x point");
-                    player->collision_x = true;
-                    player->position.x = camera->position.x;
-                } else if (x_point > base_block_world.x) { 
-                    TraceLog(LOG_WARNING, "hit x point prt 2");
-                    player->collision_x = true;
-                    player->position.x = camera->position.x;
-                } else player->collision_x = false;
+                // if (z_point < base_block_world.z && x_point == base_block_world.x) {
+                //     TraceLog(LOG_WARNING, "hit z point");
+                //     TraceLog(LOG_WARNING, TextFormat("zPOint: %.2f", z_point));
+                //     TraceLog(LOG_WARNING, TextFormat("player z: %.2f", base_block_world.z));
+                //     TraceLog(LOG_WARNING, TextFormat("Xpoint: %.2f", x_point));
+                //     TraceLog(LOG_WARNING, TextFormat("player x: %.2f", base_block_world.x));
+                //     player->collision_z = true;
+                //     player->position.z = camera->position.z;    // idea here is to keep player from going into mesh
+                // } else if (z_point > base_block_world.z) {
+                //     TraceLog(LOG_WARNING, "hit z point prt 2");
+                //     TraceLog(LOG_WARNING, TextFormat("zPOint: %.2f", z_point));
+                //     TraceLog(LOG_WARNING, TextFormat("player z: %.2f", base_block_world.z));
+                //     TraceLog(LOG_WARNING, TextFormat("Xpoint: %.2f", x_point));
+                //     TraceLog(LOG_WARNING, TextFormat("player x: %.2f", base_block_world.x));
+                //     player->collision_z = true;
+                //     player->position.z = camera->position.z;
+                // } else if (x_point < base_block_world.x) {
+                //     TraceLog(LOG_WARNING, "hit x point");
+                //     TraceLog(LOG_WARNING, TextFormat("player x: %.2f", base_block_world.x));
+                //     player->collision_x = true;
+                //     player->position.x = camera->position.x;
+                // } else if (x_point > base_block_world.x) { 
+                //     TraceLog(LOG_WARNING, "hit x point prt 2");
+                //     player->collision_x = true;
+                //     player->position.x = camera->position.x;
+                // } else player->collision_x = false;
                 
 
 
@@ -248,9 +303,14 @@ void UpdatePlayer(Player* player, Camera* camera, BoundingBox* boxes, int nearby
         }
     }
 
-    if (player->collision_x == true && player->collision_z == true) {
-        player->collision_z = false;
+    //need a catch-all, if player ever gets stuck inside a block that isn't air, get out!
+    if(!IsBlockAir(player->position, hash_table)) {
+        player->position.y += 1;
     }
+
+    // if (player->collision_x == true && player->collision_z == true) {
+    //     player->collision_z = false;
+    // }
     if(player->collision_x == false) {
         camera->position.x = player->position.x;
     }
