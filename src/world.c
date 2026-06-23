@@ -3,7 +3,7 @@
 #include "FastNoiseLite.h"
 fnl_state noise;
 
-void InitWorld() {
+void InitWorld(void) {
     //setup noise
 
     noise = fnlCreateState();

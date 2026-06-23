@@ -47,7 +47,7 @@ int main(void) {
 
     //ChunkMesh* chunkmeshes[hash_table->capacity];
 
-    Vector3 starting_position = DeriveChunkPosition(camera.position);    
+    Vector3 starting_position = DeriveChunkPosition(player.position);    
     int number_of_chunkmeshes = 100;
     ChunkMesh** chunkmeshes = (ChunkMesh**)MemAlloc(hash_table->capacity * sizeof(ChunkMesh));
 
@@ -111,13 +111,13 @@ int main(void) {
         UpdatePlayer(&player, &camera, boxes, nearby_bounding_box_counter);
 
         // every tenth of a second update player location
-        timer_player += GetFrameTime();
-        if (timer_player >= 0.1f) {
-            timer_player = 0.0f;
-            player.position = camera.position;
-        }
+        // timer_player += GetFrameTime();
+        // if (timer_player >= 0.1f) {
+        //     timer_player = 0.0f;
+        //     player.position = camera.position;
+        // }
 
-        Vector3 temp_chunk_pos = DeriveChunkPosition(camera.position);
+        Vector3 temp_chunk_pos = DeriveChunkPosition(player.position);
 
         // the following creates chunks and meshes immediately surrounding player
         if ( temp_chunk_pos.x != current_chunk_pos.x 
@@ -264,7 +264,7 @@ int main(void) {
                 //DrawBoundingBox(boxes[0], PINK);
 
                 for (int i = 1; i < nearby_bounding_box_counter; i++) {
-                    if (boxes[i].min.y > camera.position.y - PLAYER_HEIGHT) {
+                    if (boxes[i].min.y > player.position.y) {
                         if (CheckCollisionBoxes(player.bounding_box, boxes[i]) && player.flying == false) {
                             // camera.position.x = player.position.x;
                             // camera.position.z = player.position.z;
@@ -286,7 +286,7 @@ int main(void) {
             EndMode3D();
 
             
-            DrawText(TextFormat("Player position x:%.2f, y:%.2f, z:%.2f", camera.position.x, camera.position.y-PLAYER_HEIGHT, camera.position.z), 
+            DrawText(TextFormat("Player position x:%.2f, y:%.2f, z:%.2f", player.position.x, player.position.y, player.position.z), 
                         140, 10, 20, YELLOW);
 
             // DrawText(TextFormat("box position x:%.2f, y:%.2f, z:%.2f", box.min.x, box.min.y, box.min.z), 

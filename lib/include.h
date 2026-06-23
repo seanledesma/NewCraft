@@ -29,7 +29,7 @@
 #define DISTANCE_BETWEEN_MEGA_CHUNKS 48
 
 #define PLAYER_HEIGHT 1.8f
-#define PLAYER_WIDTH 0.8f
+#define PLAYER_WIDTH 0.5f
 #define PLAYER_DEPTH 0.5f
 
 #define NUM_BLOCK_VERTICES 36 * 3
@@ -147,14 +147,18 @@ typedef struct HashTable {
 }HashTable;
 
 typedef struct Player {
-    Vector3 position;
-    BoundingBox bounding_box;
-    Vector3 velocity;
-    float acceleration; 
     bool on_ground;
     bool frozen;
     bool flying;
+    bool collision_x;
+    bool collision_z;
+    float acceleration; 
     float target_offset;
+    BoundingBox bounding_box;
+    Vector3 position;
+    Vector3 velocity;
+    Vector3 up;
+    Vector3 target;
 }Player;
 
 // typedef struct MegaChunk {
@@ -177,7 +181,7 @@ ChunkMesh* FetchChunkEntry(Vector3 pos, HashTable* hash_table);
 bool DoesChunkEntryExist(Vector3 pos, HashTable* hash_table);
 
 //world.c
-void InitWorld();
+void InitWorld(void);
 int8_t DecideBlockType(Vector3 block_world_pos);
 int SpiralTraversal2D(Vector3* coords, int coords_index, Vector3 pos, int depth);
 int SpiralTraversal2DChunks(Vector3* coords, int coords_index, Vector3 pos, int depth);
@@ -199,6 +203,13 @@ bool IsBlockVisibleRework(Vector3 block_world_position, HashTable* hash_table);
 
 //player.c
 void InitPlayer(Player* player, Camera* camera);
+Vector3 GetPlayerForward(Player* player);
+Vector3 GetPlayerUp(Player* player);
+void PlayerMoveUp(Player* player, float distance);
+void PlayerMoveForward(Player* player, float distance);
+void PlayerMoveRight(Player* player, float distance);
 void UpdatePlayer(Player* player, Camera* camera, BoundingBox* boxes, int nearby_boxes_count);
+void PlayerYaw(Player* player, float angle);
+void PlayerPitch(Player* player, float angle);
 
 #endif
