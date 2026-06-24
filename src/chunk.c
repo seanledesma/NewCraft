@@ -92,6 +92,21 @@ void BreakBlock(Vector3 point, HashTable* hash_table) {
     chunkmesh = NULL;
 }
 
+void PlaceBlock(Vector3 point, char block_type, HashTable* hash_table) {
+    ChunkMesh* chunkmesh = DeriveChunkMesh(point, hash_table);
+
+    chunkmesh->dirty = true;
+
+    Vector3 chunk_index = ConvertWorldBlockPosToChunkIndex(point);
+
+    chunkmesh->chunk->blocks[(int)chunk_index.x][(int)chunk_index.y][(int)chunk_index.z].block_type = block_type;
+    GenMeshChunkRework(chunkmesh, hash_table);
+    UploadMesh(chunkmesh->mesh, false);
+    chunkmesh->uploaded = true;
+
+    chunkmesh = NULL;
+}
+
 
 
 // deprecated

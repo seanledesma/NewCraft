@@ -103,8 +103,8 @@
 #define LAVA_TEX_COORD_V_MIN 0.42f
 #define LAVA_TEX_COORD_V_MAX 0.58f
 
-#define MAGMA_TEX_COORD_U_MIN 0.789f
-#define MAGMA_TEX_COORD_U_MAX 0.9f
+#define MAGMA_TEX_COORD_U_MIN 0.805f
+#define MAGMA_TEX_COORD_U_MAX 0.978f
 #define MAGMA_TEX_COORD_V_MIN 0.023f
 #define MAGMA_TEX_COORD_V_MAX 0.195f
 
@@ -152,6 +152,7 @@ typedef struct Player {
     bool flying;
     bool collision_x;
     bool collision_z;
+    char block_type;
     float acceleration; 
     float target_offset;
     BoundingBox bounding_box;
@@ -171,6 +172,7 @@ void gen_chunk_mesh(Vector3 world_pos, ChunkMesh* chunk_mesh);
 void gen_chunk(Vector3 world_pos, Chunk* chunk);
 Block gen_block(Vector3 world_pos, int blockX, int blockY, int blockZ);
 void BreakBlock(Vector3 point, HashTable* hash_table);
+void PlaceBlock(Vector3 point, char block_type, HashTable* hash_table);
 
 // hash.c
 HashTable* InitializeTable(int capacity);

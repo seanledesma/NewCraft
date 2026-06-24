@@ -133,13 +133,14 @@ int GetNearbyBlocks(BoundingBox* boxes, Vector3 camera_pos, Vector3 player_pos, 
     //int depth = 8;
     // make sure to make coords array as big as it may ever possibly get
     //Vector3* coords = (Vector3*)MemAlloc((depth*depth*5) * sizeof(Vector3));
-    Vector3 coords[MAX_NEARBY_BOXES];
-    int coords_counter = 0;
-    coords_counter = SpiralTraversal2D(coords, coords_counter, base_block_world, NEARBY_BOX_DEPTH);
+    Vector3 coords[MAX_NEARBY_BOXES + 1];
+    coords[0] = base_block_world;
+    int coords_counter = 1;
+    //coords_counter = SpiralTraversal2D(coords, coords_counter, base_block_world, NEARBY_BOX_DEPTH);
     //then get coords for y-1
     coords_counter = SpiralTraversal2D(coords, coords_counter, (Vector3) {
         base_block_world.x,
-        base_block_world.y - 1,
+        base_block_world.y + 2,
         base_block_world.z
     }, NEARBY_BOX_DEPTH);
     //then get coords for y+1
@@ -148,10 +149,11 @@ int GetNearbyBlocks(BoundingBox* boxes, Vector3 camera_pos, Vector3 player_pos, 
         base_block_world.y + 1,
         base_block_world.z
     }, NEARBY_BOX_DEPTH);
+    coords_counter = SpiralTraversal2D(coords, coords_counter, base_block_world, NEARBY_BOX_DEPTH);
     //then get coords for y+2
     coords_counter = SpiralTraversal2D(coords, coords_counter, (Vector3) {
         base_block_world.x,
-        base_block_world.y + 2,
+        base_block_world.y - 1,
         base_block_world.z
     }, NEARBY_BOX_DEPTH);
     //then get coords for y+3

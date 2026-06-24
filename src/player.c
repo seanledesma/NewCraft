@@ -24,6 +24,7 @@ void InitPlayer(Player* player, Camera* camera) {
         player->position.z + (PLAYER_WIDTH / 2)
     };
 
+    player->block_type = BLOCK_MAGMA;
     player->on_ground = false;
     player->flying = true;
     player->target_offset = 0.0f;

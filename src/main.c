@@ -211,6 +211,11 @@ int main(void) {
                     break;
                 }
 
+                if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT)) {
+                    PlaceBlock(collision.point, player.block_type, hash_table);
+                    break;
+                }
+
                 target_box = boxes[box_counter];
             } else {
                 //target_box = 0;
