@@ -100,10 +100,12 @@ int main(void) {
     Ray ray = {0};
     RayCollision collision = {0};
     RayCollision collision_test = {0};
+    bool hit = false;
     // make boxes as big as it may ever possibly get
     BoundingBox* boxes = (BoundingBox*)MemAlloc(sizeof(BoundingBox) * MAX_NEARBY_BOXES);
     int nearby_bounding_box_counter = 0;
     BoundingBox target_box = {0};
+    BoundingBox target_box_test = {0};
 
     DisableCursor();
     SetTargetFPS(120);
@@ -202,30 +204,42 @@ int main(void) {
         ray.direction = Vector3Normalize(ray.direction);
         box_counter = 0;
         //run through all nearby boxes real quick
+        //must make sure we only keep the closest box that was hit
+        hit = false;
+        collision_test.distance = 100.0f;
         for (int i = 0; i < nearby_bounding_box_counter; i++) {
             collision = GetRayCollisionBox(ray, boxes[box_counter]);
-
-
+            // need to save collision every time it hits, then only save the shortest distance collision
             if (collision.hit) {
-                if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
-                    BreakBlock(boxes[box_counter].min, hash_table);
+                hit = true;
+                if (collision.distance < collision_test.distance) {
                     collision_test = collision;
-                    break;
+                    target_box = boxes[box_counter];
                 }
-
-                if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT)) {
-                    PlaceBlock(collision.point, player.block_type, hash_table);
-                    collision_test = collision;
-                    break;
-                }
-                //collision_test = collision;
-                target_box = boxes[box_counter];
-            } else {
-                //target_box = 0;
             }
-
             box_counter++;
         }
+        collision = collision_test;
+
+        if (hit) {
+            if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+                //BreakBlock(boxes[box_counter].min, hash_table);
+                BreakBlock(target_box.min, hash_table);
+                collision_test = collision;
+            }
+
+            if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT)) {
+                //PlaceBlock(collision.point, player.block_type, hash_table);
+                PlaceBlock(&collision, player.block_type, hash_table);
+                TraceLog(LOG_WARNING, TextFormat("collision normal x: %.2f, y: %.2f, z: %.2f", collision.normal.x, collision.normal.y, collision.normal.z));
+                TraceLog(LOG_WARNING, TextFormat("ray direction x: %.2f, y: %.2f, z: %.2f", ray.direction.x, ray.direction.y, ray.direction.z));
+                TraceLog(LOG_WARNING, TextFormat("collision distance: %.2f", collision.distance));
+                //collision.distance
+                collision_test = collision;
+            }
+            //collision_test = collision;
+            //target_box = boxes[box_counter];
+        } 
 
         //trying to figure out debug lines
         target_offset = (Vector3) { camera.target.x - camera.position.x, camera.target.y - camera.position.y, 
@@ -241,7 +255,7 @@ int main(void) {
             ClearBackground(SKYBLUE);
 
             BeginMode3D(camera);
-            DrawGrid(20, 1);
+            //DrawGrid(20, 1);
 
                 for(int i = 0; i < number_of_chunkmeshes; i++) {
                     if(DoesChunkEntryExist((Vector3){coords[i].x,coords[i].y,coords[i].z},hash_table)) {
@@ -281,7 +295,7 @@ int main(void) {
                     }
                 }
 
-                if (collision_test.hit) DrawCube(collision_test.point, 0.3f, 0.3f, 0.3f, RED);
+                //if (collision_test.hit) DrawCube(collision_test.point, 0.1f, 10.0f, 0.1f, RED);
 
                 if (debugging) {
                     DrawLine3D(target_offset, (Vector3) { target_offset.x + 0.05f, target_offset.y, target_offset.z }, RED);

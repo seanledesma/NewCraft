@@ -172,7 +172,7 @@ void gen_chunk_mesh(Vector3 world_pos, ChunkMesh* chunk_mesh);
 void gen_chunk(Vector3 world_pos, Chunk* chunk);
 Block gen_block(Vector3 world_pos, int blockX, int blockY, int blockZ);
 void BreakBlock(Vector3 point, HashTable* hash_table);
-void PlaceBlock(Vector3 point, char block_type, HashTable* hash_table);
+void PlaceBlock(RayCollision* collision, char block_type, HashTable* hash_table);
 
 // hash.c
 HashTable* InitializeTable(int capacity);

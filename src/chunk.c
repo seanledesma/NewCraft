@@ -115,12 +115,21 @@ void BreakBlock(Vector3 point, HashTable* hash_table) {
     chunkmesh = NULL;
 }
 
-void PlaceBlock(Vector3 point, char block_type, HashTable* hash_table) {
-    ChunkMesh* chunkmesh = DeriveChunkMesh(point, hash_table);
+void PlaceBlock(RayCollision* collision, char block_type, HashTable* hash_table) {
+    Vector3 block_pos = {0};
+    if(collision->normal.x != 0) {
+        block_pos = (Vector3) { collision->point.x + (collision->normal.x / 2), collision->point.y, collision->point.z };
+    } else if(collision->normal.y != 0) {
+        block_pos = (Vector3) { collision->point.x, collision->point.y + (collision->normal.y / 2), collision->point.z };
+    } else if(collision->normal.z != 0) {
+        block_pos = (Vector3) { collision->point.x, collision->point.y, collision->point.z + (collision->normal.z / 2) };
+    }
+
+    ChunkMesh* chunkmesh = DeriveChunkMesh(block_pos, hash_table);
 
     chunkmesh->dirty = true;
 
-    Vector3 chunk_index = ConvertWorldBlockPosToChunkIndex(point);
+    Vector3 chunk_index = ConvertWorldBlockPosToChunkIndex(block_pos);
 
     chunkmesh->chunk->blocks[(int)chunk_index.x][(int)chunk_index.y][(int)chunk_index.z].block_type = block_type;
     GenMeshChunkRework(chunkmesh, hash_table);
