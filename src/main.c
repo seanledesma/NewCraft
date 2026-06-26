@@ -15,7 +15,7 @@ int main(void) {
     InitWindow(screenWidth, screenHeight, "NewCraft");
 
     Camera camera = { 0 };
-    camera.position = (Vector3) { 100.0f, PLAYER_HEIGHT, 100.0f };
+    camera.position = (Vector3) { 0.0f, PLAYER_HEIGHT, 0.0f };
     camera.target = (Vector3) { camera.position.x-1000, camera.position.y-1000, camera.position.z - 1000 };
     camera.up = (Vector3) { 0.0f, 1.0f, 0.0f };
     camera.fovy = 70.0f;
@@ -99,6 +99,7 @@ int main(void) {
 
     Ray ray = {0};
     RayCollision collision = {0};
+    RayCollision collision_test = {0};
     // make boxes as big as it may ever possibly get
     BoundingBox* boxes = (BoundingBox*)MemAlloc(sizeof(BoundingBox) * MAX_NEARBY_BOXES);
     int nearby_bounding_box_counter = 0;
@@ -208,14 +209,16 @@ int main(void) {
             if (collision.hit) {
                 if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
                     BreakBlock(boxes[box_counter].min, hash_table);
+                    collision_test = collision;
                     break;
                 }
 
                 if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT)) {
                     PlaceBlock(collision.point, player.block_type, hash_table);
+                    collision_test = collision;
                     break;
                 }
-
+                //collision_test = collision;
                 target_box = boxes[box_counter];
             } else {
                 //target_box = 0;
@@ -278,7 +281,7 @@ int main(void) {
                     }
                 }
 
-                //if (collision.hit) DrawCube(collision.point, 0.3f, 0.3f, 0.3f, RED);
+                if (collision_test.hit) DrawCube(collision_test.point, 0.3f, 0.3f, 0.3f, RED);
 
                 if (debugging) {
                     DrawLine3D(target_offset, (Vector3) { target_offset.x + 0.05f, target_offset.y, target_offset.z }, RED);

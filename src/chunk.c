@@ -89,6 +89,29 @@ void BreakBlock(Vector3 point, HashTable* hash_table) {
     UploadMesh(chunkmesh->mesh, false);
     chunkmesh->uploaded = true;
 
+    // need to see if any adjacent blocks happen to fall into seperate chunk, cuz if so we need to redraw that chunk as well
+    Vector3 surrounding_blocks[] = {
+        (Vector3) { point.x+1, point.y, point.z },
+        (Vector3) { point.x-1, point.y, point.z },
+        (Vector3) { point.x, point.y+1, point.z },
+        (Vector3) { point.x, point.y-1, point.z },
+        (Vector3) { point.x, point.y, point.z+1 },
+        (Vector3) { point.x, point.y, point.z-1 },
+    };
+    for (int i = 0; i < 6; i++) {
+        ChunkMesh* temp_chunkmesh = DeriveChunkMesh(surrounding_blocks[i], hash_table);
+
+        if (temp_chunkmesh->chunk->world_pos.x != chunkmesh->chunk->world_pos.x ||
+            temp_chunkmesh->chunk->world_pos.y != chunkmesh->chunk->world_pos.y || 
+            temp_chunkmesh->chunk->world_pos.z != chunkmesh->chunk->world_pos.z) {
+
+            GenMeshChunkRework(temp_chunkmesh, hash_table);
+            UploadMesh(temp_chunkmesh->mesh, false);
+            temp_chunkmesh->uploaded = true;
+        }
+        temp_chunkmesh = NULL;
+    }
+
     chunkmesh = NULL;
 }
 
