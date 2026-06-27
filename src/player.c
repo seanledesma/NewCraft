@@ -187,14 +187,14 @@ void UpdatePlayer(Player* player, Camera* camera, BoundingBox* boxes, int nearby
                 // check if we have the box right in front of player
                 if (z_point == base_block_world.z) {
                     if (x_point < base_block_world.x) {
-                        TraceLog(LOG_WARNING, "hit x point");
-                        TraceLog(LOG_WARNING, TextFormat("player x: %.2f", base_block_world.x));
+                        // TraceLog(LOG_WARNING, "hit x point");
+                        // TraceLog(LOG_WARNING, TextFormat("player x: %.2f", base_block_world.x));
                         player->collision_x = true;
                         player->position.x = camera->position.x;
                         //player->position.x = x_point + 0.0001;
                     }
                     if (x_point > base_block_world.x) { 
-                        TraceLog(LOG_WARNING, "hit x point prt 2");
+                        //TraceLog(LOG_WARNING, "hit x point prt 2");
                         player->collision_x = true;
                         player->position.x = camera->position.x;
                         //player->position.x = x_point - 0.0001;
@@ -203,20 +203,20 @@ void UpdatePlayer(Player* player, Camera* camera, BoundingBox* boxes, int nearby
 
                 if (x_point ==base_block_world.x) {
                     if (z_point < base_block_world.z) {
-                        TraceLog(LOG_WARNING, "hit z point");
-                        TraceLog(LOG_WARNING, TextFormat("zPOint: %.2f", z_point));
-                        TraceLog(LOG_WARNING, TextFormat("player z: %.2f", base_block_world.z));
-                        TraceLog(LOG_WARNING, TextFormat("Xpoint: %.2f", x_point));
-                        TraceLog(LOG_WARNING, TextFormat("player x: %.2f", base_block_world.x));
+                        // TraceLog(LOG_WARNING, "hit z point");
+                        // TraceLog(LOG_WARNING, TextFormat("zPOint: %.2f", z_point));
+                        // TraceLog(LOG_WARNING, TextFormat("player z: %.2f", base_block_world.z));
+                        // TraceLog(LOG_WARNING, TextFormat("Xpoint: %.2f", x_point));
+                        // TraceLog(LOG_WARNING, TextFormat("player x: %.2f", base_block_world.x));
                         player->collision_z = true;
                         player->position.z = camera->position.z;    // idea here is to keep player from going into mesh
                     }
                     if (z_point > base_block_world.z) {
-                        TraceLog(LOG_WARNING, "hit z point prt 2");
-                        TraceLog(LOG_WARNING, TextFormat("zPOint: %.2f", z_point));
-                        TraceLog(LOG_WARNING, TextFormat("player z: %.2f", base_block_world.z));
-                        TraceLog(LOG_WARNING, TextFormat("Xpoint: %.2f", x_point));
-                        TraceLog(LOG_WARNING, TextFormat("player x: %.2f", base_block_world.x));
+                        // TraceLog(LOG_WARNING, "hit z point prt 2");
+                        // TraceLog(LOG_WARNING, TextFormat("zPOint: %.2f", z_point));
+                        // TraceLog(LOG_WARNING, TextFormat("player z: %.2f", base_block_world.z));
+                        // TraceLog(LOG_WARNING, TextFormat("Xpoint: %.2f", x_point));
+                        // TraceLog(LOG_WARNING, TextFormat("player x: %.2f", base_block_world.x));
                         player->collision_z = true;
                         player->position.z = camera->position.z;
                     }

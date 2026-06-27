@@ -83,7 +83,7 @@ void BreakBlock(Vector3 point, HashTable* hash_table) {
 
     Vector3 chunk_index = ConvertWorldBlockPosToChunkIndex(point);
 
-    TraceLog(LOG_WARNING, TextFormat("index x:%d, y:%d, z:%d", (int)chunk_index.x, (int)chunk_index.y, (int)chunk_index.z));
+    //TraceLog(LOG_WARNING, TextFormat("index x:%d, y:%d, z:%d", (int)chunk_index.x, (int)chunk_index.y, (int)chunk_index.z));
     chunkmesh->chunk->blocks[(int)chunk_index.x][(int)chunk_index.y][(int)chunk_index.z].block_type = BLOCK_AIR;
     GenMeshChunkRework(chunkmesh, hash_table);
     UploadMesh(chunkmesh->mesh, false);

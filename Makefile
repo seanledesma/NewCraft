@@ -138,7 +138,8 @@ WEB_LIB := $(WEB_DIR)/libraylib.a
 WEB_RELEASE_FLAGS := $(WEB_COMMON_FLAGS) \
                      -Os \
                      -Wall \
-                     -s TOTAL_MEMORY=67108864 \
+                     -s ALLOW_MEMORY_GROWTH=1 \
+                     -s INITIAL_MEMORY=134217728 \
                      -s STACK_SIZE=1048576
 
 WEB_DEBUG_FLAGS := $(WEB_COMMON_FLAGS) \

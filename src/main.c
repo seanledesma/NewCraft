@@ -1,15 +1,17 @@
 #include "include.h"
 
 // TO DO NEXT
-// player collisions with floor / nearby blocks
-// add / remove blocks
+// better collisions between player / nearby blocks, prevent wall clipping / getting stuck in walls
+// more performant terrain generation
+// take a look at world gen up and down y axis (why does everything dissapear when i go up)
 
 int main(void) {
     //SetTraceLogLevel(LOG_DEBUG);
-    bool debugging = true;
+    bool debugging = false;
 
-    const int screenWidth = 1920;
-    const int screenHeight = 1080;
+    int screenWidth = 1280;
+    int screenHeight = 720;
+    SetConfigFlags(FLAG_WINDOW_RESIZABLE);
     SetConfigFlags(FLAG_WINDOW_UNDECORATED);
     //SetConfigFlags(FLAG_WINDOW_HIGHDPI);
     InitWindow(screenWidth, screenHeight, "NewCraft");
@@ -110,6 +112,10 @@ int main(void) {
     DisableCursor();
     SetTargetFPS(120);
     while(!WindowShouldClose()) {
+        if (IsWindowResized()) {
+            screenWidth = GetScreenWidth();
+            screenHeight = GetScreenHeight();
+        }
         //UpdateCameraCustom(&camera, cameraMode);
         UpdatePlayer(&player, &camera, boxes, nearby_bounding_box_counter, hash_table);
 
@@ -231,9 +237,9 @@ int main(void) {
             if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT)) {
                 //PlaceBlock(collision.point, player.block_type, hash_table);
                 PlaceBlock(&collision, player.block_type, hash_table);
-                TraceLog(LOG_WARNING, TextFormat("collision normal x: %.2f, y: %.2f, z: %.2f", collision.normal.x, collision.normal.y, collision.normal.z));
-                TraceLog(LOG_WARNING, TextFormat("ray direction x: %.2f, y: %.2f, z: %.2f", ray.direction.x, ray.direction.y, ray.direction.z));
-                TraceLog(LOG_WARNING, TextFormat("collision distance: %.2f", collision.distance));
+                // TraceLog(LOG_WARNING, TextFormat("collision normal x: %.2f, y: %.2f, z: %.2f", collision.normal.x, collision.normal.y, collision.normal.z));
+                // TraceLog(LOG_WARNING, TextFormat("ray direction x: %.2f, y: %.2f, z: %.2f", ray.direction.x, ray.direction.y, ray.direction.z));
+                // TraceLog(LOG_WARNING, TextFormat("collision distance: %.2f", collision.distance));
                 //collision.distance
                 collision_test = collision;
             }
@@ -275,7 +281,7 @@ int main(void) {
                 }
                 
                 
-                //DrawBoundingBox(target_box, RED);
+                DrawBoundingBox(target_box, WHITE);
                 // DrawBoundingBox(boxes[2], PURPLE);
                 // DrawBoundingBox(boxes[3], PURPLE);
                 // DrawBoundingBox(boxes[4], PURPLE);
@@ -308,9 +314,11 @@ int main(void) {
 
             EndMode3D();
 
-            
-            DrawText(TextFormat("Player position x:%.2f, y:%.2f, z:%.2f", player.position.x, player.position.y, player.position.z), 
+            if (debugging) {
+                DrawText(TextFormat("Player position x:%.2f, y:%.2f, z:%.2f", player.position.x, player.position.y, player.position.z), 
                         140, 10, 20, YELLOW);
+            }
+            
 
             // DrawText(TextFormat("box position x:%.2f, y:%.2f, z:%.2f", box.min.x, box.min.y, box.min.z), 
             //             540, 10, 20, YELLOW);
