@@ -6,7 +6,7 @@
 
 int main(void) {
     //SetTraceLogLevel(LOG_DEBUG);
-    float debugging = true;
+    bool debugging = true;
 
     const int screenWidth = 1920;
     const int screenHeight = 1080;
@@ -268,10 +268,12 @@ int main(void) {
 
                 //DrawMesh(*chunkmeshes[0]->mesh, material, matrix);
 
-                
-                for(int i = 0; i < nearby_bounding_box_counter; i++) {
-                    DrawBoundingBox(boxes[i], WHITE);
+                if (debugging) {
+                    for(int i = 0; i < nearby_bounding_box_counter; i++) {
+                        DrawBoundingBox(boxes[i], WHITE);
+                    }
                 }
+                
                 
                 //DrawBoundingBox(target_box, RED);
                 // DrawBoundingBox(boxes[2], PURPLE);
@@ -304,7 +306,6 @@ int main(void) {
                 }
 
 
-
             EndMode3D();
 
             
@@ -321,10 +322,15 @@ int main(void) {
 
             //if(collision.hit) DrawText("hit!", 900, 10, 50, YELLOW);
 
-            // DrawRectangle((screenWidth/2) - 20, (screenHeight / 2), 45, 5, GRAY);
-            // DrawRectangle((screenWidth/2), (screenHeight / 2) - 20, 5, 45, GRAY);
+            if (debugging == false) {
+                DrawRectangle((screenWidth/2) - 20, (screenHeight / 2), 45, 5, GRAY);
+                DrawRectangle((screenWidth/2), (screenHeight / 2) - 20, 5, 45, GRAY);
+            }
+
             DrawFPS(10, 10);
         EndDrawing();
+        //debugging
+        if (IsKeyPressed(KEY_GRAVE)) debugging = !debugging;
     }
 
     for (int i = 0; i < number_of_chunkmeshes; i++) {
