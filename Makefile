@@ -111,7 +111,12 @@ else ifeq ($(PLATFORM),macOS)
                           -fsanitize=undefined \
                           -fno-omit-frame-pointer \
                           -fstack-protector-strong \
-                          -fsanitize-recover=signed-integer-overflow
+                          -fsanitize-recover=signed-integer-overflow \
+						  -fprofile-instr-generate \
+						  -fcoverage-mapping
+# xcrun llvm-profdata merge -output=ordered.profdata default.profraw
+# xcrun llvm-cov show ./bin/game_debug -instr-profile=ordered.profdata
+# 
 else
     NATIVE_DEBUG_FLAGS := $(NATIVE_COMMON_FLAGS) \
                           -g3 \

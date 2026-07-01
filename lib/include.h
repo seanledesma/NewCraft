@@ -6,6 +6,7 @@
 #include <string.h>
 #include <stdint.h>
 
+#include <pthread.h>
 
 #ifndef INCLUDE_H
 #define INCLUDE_H
@@ -162,6 +163,11 @@ typedef struct Player {
     Vector3 target;
 }Player;
 
+typedef struct ThreadStruct {
+    ChunkMesh* chunkmesh;
+    HashTable* hashtable;
+}ThreadStruct;
+
 // typedef struct MegaChunk {
 //     ChunkMesh* chunkmeshes[3*3*3];
 //     Vector3 center_pos;
@@ -200,6 +206,7 @@ bool IsBlockAir(Vector3 block_world_pos, HashTable* hash_table);
 void GenMeshChunk(Mesh* mesh, Chunk* chunk, HashTable* hash_table);
 void GenMeshChunkSimplified(Mesh* mesh, Chunk* chunk, HashTable* hash_table);
 void GenMeshChunkRework(ChunkMesh* chunk_mesh, HashTable* hash_table);
+void* GenMeshChunkReworkVoid(void* arg);
 bool IsBlockVisible(Vector3 chunk_pos, Vector3 block_pos, int blockX, int blockY, int blockZ, HashTable* hash_table);
 bool IsBlockVisibleRework(Vector3 block_world_position, HashTable* hash_table);
 

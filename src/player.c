@@ -96,7 +96,12 @@ void PlayerMoveUp(Player* player, float distance) {
 
 // to do: update camera only after updating player position, checking collisions
 void UpdatePlayer(Player* player, Camera* camera, BoundingBox* boxes, int nearby_boxes_count, HashTable* hash_table) {
-    float playerMoveSpeed = CAMERA_MOVE_SPEED*GetFrameTime();
+    float playerMoveSpeed = 0.0f;
+    if (player->flying) {
+        playerMoveSpeed = 14*GetFrameTime();
+    } else {
+        playerMoveSpeed = CAMERA_MOVE_SPEED*GetFrameTime();
+    }
     float deltatime = GetFrameTime();
 
     Vector2 mousePositionDelta = GetMouseDelta();
