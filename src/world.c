@@ -17,7 +17,7 @@ void InitWorld(void) {
 int8_t DecideBlockType(Vector3 block_world_pos) {
     //will return a value between -1 and 1 !!
     float height = fnlGetNoise2D(&noise, block_world_pos.x, block_world_pos.z);
-    height *= 5;
+    height *= 15;
     height = floor(height);
 
     if (block_world_pos.y > height) return BLOCK_AIR;
@@ -165,7 +165,7 @@ int GetNearbyBlocks(BoundingBox* boxes, Vector3 camera_pos, Vector3 player_pos, 
 
     // get how many nearby boxes there actually are (air doesn't count)
     int nearby_boxes_count = 0;
-    Vector3 nearby_boxes_arr[MAX_NEARBY_BOXES];
+    Vector3 nearby_boxes_arr[MAX_NEARBY_BOXES + 1];
     for (int i = 0; i < coords_counter; i++) {
         if(IsBlockAir(coords[i], hash_table) != true) {
             nearby_boxes_arr[nearby_boxes_count] = coords[i];

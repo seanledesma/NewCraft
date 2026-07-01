@@ -854,6 +854,8 @@ void* GenMeshChunkReworkVoid(void* arg) {
 
     chunk_mesh->dirty = false;
 
+    chunk_mesh->generating = true;
+
     if(chunk_mesh->uploaded) {
         UnloadMesh(*chunk_mesh->mesh);
         //do i need to free mesh or will that cause issues?
@@ -1670,6 +1672,8 @@ void* GenMeshChunkReworkVoid(void* arg) {
         }
     }
     //chunk_mesh->dirty = false;
-
-    pthread_exit;
+    // UploadMesh(chunk_mesh->mesh, false);
+    // chunk_mesh->uploaded = true;
+    chunk_mesh->generating = false;
+    pthread_exit(NULL);
 }

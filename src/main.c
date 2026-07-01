@@ -52,32 +52,30 @@ int main(void) {
     //ChunkMesh* chunkmeshes[hash_table->capacity];
 
     Vector3 starting_position = DeriveChunkPosition(player.position);    
-    int number_of_chunkmeshes = 100;
+    
     ChunkMesh** chunkmeshes = (ChunkMesh**)MemAlloc(hash_table->capacity * sizeof(ChunkMesh));
 
     int depth = 10;
     Vector3* coords = (Vector3*)MemAlloc(hash_table->capacity * sizeof(Vector3));
     int total_coords = 0;
     total_coords = SpiralTraversal2DChunks(coords, total_coords, starting_position, depth);
-    float timer_chunks = 0.0f;
-    float timer_mesh = 0.0f;
-    float timer_mesh_uploaded = 0.0f;
-    float timer_player = 0.0f;
+    float timer = 0.0f;
 
-    // // inner_coords_counter = SpiralTraversal2D(inner_coords, inner_coords_counter, 
-    // //     (Vector3) {
-    // //         starting_position.x,
-    // //         starting_position.y + 1,
-    // //         starting_position.z
-    // //     }, depth);
+    total_coords = SpiralTraversal2DChunks(coords, total_coords, 
+        (Vector3) {
+            starting_position.x,
+            starting_position.y + CHUNK_SIZE,
+            starting_position.z
+        }, depth);
 
-    // // inner_coords_counter = SpiralTraversal2D(inner_coords, inner_coords_counter, 
-    // //     (Vector3) {
-    // //         starting_position.x,
-    // //         starting_position.y - 1,
-    // //         starting_position.z
-    // //     }, depth);
+    total_coords = SpiralTraversal2DChunks(coords, total_coords, 
+        (Vector3) {
+            starting_position.x,
+            starting_position.y - CHUNK_SIZE,
+            starting_position.z
+        }, depth);
 
+    int number_of_chunkmeshes = total_coords;
 
     //create all chunks closet to player
     for (int i = 0; i < number_of_chunkmeshes; i++) {
@@ -107,7 +105,7 @@ int main(void) {
     RayCollision collision_test = {0};
     bool hit = false;
     // make boxes as big as it may ever possibly get
-    BoundingBox* boxes = (BoundingBox*)MemAlloc(sizeof(BoundingBox) * MAX_NEARBY_BOXES);
+    BoundingBox* boxes = (BoundingBox*)MemAlloc(sizeof(BoundingBox) * MAX_NEARBY_BOXES + 1);
     int nearby_bounding_box_counter = 0;
     BoundingBox target_box = {0};
     BoundingBox target_box_test = {0};
@@ -140,43 +138,19 @@ int main(void) {
 
             total_coords = 0;
             total_coords = SpiralTraversal2DChunks(coords, total_coords, current_chunk_pos, depth);
+            total_coords = SpiralTraversal2DChunks(coords, total_coords, 
+                (Vector3) {
+                    current_chunk_pos.x,
+                    current_chunk_pos.y + CHUNK_SIZE,
+                    current_chunk_pos.z
+                }, depth);
 
-            // changing this to JUST grab the immediate chunk
-            // chunkmeshes[0] = FetchChunkEntry((Vector3) { 
-            //     coords[0].x,
-            //     coords[0].y,
-            //     coords[0].z
-            // }, hash_table);
-
-            // if (chunkmeshes[0]->dirty) {
-            //     GenMeshChunkRework(chunkmeshes[0], hash_table);
-            //     UploadMesh(chunkmeshes[0]->mesh, false);
-            //     chunkmeshes[0]->uploaded = true;
-            // }
-
-
-            //create all chunks closet to player
-            //if they don't exist yet, DON'T create them all at once, just skip for now
-            // for (int i = 0; i < number_of_chunkmeshes; i++) {
-            //     if(DoesChunkEntryExist((Vector3) { coords[i].x, coords[i].y, coords[i].z }, hash_table)) {                                                    
-            //         chunkmeshes[i] = FetchChunkEntry((Vector3) { 
-            //             coords[i].x,
-            //             coords[i].y,
-            //             coords[i].z
-            //         }, hash_table);
-            //     }
-            // }
-
-            //then create all meshes IF there are any new ones
-            // for (int i = 0; i < number_of_chunkmeshes; i++) {
-            //     if(DoesChunkEntryExist((Vector3) { coords[i].x, coords[i].y, coords[i].z }, hash_table)) {
-            //         if (chunkmeshes[i]->dirty) {
-            //             GenMeshChunkRework(chunkmeshes[i], hash_table);
-            //             UploadMesh(chunkmeshes[i]->mesh, false);
-            //             chunkmeshes[i]->uploaded = true;
-            //         }
-            //     }
-            // }
+            total_coords = SpiralTraversal2DChunks(coords, total_coords, 
+                (Vector3) {
+                    current_chunk_pos.x,
+                    current_chunk_pos.y - CHUNK_SIZE,
+                    current_chunk_pos.z
+                }, depth);
 
             // is this fast enough i can just run through it real quick with no noticeable penalty?
             for (int i = 0; i < number_of_chunkmeshes; i++) {
@@ -190,132 +164,45 @@ int main(void) {
 
         }
 
-        // run through all CREATED chunkmeshes nearby every frame to make sure they are in the chunkmeshes array
-        // for (int i = 0; i < number_of_chunkmeshes; i++) {
-        //     if(DoesChunkEntryExist((Vector3) { coords[i].x, coords[i].y, coords[i].z }, hash_table)) {
-        //         // if the entry exists, we must suppose the mesh has been created... need to track that
-        //         chunkmeshes[i] = FetchChunkEntry((Vector3) { 
-        //             coords[i].x,
-        //             coords[i].y,
-        //             coords[i].z
-        //         }, hash_table);
-        //     }
-        // }
-
-
-
-        // in the background, slowly generate chunk data without generating meshes yet
-        timer_chunks += GetFrameTime();
-        timer_mesh += GetFrameTime();
-        timer_mesh_uploaded += GetFrameTime();
-        // if (timer_chunks > 0.1) {
-        //     timer_chunks = 0.0f;
-
-        //     // go through coords up to number of chunkmeshes, if they HAVN'T been made, make one then break
-        //     for (int i = 0; i < number_of_chunkmeshes; i++) {
-        //         if(!DoesChunkEntryExist((Vector3) { coords[i].x, coords[i].y, coords[i].z }, hash_table)) {                                                    
-        //             chunkmeshes[i] = FetchChunkEntry((Vector3) { 
-        //                 coords[i].x,
-        //                 coords[i].y,
-        //                 coords[i].z
-        //             }, hash_table);
-
-        //             break;
-        //         }
-        //     }
-        //     /*
-        //         optional: i could then run through ALL coords, basically past total number of chunkmeshes to end of coords
-        //         and unload meshes if they exist to save on memory space.
-        //     */
-        // }
-
-        // if(timer_mesh >= 0.1) {
-        //     timer_mesh = 0;
-            
-        //     for (int i = 0; i < number_of_chunkmeshes; i++) {
-        //         //make sure we are checking a chunk that exists
-        //         // if(DoesChunkEntryExist((Vector3) { coords[i].x, coords[i].y, coords[i].z }, hash_table)) {
-        //         //     if(chunkmeshes[i]->dirty) {
-        //         //         GenMeshChunkRework(chunkmeshes[i], hash_table);
-        //         //         UploadMesh(chunkmeshes[i]->mesh, false);
-        //         //         chunkmeshes[i]->uploaded = true;
-        //         //         break;
-        //         //     }
-        //         // }
-
-
-        //         if(chunkmeshes[i]->dirty) {
-        //             rmt_BeginCPUSample(GenMeshChunkReworkk, 0);
-        //             rmt_LogText("Time me, please!");
-        //             // ChunkMesh** chunkmesh = (ChunkMesh**)MemAlloc(sizeof(ChunkMesh));
-        //             // **chunkmesh = *chunkmeshes[i];
-        //             //ThreadStruct threadstruct = {chunkmeshes[i], hash_table};
-        //             ThreadStruct* thread_struct = (ThreadStruct*)MemAlloc(sizeof(ThreadStruct));
-        //             thread_struct->chunkmesh = chunkmeshes[i];
-        //             thread_struct->hashtable = hash_table;
-        //             pthread_create(&thread_1, NULL, GenMeshChunkReworkVoid, thread_struct);
-        //             // pthread_join(thread_1, NULL);
-        //             //GenMeshChunkRework(chunkmeshes[i], hash_table);
-                    
-        //             rmt_EndCPUSample();
-        //             break;
-        //         }
-        //     }
-            
-        // }
-
         for (int i = 0; i < number_of_chunkmeshes; i++) {
-            //make sure we are checking a chunk that exists
-            // if(DoesChunkEntryExist((Vector3) { coords[i].x, coords[i].y, coords[i].z }, hash_table)) {
-            //     if(chunkmeshes[i]->dirty) {
-            //         GenMeshChunkRework(chunkmeshes[i], hash_table);
-            //         UploadMesh(chunkmeshes[i]->mesh, false);
-            //         chunkmeshes[i]->uploaded = true;
-            //         break;
-            //     }
-            // }
-
-
             if(chunkmeshes[i]->dirty) {
-                // ChunkMesh** chunkmesh = (ChunkMesh**)MemAlloc(sizeof(ChunkMesh));
-                // **chunkmesh = *chunkmeshes[i];
-                //ThreadStruct threadstruct = {chunkmeshes[i], hash_table};
                 ThreadStruct* thread_struct = (ThreadStruct*)MemAlloc(sizeof(ThreadStruct));
                 thread_struct->chunkmesh = chunkmeshes[i];
                 thread_struct->hashtable = hash_table;
                 pthread_create(&thread_1, NULL, GenMeshChunkReworkVoid, thread_struct);
-                // pthread_join(thread_1, NULL);
-                //GenMeshChunkRework(chunkmeshes[i], hash_table);
-                
                 break;
             }
         }
 
         //maybe we seperate uploading mesh as well?
-        if(timer_mesh_uploaded >= 0.2) {
-            timer_mesh_uploaded = 0.0f;
-            for (int i = 0; i < number_of_chunkmeshes; i++) {
-                if(!chunkmeshes[i]->uploaded && !chunkmeshes[i]->dirty) {
-                    UploadMesh(chunkmeshes[i]->mesh, false);
-                    chunkmeshes[i]->uploaded = true;
-                    break;
-                }
+        for (int i = 0; i < number_of_chunkmeshes; i++) {
+            if(!chunkmeshes[i]->uploaded && !chunkmeshes[i]->dirty && !chunkmeshes[i]->generating) {
+                UploadMesh(chunkmeshes[i]->mesh, false);
+                chunkmeshes[i]->uploaded = true;
+                break;
             }
         }
 
-        // for (int i = 0; i < number_of_chunkmeshes; i++) {
-        //     if(!chunkmeshes[i]->uploaded && !chunkmeshes[i]->dirty) {
-        //         UploadMesh(chunkmeshes[i]->mesh, false);
-        //         chunkmeshes[i]->uploaded = true;
-        //         break;
+        // every once in a while, run through already loaded chunks and reload them to reduce faces drawn
+        // this whole thing is stupid
+        // timer += GetFrameTime();
+        // if(timer >= 1.0f) {
+        //     timer = 0.0f;
+        //     for (int i = 0; i < number_of_chunkmeshes; i++) {
+        //         if(DoesChunkEntryExist((Vector3) { coords[i].x, coords[i].y, coords[i].z }, hash_table)) {
+        //             // if there is a single dirty chunk, don't do anything yet
+        //             if(chunkmeshes[i]->dirty) break;
+        //             if(i == number_of_chunkmeshes-1) {
+        //                 for (int j = 0; j < number_of_chunkmeshes; j++) {
+        //                     chunkmeshes[j]->dirty = true;
+        //                 }
+        //             }
+        //         }
+                
         //     }
         // }
 
         nearby_bounding_box_counter = GetNearbyBlocks(boxes, camera.position, camera.position, hash_table);
-        // Vector3 lower_upper_position = (Vector3) { camera.position.x, camera.position.y - 1, camera.position.z };
-        // nearby_bounding_box_counter += GetNearbyBlocks(boxes, lower_upper_position, lower_upper_position, hash_table);
-        // lower_upper_position = (Vector3) { camera.position.x, camera.position.y + 1, camera.position.z };
-        // nearby_bounding_box_counter += GetNearbyBlocks(boxes, lower_upper_position, lower_upper_position, hash_table);
 
         // constantly check which block the player is looking at
         ray = GetScreenToWorldRay((Vector2) { screenWidth/2, screenHeight / 2 }, camera);
@@ -469,6 +356,7 @@ int main(void) {
     //     free(chunkmeshes[i]);
     // }
 
+    pthread_cancel(thread_1);   // to stop use after free errors?
     free(coords);
     free(chunkmeshes);
     free(boxes);

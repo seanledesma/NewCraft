@@ -231,7 +231,7 @@ void UpdatePlayer(Player* player, Camera* camera, BoundingBox* boxes, int nearby
     }
 
     //need a catch-all, if player ever gets stuck inside a block that isn't air, get out!
-    if(!IsBlockAir(player->position, hash_table)) {
+    if(!IsBlockAir(player->position, hash_table) && player->flying == false) {
         player->position.y += 1;
     }
 

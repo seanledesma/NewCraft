@@ -130,6 +130,7 @@ typedef struct ChunkMesh {
     bool new;
     bool dirty;
     bool uploaded;
+    bool generating;
     Mesh* mesh;
     Chunk* chunk;
 } ChunkMesh;
