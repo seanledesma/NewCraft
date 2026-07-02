@@ -7,6 +7,8 @@
 #include <stdint.h>
 
 #include <pthread.h>
+#include <stdio.h>
+#include <time.h>
 
 #ifndef INCLUDE_H
 #define INCLUDE_H

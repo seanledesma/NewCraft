@@ -4,6 +4,10 @@
 // better collisions between player / nearby blocks, prevent wall clipping / getting stuck in walls
 // more performant terrain generation
 // take a look at world gen up and down y axis (why does everything dissapear when i go up)
+// realllyy need to lower memory consumption
+// put some clouds in the sky
+// caves!
+// three threads or more for each y axis terrain gen?
 
 int main(void) {
     //SetTraceLogLevel(LOG_DEBUG);
@@ -78,22 +82,22 @@ int main(void) {
     int number_of_chunkmeshes = total_coords;
 
     //create all chunks closet to player
-    for (int i = 0; i < number_of_chunkmeshes; i++) {
-        chunkmeshes[i] = FetchChunkEntry((Vector3) { 
-            coords[i].x,
-            coords[i].y,
-            coords[i].z
-         }, hash_table);
-    }
+    // for (int i = 0; i < number_of_chunkmeshes; i++) {
+    //     chunkmeshes[i] = FetchChunkEntry((Vector3) { 
+    //         coords[i].x,
+    //         coords[i].y,
+    //         coords[i].z
+    //      }, hash_table);
+    // }
 
     //then create all meshes
-    for (int i = 0; i < number_of_chunkmeshes; i++) {
-        GenMeshChunkRework(chunkmeshes[i], hash_table);
-        chunkmeshes[i]->uploaded = true;
-        UploadMesh(chunkmeshes[i]->mesh, false);
-    }
+    // for (int i = 0; i < number_of_chunkmeshes; i++) {
+    //     GenMeshChunkRework(chunkmeshes[i], hash_table);
+    //     chunkmeshes[i]->uploaded = true;
+    //     UploadMesh(chunkmeshes[i]->mesh, false);
+    // }
 
-    Vector3 current_chunk_pos = starting_position;
+    Vector3 current_chunk_pos = {-1000.0f, -1000.0f, -1000.0f};;
 
     //chunkmeshes[0] = FetchChunkEntry(starting_position, hash_table);
     // GenMeshChunk(chunkmeshes[0]->mesh, chunkmeshes[0]->chunk, hash_table);
@@ -212,7 +216,7 @@ int main(void) {
         //must make sure we only keep the closest box that was hit
         hit = false;
         collision_test.distance = 100.0f;
-        for (int i = 0; i < nearby_bounding_box_counter; i++) {
+        for (int i = 0; i < nearby_bounding_box_counter-1; i++) {
             collision = GetRayCollisionBox(ray, boxes[box_counter]);
             // need to save collision every time it hits, then only save the shortest distance collision
             if (collision.hit) {
@@ -292,7 +296,7 @@ int main(void) {
 
                 //DrawBoundingBox(boxes[0], PINK);
 
-                for (int i = 1; i < nearby_bounding_box_counter; i++) {
+                for (int i = 1; i < nearby_bounding_box_counter-1; i++) {
                     if (boxes[i].min.y > player.position.y) {
                         if (CheckCollisionBoxes(player.bounding_box, boxes[i]) && player.flying == false) {
                             // camera.position.x = player.position.x;

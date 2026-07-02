@@ -177,7 +177,7 @@ void UpdatePlayer(Player* player, Camera* camera, BoundingBox* boxes, int nearby
     }
 
 
-    for (int i = 1; i < nearby_boxes_count; i++) {
+    for (int i = 1; i < nearby_boxes_count-1; i++) {
         if (boxes[i].min.y >= player->bounding_box.min.y) {
             if (CheckCollisionBoxes(player->bounding_box, boxes[i]) && player->flying == false) {
                 // i could use boxes[0] if this sticks around 

@@ -2,22 +2,60 @@
 #define FNL_IMPL
 #include "FastNoiseLite.h"
 fnl_state noise;
+fnl_state noise3D;
 
 void InitWorld(void) {
     //setup noise
 
     noise = fnlCreateState();
-    noise.seed = 1234;
+    //noise.seed = 1234;
+    srand(time(0));
+    noise.seed = rand();
     //noise.noise_type = FNL_NOISE_OPENSIMPLEX2;
-    //noise.noise_type = FNL_NOISE_PERLIN;
-    noise.noise_type = FNL_NOISE_OPENSIMPLEX2S;
-    noise.frequency = 0.03f;
+    noise.noise_type = FNL_NOISE_PERLIN;
+    //noise.noise_type = FNL_NOISE_OPENSIMPLEX2S;
+    //noise.noise_type = FNL_NOISE_CELLULAR;
+    noise.frequency = 0.006f;
+
+    // noise.cellular_distance_func = FNL_CELLULAR_DISTANCE_EUCLIDEAN;
+    // noise.cellular_return_type = FNL_CELLULAR_RETURN_TYPE_DISTANCE;
+    // noise.cellular_jitter_mod = 1.390;
+
+    // noise.domain_warp_amp = 159.5f;
+    // noise.domain_warp_type = FNL_NOISE_OPENSIMPLEX2;
+
+    //noise.fractal_type = FNL_FRACTAL_FBM;
+    //noise.fractal_type = FNL_FRACTAL_RIDGED;
+    noise.fractal_type = FNL_FRACTAL_PINGPONG;
+    noise.octaves = 3.0f;
+    noise.lacunarity = 2.0f;
+    noise.gain = 0.45f;
+    noise.weighted_strength = 0.91f;
+
+
+    //cave noise
+    noise3D = fnlCreateState();
+    noise3D.seed = rand();
+
+    noise3D.noise_type = FNL_NOISE_OPENSIMPLEX2;
+    noise3D.frequency = 0.015;
+
+    //noise3D.fractal_type = FNL_FRACTAL_FBM;
+    //noise3D.fractal_type = FNL_FRACTAL_PINGPONG;
+    noise3D.fractal_type = FNL_FRACTAL_RIDGED;
+    noise3D.octaves = 3.0f;
+    noise3D.lacunarity = 2.0f;
+    noise3D.gain = 0.5f;
+    // noise3D.weighted_strength = 0.9f;
+    // noise3D.ping_pong_strength = 2.0f;
+    
 }
 
 int8_t DecideBlockType(Vector3 block_world_pos) {
     //will return a value between -1 and 1 !!
     float height = fnlGetNoise2D(&noise, block_world_pos.x, block_world_pos.z);
-    height *= 15;
+    //height *= 15;
+    height = pow(height + 1, 5);
     height = floor(height);
 
     if (block_world_pos.y > height) return BLOCK_AIR;
@@ -26,7 +64,16 @@ int8_t DecideBlockType(Vector3 block_world_pos) {
 
     if (block_world_pos.y < height && block_world_pos.y >= -5.0f) return BLOCK_DIRT;
 
-    if (block_world_pos.y < -5.0) return BLOCK_STONE;
+    if (block_world_pos.y < -5.0) {
+        float caves = fnlGetNoise3D(&noise3D, block_world_pos.x, block_world_pos.y*3, block_world_pos.z);
+        //caves = floor(caves);
+        if(caves < -0.3) {
+            return BLOCK_AIR;
+        } else {
+            return BLOCK_STONE;
+        }
+        
+    }
 
     //something went wrong
     return BLOCK_MAGMA;
@@ -170,10 +217,13 @@ int GetNearbyBlocks(BoundingBox* boxes, Vector3 camera_pos, Vector3 player_pos, 
         if(IsBlockAir(coords[i], hash_table) != true) {
             nearby_boxes_arr[nearby_boxes_count] = coords[i];
             nearby_boxes_count++;
+            //TraceLog(LOG_WARNING, TextFormat("nearby boxes count loop: %d", nearby_boxes_count));
         }
     }
+    // TraceLog(LOG_WARNING, TextFormat("nearby boxes count: %d", nearby_boxes_count));
+    // TraceLog(LOG_WARNING, "hello");
     // add boxes to boxes array
-    for(int i = 0; i < nearby_boxes_count; i++) {
+    for(int i = 0; i < nearby_boxes_count-1; i++) {
 
         boxes[i].min = nearby_boxes_arr[i];
         boxes[i].max = (Vector3) { 
