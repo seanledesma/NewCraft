@@ -133,6 +133,8 @@ typedef struct ChunkMesh {
     bool dirty;
     bool uploaded;
     bool generating;
+    bool is_all_air;
+    int id;
     Mesh* mesh;
     Chunk* chunk;
 } ChunkMesh;
@@ -188,6 +190,7 @@ HashTable* InitializeTable(int capacity);
 void DestroyTable(HashTable* hash_table);
 int32_t Hash(int32_t x, int32_t y, int32_t z, int32_t size);
 ChunkMesh* CreateChunkEntry(Vector3 pos, HashTable* hash_table);
+void RemoveChunkEntry(Vector3 pos, HashTable* hash_table);
 ChunkMesh* FetchChunkEntry(Vector3 pos, HashTable* hash_table);
 bool DoesChunkEntryExist(Vector3 pos, HashTable* hash_table);
 

@@ -8,6 +8,9 @@ bool IsBlockVisibleRework(Vector3 block_world_position, HashTable* hash_table) {
         // TraceLog(LOG_WARNING, TextFormat("chunk y: %d", (int)chunk_pos.y));
         // TraceLog(LOG_WARNING, TextFormat("chunk z: %d", (int)chunk_pos.z));
         return true;
+
+        // returning false here to see if it stops drawing so many unnecessary faces
+        //return false;
     }
 
     //we have the block in question. all we need to do is get the chunk, then then block index, then check
@@ -60,6 +63,8 @@ void GenMeshChunkRework(ChunkMesh* chunk_mesh, HashTable* hash_table) {
     float v_max = MAGMA_TEX_COORD_V_MAX;
     int shade = 215;
 
+    bool is_chunk_air = true;
+
     for (int blockX = 0; blockX < CHUNK_SIZE; blockX++) {
         for (int blockY = 0; blockY < CHUNK_SIZE; blockY++) {
             for (int blockZ = 0; blockZ < CHUNK_SIZE; blockZ++) {
@@ -76,6 +81,7 @@ void GenMeshChunkRework(ChunkMesh* chunk_mesh, HashTable* hash_table) {
                     chunk_mesh->mesh->triangleCount += 12;
                     continue;
                 }
+                is_chunk_air = false;
 
                 //TraceLog(LOG_WARNING, TextFormat("block type: %d", chunk->blocks[blockX][blockY][blockZ].block_type));
                 // we will know if block is visible or not by checking all 6 sides
@@ -852,12 +858,14 @@ void* GenMeshChunkReworkVoid(void* arg) {
     ChunkMesh* chunk_mesh = thread_struct.chunkmesh;
     HashTable* hash_table = thread_struct.hashtable;
 
-    chunk_mesh->dirty = false;
+    // this needs to be up top because 
+    //chunk_mesh->dirty = false;
 
     chunk_mesh->generating = true;
 
-    if(chunk_mesh->uploaded) {
+    if(chunk_mesh->uploaded && chunk_mesh->mesh->vertices[0] != 0) {
         UnloadMesh(*chunk_mesh->mesh);
+        chunk_mesh->uploaded = false;
         //do i need to free mesh or will that cause issues?
         //MemFree(chunkmeshes[i]->mesh);
     }
@@ -885,6 +893,7 @@ void* GenMeshChunkReworkVoid(void* arg) {
     float v_min = MAGMA_TEX_COORD_V_MIN;
     float v_max = MAGMA_TEX_COORD_V_MAX;
     int shade = 215;
+    bool is_chunk_air = true;
 
     for (int blockX = 0; blockX < CHUNK_SIZE; blockX++) {
         for (int blockY = 0; blockY < CHUNK_SIZE; blockY++) {
@@ -902,6 +911,7 @@ void* GenMeshChunkReworkVoid(void* arg) {
                     chunk_mesh->mesh->triangleCount += 12;
                     continue;
                 }
+                is_chunk_air = false;
 
                 //TraceLog(LOG_WARNING, TextFormat("block type: %d", chunk->blocks[blockX][blockY][blockZ].block_type));
                 // we will know if block is visible or not by checking all 6 sides
@@ -1671,9 +1681,19 @@ void* GenMeshChunkReworkVoid(void* arg) {
             }
         }
     }
-    //chunk_mesh->dirty = false;
+    chunk_mesh->dirty = false;
     // UploadMesh(chunk_mesh->mesh, false);
     // chunk_mesh->uploaded = true;
+
+    // i'm already not saving data if a block is air, if the whole chunk is air nothing gets saved besides
+    // just saying theres this number of vertices etc. so this is redundant and doesn't work.
+    if(is_chunk_air) {
+        // if this is the case, then all the blocks in this chunk are air and we should release the memory
+        //UnloadMesh(*chunk_mesh->mesh);
+        chunk_mesh->is_all_air = true;
+    }
+
     chunk_mesh->generating = false;
+    free(arg);
     pthread_exit(NULL);
 }

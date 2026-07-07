@@ -8,10 +8,15 @@
 // put some clouds in the sky
 // caves!
 // three threads or more for each y axis terrain gen?
+// seperate thread for rebuilding current chunk on block break?
+// ideas for lowering memory usage: do not allocate mem for all-air chunks, put two textures in one byte, frustrum culling,
+//                                  deallocating memory when player leaves chunks visibility
 
 int main(void) {
     //SetTraceLogLevel(LOG_DEBUG);
     bool debugging = false;
+
+    bool all_chunkmeshes_generated = false;
 
     pthread_t thread_1, thread_2;
 
@@ -81,6 +86,17 @@ int main(void) {
 
     int number_of_chunkmeshes = total_coords;
 
+    Vector3* new_coords = (Vector3*)MemAlloc(hash_table->capacity * sizeof(Vector3));
+    int new_total_coords = 0;
+
+    for(int i = 0; i < total_coords; i++) {
+        chunkmeshes[i] = FetchChunkEntry((Vector3) { 
+            coords[i].x,
+            coords[i].y,
+            coords[i].z
+        }, hash_table);
+    }
+
     //create all chunks closet to player
     // for (int i = 0; i < number_of_chunkmeshes; i++) {
     //     chunkmeshes[i] = FetchChunkEntry((Vector3) { 
@@ -97,7 +113,8 @@ int main(void) {
     //     UploadMesh(chunkmeshes[i]->mesh, false);
     // }
 
-    Vector3 current_chunk_pos = {-1000.0f, -1000.0f, -1000.0f};;
+    //Vector3 current_chunk_pos = {-1000.0f, -1000.0f, -1000.0f};
+    Vector3 current_chunk_pos = DeriveChunkPosition(player.position);
 
     //chunkmeshes[0] = FetchChunkEntry(starting_position, hash_table);
     // GenMeshChunk(chunkmeshes[0]->mesh, chunkmeshes[0]->chunk, hash_table);
@@ -140,24 +157,55 @@ int main(void) {
         {
             current_chunk_pos = temp_chunk_pos;
 
-            total_coords = 0;
-            total_coords = SpiralTraversal2DChunks(coords, total_coords, current_chunk_pos, depth);
-            total_coords = SpiralTraversal2DChunks(coords, total_coords, 
+            new_total_coords = 0;
+            new_total_coords = SpiralTraversal2DChunks(new_coords, new_total_coords, current_chunk_pos, depth);
+            new_total_coords = SpiralTraversal2DChunks(new_coords, new_total_coords, 
                 (Vector3) {
                     current_chunk_pos.x,
                     current_chunk_pos.y + CHUNK_SIZE,
                     current_chunk_pos.z
                 }, depth);
 
-            total_coords = SpiralTraversal2DChunks(coords, total_coords, 
+            new_total_coords = SpiralTraversal2DChunks(new_coords, new_total_coords, 
                 (Vector3) {
                     current_chunk_pos.x,
                     current_chunk_pos.y - CHUNK_SIZE,
                     current_chunk_pos.z
                 }, depth);
+            bool does_chunkmesh_exist_in_new_arr = false;
+            for(int i = 0; i < total_coords; i++) { //could have issue with newtotalcoords != totalcoords here
+                does_chunkmesh_exist_in_new_arr = false;
+                for(int j = 0; j < new_total_coords; j++) {
+                    if(coords[i].x == new_coords[j].x &&
+                        coords[i].y == new_coords[j].y && 
+                        coords[i].z == new_coords[j].z) {
+                            does_chunkmesh_exist_in_new_arr = true;
+                            continue;
+                            //chunkmeshes[i].
+                    }
+
+                    // if(coords[i].x == chunkmeshes[j]->id) {
+                    //     does_chunkmesh_exist_in_new_arr = true;
+                    //     TraceLog(LOG_WARNING, TextFormat("found id %d", chunkmeshes[j]->id));
+                    //     continue;
+                    // }
+                    //does_chunkmesh_exist_in_new_arr = false;
+                }
+
+                if(does_chunkmesh_exist_in_new_arr == false) {
+                    RemoveChunkEntry(coords[i], hash_table);
+                    TraceLog(LOG_WARNING, TextFormat("removing chunkmesh %d", i));
+                }
+            }
+            
+            number_of_chunkmeshes = new_total_coords;
+            total_coords = new_total_coords;
 
             // is this fast enough i can just run through it real quick with no noticeable penalty?
             for (int i = 0; i < number_of_chunkmeshes; i++) {
+                // copy over new coords
+                coords[i] = new_coords[i];
+
                 // if the entry exists, we must suppose the mesh has been created... need to track that
                 chunkmeshes[i] = FetchChunkEntry((Vector3) { 
                     coords[i].x,
@@ -169,13 +217,18 @@ int main(void) {
         }
 
         for (int i = 0; i < number_of_chunkmeshes; i++) {
-            if(chunkmeshes[i]->dirty) {
+            if(chunkmeshes[i]->dirty && !chunkmeshes[i]->generating) {
                 ThreadStruct* thread_struct = (ThreadStruct*)MemAlloc(sizeof(ThreadStruct));
                 thread_struct->chunkmesh = chunkmeshes[i];
                 thread_struct->hashtable = hash_table;
                 pthread_create(&thread_1, NULL, GenMeshChunkReworkVoid, thread_struct);
                 break;
             }
+            // if we get here then theoretically all chunkmeshes have been created
+            // if (i == number_of_chunkmeshes - 1) {
+            //     all_chunkmeshes_generated = true;
+            //     //pthread_join(thread_1, NULL);
+            // }
         }
 
         //maybe we seperate uploading mesh as well?
@@ -186,6 +239,25 @@ int main(void) {
                 break;
             }
         }
+
+        // if(chunkmeshes[total_coords-1]->uploaded) {
+        //     all_chunkmeshes_generated = true;
+        // }
+
+
+        // if(all_chunkmeshes_generated) {
+        //     for (int i = 0; i < number_of_chunkmeshes; i++) {
+        //         if(DoesChunkEntryExist((Vector3){coords[i].x,coords[i].y,coords[i].z},hash_table)) {
+        //             if(chunkmeshes[i]->generating || !chunkmeshes[i]->uploaded) {
+        //                 all_chunkmeshes_generated = false;
+        //                 break;
+        //             }
+        //             chunkmeshes[i]->uploaded = false;
+        //             chunkmeshes[i]->dirty = true;
+        //         }
+
+        //     }
+        // }
 
         // every once in a while, run through already loaded chunks and reload them to reduce faces drawn
         // this whole thing is stupid
@@ -278,7 +350,7 @@ int main(void) {
                 //DrawMesh(*chunkmeshes[0]->mesh, material, matrix);
 
                 if (debugging) {
-                    for(int i = 0; i < nearby_bounding_box_counter; i++) {
+                    for(int i = 0; i < nearby_bounding_box_counter-1; i++) {
                         DrawBoundingBox(boxes[i], WHITE);
                     }
                 }
@@ -362,6 +434,7 @@ int main(void) {
 
     pthread_cancel(thread_1);   // to stop use after free errors?
     free(coords);
+    free(new_coords);
     free(chunkmeshes);
     free(boxes);
     UnloadTexture(texture);

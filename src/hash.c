@@ -89,6 +89,7 @@ ChunkMesh* CreateChunkEntry(Vector3 pos, HashTable* hash_table) {
         hash_table->entries[index]->empty = false;
         hash_table->entries[index]->value = index;
         hash_table->entries[index]->chunk_mesh->new = true;
+        hash_table->entries[index]->chunk_mesh->id = rand();
         return hash_table->entries[index]->chunk_mesh;
     } else {
         TraceLog(LOG_ERROR, "not supposed to get here, check create chunk entry");
@@ -99,8 +100,45 @@ ChunkMesh* CreateChunkEntry(Vector3 pos, HashTable* hash_table) {
 }
 
 //destroy chunk from table
-void RemoveChunkEntry() {
+void RemoveChunkEntry(Vector3 pos, HashTable* hash_table) {
+    int32_t index = Hash(pos.x, pos.y, pos.z, TABLE_CAPACITY/5);
+    // ChunkMesh* chunk_mesh;
+    // if(DoesChunkEntryExist(pos, hash_table)) {
+    //     chunk_mesh = FetchChunkEntry(pos, hash_table);
+    // }
 
+    // // deallocate memory for chunkmesh
+    // UnloadMesh(*chunk_mesh->mesh);
+    // free(chunk_mesh->chunk);
+
+    while(true) {
+        if(hash_table->entries[index]->key.x == pos.x &&
+            hash_table->entries[index]->key.y == pos.y &&
+            hash_table->entries[index]->key.z == pos.z) { 
+            
+            //we have found the chunkmesh entry to remove
+            if(hash_table->entries[index]->chunk_mesh->uploaded) {
+                UnloadMesh(*hash_table->entries[index]->chunk_mesh->mesh);
+            }
+            
+            free(hash_table->entries[index]->chunk_mesh->chunk);
+            //free(hash_table->entries[index]->chunk_mesh);
+
+            //hash_table->entries[index]->chunk_mesh = NULL;
+            hash_table->entries[index]->empty = true;
+            hash_table->entries[index]->key.x = 1.234f;
+            hash_table->entries[index]->key.y = 1.234f;
+            hash_table->entries[index]->key.z = 1.234f;
+
+            break;
+        }
+        index++;
+        if(index >= TABLE_CAPACITY) {
+            TraceLog(LOG_ERROR, "something went wrong in remove chunk entry");
+            break;
+        }
+    }
+    // free(chunk_mesh);
 }
 
 //fetch chunk entry from table
