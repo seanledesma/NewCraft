@@ -192,6 +192,7 @@ int main(void) {
                     //does_chunkmesh_exist_in_new_arr = false;
                 }
 
+                // an attempt to reduce memory consumption
                 if(does_chunkmesh_exist_in_new_arr == false) {
                     RemoveChunkEntry(coords[i], hash_table);
                     TraceLog(LOG_WARNING, TextFormat("removing chunkmesh %d", i));
