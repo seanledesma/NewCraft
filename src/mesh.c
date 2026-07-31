@@ -864,8 +864,9 @@ void* GenMeshChunkReworkVoid(void* arg) {
     chunk_mesh->generating = true;
 
     if(chunk_mesh->uploaded && chunk_mesh->mesh->vertices[0] != 0) {
-        UnloadMesh(*chunk_mesh->mesh);
         chunk_mesh->uploaded = false;
+        UnloadMesh(*chunk_mesh->mesh);
+        //chunk_mesh->uploaded = false;
         //do i need to free mesh or will that cause issues?
         //MemFree(chunkmeshes[i]->mesh);
     }

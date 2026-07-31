@@ -70,20 +70,6 @@ int main(void) {
     total_coords = SpiralTraversal2DChunks(coords, total_coords, starting_position, depth);
     float timer = 0.0f;
 
-    total_coords = SpiralTraversal2DChunks(coords, total_coords, 
-        (Vector3) {
-            starting_position.x,
-            starting_position.y + CHUNK_SIZE,
-            starting_position.z
-        }, depth);
-
-    total_coords = SpiralTraversal2DChunks(coords, total_coords, 
-        (Vector3) {
-            starting_position.x,
-            starting_position.y - CHUNK_SIZE,
-            starting_position.z
-        }, depth);
-
     int number_of_chunkmeshes = total_coords;
 
     Vector3* new_coords = (Vector3*)MemAlloc(hash_table->capacity * sizeof(Vector3));
@@ -159,45 +145,38 @@ int main(void) {
 
             new_total_coords = 0;
             new_total_coords = SpiralTraversal2DChunks(new_coords, new_total_coords, current_chunk_pos, depth);
-            new_total_coords = SpiralTraversal2DChunks(new_coords, new_total_coords, 
-                (Vector3) {
-                    current_chunk_pos.x,
-                    current_chunk_pos.y + CHUNK_SIZE,
-                    current_chunk_pos.z
-                }, depth);
 
-            new_total_coords = SpiralTraversal2DChunks(new_coords, new_total_coords, 
-                (Vector3) {
-                    current_chunk_pos.x,
-                    current_chunk_pos.y - CHUNK_SIZE,
-                    current_chunk_pos.z
-                }, depth);
-            bool does_chunkmesh_exist_in_new_arr = false;
-            for(int i = 0; i < total_coords; i++) { //could have issue with newtotalcoords != totalcoords here
-                does_chunkmesh_exist_in_new_arr = false;
+            //here are the order of operations:
+            // - player moves to new chunk
+            // - we generate new array of coords surrounding player
+            // - using the new array of coords, we reset chunkmeshes array and add the chunks back in
+            // the correct order. We can just see if the chunk exists or not before adding it.
+            bool found = false;
+            for(int i = 0; i < new_total_coords; i++) {
                 for(int j = 0; j < new_total_coords; j++) {
                     if(coords[i].x == new_coords[j].x &&
-                        coords[i].y == new_coords[j].y && 
-                        coords[i].z == new_coords[j].z) {
-                            does_chunkmesh_exist_in_new_arr = true;
-                            continue;
-                            //chunkmeshes[i].
+                        coords[i].y == new_coords[j].y &&
+                            coords[i].z == new_coords[j].z) {
+                            
+                        found = true;
                     }
-
-                    // if(coords[i].x == chunkmeshes[j]->id) {
-                    //     does_chunkmesh_exist_in_new_arr = true;
-                    //     TraceLog(LOG_WARNING, TextFormat("found id %d", chunkmeshes[j]->id));
-                    //     continue;
-                    // }
-                    //does_chunkmesh_exist_in_new_arr = false;
                 }
-
-                // an attempt to reduce memory consumption
-                if(does_chunkmesh_exist_in_new_arr == false) {
-                    RemoveChunkEntry(coords[i], hash_table);
-                    TraceLog(LOG_WARNING, TextFormat("removing chunkmesh %d", i));
+                if(!found) {
+                    // need some guarantee we are freeing the right mesh
+                    if(chunkmeshes[i]->chunk->world_pos.x == coords[i].x &&
+                    chunkmeshes[i]->chunk->world_pos.y == coords[i].y &&
+                    chunkmeshes[i]->chunk->world_pos.z == coords[i].z && 
+                    chunkmeshes[i]->uploaded &&
+                    !chunkmeshes[i]->generating ) {
+                        chunkmeshes[i]->uploaded = false;
+                        UnloadMesh(*chunkmeshes[i]->mesh);
+                        TraceLog(LOG_WARNING, "old chunk not found, unloading mesh");
+                    }
+                    
                 }
+                found = false;
             }
+
             
             number_of_chunkmeshes = new_total_coords;
             total_coords = new_total_coords;
