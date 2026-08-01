@@ -74,6 +74,20 @@ int main(void) {
     total_coords = SpiralTraversal2DChunks(coords, total_coords, starting_position, depth);
     float timer = 0.0f;
 
+    total_coords = SpiralTraversal2DChunks(coords, total_coords, 
+        (Vector3) {
+            starting_position.x,
+            starting_position.y + CHUNK_SIZE,
+            starting_position.z
+        }, depth);
+
+    total_coords = SpiralTraversal2DChunks(coords, total_coords, 
+        (Vector3) {
+            starting_position.x,
+            starting_position.y - CHUNK_SIZE,
+            starting_position.z
+        }, depth);
+
     int number_of_chunkmeshes = total_coords;
 
     Vector3* new_coords = (Vector3*)MemAlloc(hash_table->capacity * sizeof(Vector3));
@@ -189,14 +203,27 @@ int main(void) {
 
             new_total_coords = 0;
             new_total_coords = SpiralTraversal2DChunks(new_coords, new_total_coords, current_chunk_pos, depth);
+            new_total_coords = SpiralTraversal2DChunks(new_coords, new_total_coords, 
+                (Vector3) {
+                    current_chunk_pos.x,
+                    current_chunk_pos.y + CHUNK_SIZE,
+                    current_chunk_pos.z
+                }, depth);
+
+            new_total_coords = SpiralTraversal2DChunks(new_coords, new_total_coords, 
+                (Vector3) {
+                    current_chunk_pos.x,
+                    current_chunk_pos.y - CHUNK_SIZE,
+                    current_chunk_pos.z
+                }, depth);
 
             //debugging, remove later
-            for(int i = 0; i < total_coords; i++) {
-                TraceLog(LOG_WARNING, TextFormat("coord index: %d, x: %.2f, y: %.2f, z: %.2f", i, coords[i].x, coords[i].y, coords[i].z));
-            }
-            for(int i = 0; i < new_total_coords; i++) {
-                TraceLog(LOG_WARNING, TextFormat("new_coords index: %d, x: %.2f, y: %.2f, z: %.2f", i, new_coords[i].x, new_coords[i].y, new_coords[i].z));
-            }
+            // for(int i = 0; i < total_coords; i++) {
+            //     TraceLog(LOG_WARNING, TextFormat("coord index: %d, x: %.2f, y: %.2f, z: %.2f", i, coords[i].x, coords[i].y, coords[i].z));
+            // }
+            // for(int i = 0; i < new_total_coords; i++) {
+            //     TraceLog(LOG_WARNING, TextFormat("new_coords index: %d, x: %.2f, y: %.2f, z: %.2f", i, new_coords[i].x, new_coords[i].y, new_coords[i].z));
+            // }
 
             //here are the order of operations:
             // - player moves to new chunk
@@ -209,7 +236,7 @@ int main(void) {
                     if(coords[i].x == new_coords[j].x &&
                         coords[i].y == new_coords[j].y &&
                             coords[i].z == new_coords[j].z) {
-                        TraceLog(LOG_WARNING, "found coord pair");
+                        //TraceLog(LOG_WARNING, "found coord pair");
                         found = true;
                     }
                 }
@@ -226,7 +253,7 @@ int main(void) {
                             chunkmeshes[i]->mesh = NULL;
                             chunkmeshes[i]->uploaded = false;
                             chunkmeshes[i]->dirty = false;
-                            TraceLog(LOG_WARNING, "old chunk not found, unloading mesh");
+                            //TraceLog(LOG_WARNING, "old chunk not found, unloading mesh");
                         }
                     }
                 }

@@ -9,14 +9,20 @@ void InitWorld(void) {
     //setup noise
 
     noise = fnlCreateState();
-    //noise.seed = 1234;
     srand(time(0));
     noise.seed = rand();
+    noise.noise_type = FNL_NOISE_OPENSIMPLEX2;
+    noise.frequency = 0.01f;
+    noise.fractal_type = FNL_FRACTAL_FBM;
+    noise.octaves = 3;
+    noise.lacunarity = 2;
+
+
     //noise.noise_type = FNL_NOISE_OPENSIMPLEX2;
-    noise.noise_type = FNL_NOISE_PERLIN;
+    // noise.noise_type = FNL_NOISE_PERLIN;
     //noise.noise_type = FNL_NOISE_OPENSIMPLEX2S;
     //noise.noise_type = FNL_NOISE_CELLULAR;
-    noise.frequency = 0.006f;
+    // noise.frequency = 0.006f;
 
     // noise.cellular_distance_func = FNL_CELLULAR_DISTANCE_EUCLIDEAN;
     // noise.cellular_return_type = FNL_CELLULAR_RETURN_TYPE_DISTANCE;
@@ -27,11 +33,12 @@ void InitWorld(void) {
 
     //noise.fractal_type = FNL_FRACTAL_FBM;
     //noise.fractal_type = FNL_FRACTAL_RIDGED;
-    noise.fractal_type = FNL_FRACTAL_PINGPONG;
-    noise.octaves = 3.0f;
-    noise.lacunarity = 2.0f;
-    noise.gain = 0.45f;
-    noise.weighted_strength = 0.91f;
+
+    // noise.fractal_type = FNL_FRACTAL_PINGPONG;
+    // noise.octaves = 3.0f;
+    // noise.lacunarity = 2.0f;
+    // noise.gain = 0.45f;
+    // noise.weighted_strength = 0.91f;
 
 
     //cave noise
