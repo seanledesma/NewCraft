@@ -19,6 +19,7 @@ int main(void) {
     bool all_chunkmeshes_generated = false;
 
     pthread_t thread_1, thread_2;
+    pthread_mutex_t mutex_1, mutex_2;
 
     int screenWidth = 1920;
     int screenHeight = 1080;
@@ -146,6 +147,14 @@ int main(void) {
             new_total_coords = 0;
             new_total_coords = SpiralTraversal2DChunks(new_coords, new_total_coords, current_chunk_pos, depth);
 
+            //debugging, remove later
+            for(int i = 0; i < total_coords; i++) {
+                TraceLog(LOG_WARNING, TextFormat("coord index: %d, x: %.2f, y: %.2f, z: %.2f", i, coords[i].x, coords[i].y, coords[i].z));
+            }
+            for(int i = 0; i < new_total_coords; i++) {
+                TraceLog(LOG_WARNING, TextFormat("new_coords index: %d, x: %.2f, y: %.2f, z: %.2f", i, new_coords[i].x, new_coords[i].y, new_coords[i].z));
+            }
+
             //here are the order of operations:
             // - player moves to new chunk
             // - we generate new array of coords surrounding player
@@ -157,7 +166,7 @@ int main(void) {
                     if(coords[i].x == new_coords[j].x &&
                         coords[i].y == new_coords[j].y &&
                             coords[i].z == new_coords[j].z) {
-                            
+                        TraceLog(LOG_WARNING, "found coord pair");
                         found = true;
                     }
                 }
@@ -168,11 +177,15 @@ int main(void) {
                     chunkmeshes[i]->chunk->world_pos.z == coords[i].z && 
                     chunkmeshes[i]->uploaded &&
                     !chunkmeshes[i]->generating ) {
-                        chunkmeshes[i]->uploaded = false;
-                        UnloadMesh(*chunkmeshes[i]->mesh);
-                        TraceLog(LOG_WARNING, "old chunk not found, unloading mesh");
+                        
+                        if (chunkmeshes[i]->mesh != NULL) {
+                            UnloadMesh(*chunkmeshes[i]->mesh);
+                            chunkmeshes[i]->mesh = NULL;
+                            chunkmeshes[i]->uploaded = false;
+                            chunkmeshes[i]->dirty = false;
+                            TraceLog(LOG_WARNING, "old chunk not found, unloading mesh");
+                        }
                     }
-                    
                 }
                 found = false;
             }
@@ -187,11 +200,17 @@ int main(void) {
                 coords[i] = new_coords[i];
 
                 // if the entry exists, we must suppose the mesh has been created... need to track that
+                // OKAY so actually, we can have the condition where the chunk and mesh were made, they went out
+                // of player view, mesh was unloaded, but chunk remains, so assuming mesh is there is incorrect
                 chunkmeshes[i] = FetchChunkEntry((Vector3) { 
                     coords[i].x,
                     coords[i].y,
                     coords[i].z
                 }, hash_table);
+                // THE FIX
+                if(chunkmeshes[i]->mesh == NULL) {
+                    chunkmeshes[i]->dirty = true;
+                }
             }
 
         }
@@ -214,8 +233,10 @@ int main(void) {
         //maybe we seperate uploading mesh as well?
         for (int i = 0; i < number_of_chunkmeshes; i++) {
             if(!chunkmeshes[i]->uploaded && !chunkmeshes[i]->dirty && !chunkmeshes[i]->generating) {
-                UploadMesh(chunkmeshes[i]->mesh, false);
-                chunkmeshes[i]->uploaded = true;
+                if(chunkmeshes[i]->mesh != NULL) {
+                    UploadMesh(chunkmeshes[i]->mesh, false);
+                    chunkmeshes[i]->uploaded = true;
+                }
                 break;
             }
         }
@@ -321,6 +342,9 @@ int main(void) {
                 for(int i = 0; i < number_of_chunkmeshes; i++) {
                     if(DoesChunkEntryExist((Vector3){coords[i].x,coords[i].y,coords[i].z},hash_table)) {
                         if(!chunkmeshes[i]->dirty && chunkmeshes[i]->uploaded) {
+                            if(chunkmeshes[i]->mesh == NULL) {
+                                TraceLog(LOG_WARNING, "mesh is null, something is wrong (main.c)");
+                            }
                             DrawMesh(*chunkmeshes[i]->mesh, material, matrix);
                         }
                     }

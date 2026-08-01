@@ -864,8 +864,12 @@ void* GenMeshChunkReworkVoid(void* arg) {
     chunk_mesh->generating = true;
 
     if(chunk_mesh->uploaded && chunk_mesh->mesh->vertices[0] != 0) {
-        chunk_mesh->uploaded = false;
-        UnloadMesh(*chunk_mesh->mesh);
+        if(chunk_mesh->mesh != NULL) {
+            chunk_mesh->uploaded = false;
+            UnloadMesh(*chunk_mesh->mesh);
+            chunk_mesh->mesh = NULL;
+        }
+
         //chunk_mesh->uploaded = false;
         //do i need to free mesh or will that cause issues?
         //MemFree(chunkmeshes[i]->mesh);
@@ -1693,6 +1697,11 @@ void* GenMeshChunkReworkVoid(void* arg) {
         //UnloadMesh(*chunk_mesh->mesh);
         chunk_mesh->is_all_air = true;
     }
+
+    if(chunk_mesh->mesh == NULL) {
+        TraceLog(LOG_WARNING, "mesh is null, something is wrong (mesh.c)");
+    }
+    
 
     chunk_mesh->generating = false;
     free(arg);
