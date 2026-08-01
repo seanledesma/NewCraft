@@ -3,6 +3,7 @@
 #include "FastNoiseLite.h"
 fnl_state noise;
 fnl_state noise3D;
+fnl_state cloud_noise;
 
 void InitWorld(void) {
     //setup noise
@@ -48,7 +49,23 @@ void InitWorld(void) {
     noise3D.gain = 0.5f;
     // noise3D.weighted_strength = 0.9f;
     // noise3D.ping_pong_strength = 2.0f;
+
+
+
+    cloud_noise = fnlCreateState();
+    cloud_noise.seed = rand();
+
+    cloud_noise.noise_type = FNL_NOISE_VALUE;
+    cloud_noise.frequency = 0.024;
     
+}
+
+bool CloudNoise(int x, int z) {
+    //will return a value between -1 and 1 !!
+    float value = fnlGetNoise2D(&cloud_noise, x, z);
+
+    if(value > 0.7) return true;
+    else return false;
 }
 
 int8_t DecideBlockType(Vector3 block_world_pos) {

@@ -196,6 +196,7 @@ bool DoesChunkEntryExist(Vector3 pos, HashTable* hash_table);
 
 //world.c
 void InitWorld(void);
+bool CloudNoise(int x, int z);
 int8_t DecideBlockType(Vector3 block_world_pos);
 int SpiralTraversal2D(Vector3* coords, int coords_index, Vector3 pos, int depth);
 int SpiralTraversal2DChunks(Vector3* coords, int coords_index, Vector3 pos, int depth);

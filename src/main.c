@@ -12,6 +12,9 @@
 // ideas for lowering memory usage: do not allocate mem for all-air chunks, put two textures in one byte, frustrum culling,
 //                                  deallocating memory when player leaves chunks visibility
 
+//next:
+// want to have threads running for y axis, have some sort of handoff so when player goes up or down it doesn't come to a halt.
+
 int main(void) {
     //SetTraceLogLevel(LOG_DEBUG);
     bool debugging = false;
@@ -117,6 +120,28 @@ int main(void) {
     int nearby_bounding_box_counter = 0;
     BoundingBox target_box = {0};
     BoundingBox target_box_test = {0};
+
+    //clouds?
+    // here is my plan: use 2D noise to figure out where clouds will be, logically split sky into 
+    // quadrants above player, check each quadrant position against noise function to determine if cloud
+    // is visible, only draw those. Each quadrant is 10x10, we have an array of cloud coords that passed the 
+    // cloud noise test we loop through every frame to draw. For now, just divide sky above player and figure out 
+    // cloud noise function in world.c
+    Vector3 starting_cloud_position = (Vector3) { current_chunk_pos.x, 20, current_chunk_pos.z };
+    Vector3* sky_quadrants = (Vector3*)MemAlloc(1000 * sizeof(Vector3));
+    Vector3* cloud_coords = (Vector3*)MemAlloc(100 * sizeof(Vector3));
+    int num_of_sky_quadrants = 0;
+    int cloud_coords_counter = 0;
+    num_of_sky_quadrants = SpiralTraversal2D(sky_quadrants, num_of_sky_quadrants, starting_cloud_position, 10);
+    for(int i = 0; i < num_of_sky_quadrants; i++) {
+        if(CloudNoise((int)sky_quadrants->x, (int)sky_quadrants->z)) {
+            cloud_coords[cloud_coords_counter] = sky_quadrants[i];
+            cloud_coords_counter++;
+        }
+    }
+    TraceLog(LOG_WARNING, "num of sky quadrants: %d", num_of_sky_quadrants);
+    TraceLog(LOG_WARNING, "cloud coord counter: %d", cloud_coords_counter);
+
 
     DisableCursor();
     SetTargetFPS(120);
@@ -390,6 +415,13 @@ int main(void) {
                     DrawLine3D(target_offset, (Vector3) { target_offset.x, target_offset.y, target_offset.z + 0.05f }, BLUE);
                 }
 
+                //figuring out clouds
+                for(int i = 0; i < cloud_coords_counter; i++) {
+                    TraceLog(LOG_WARNING, TextFormat("cloud coord index %d, x: %.2f, y: %.2f, z: %.2f", i, cloud_coords[i].x, cloud_coords[i].y, cloud_coords[i].z));
+                    //DrawRectangle(cloud_coords[i].x, cloud_coords[i].z, 1, 1, WHITE);
+                    DrawCube(cloud_coords[i], 1, 0.5f, 1, WHITE);
+                }
+
 
             EndMode3D();
 
@@ -413,6 +445,11 @@ int main(void) {
                 DrawRectangle((screenWidth/2) - 20, (screenHeight / 2), 45, 5, GRAY);
                 DrawRectangle((screenWidth/2), (screenHeight / 2) - 20, 5, 45, GRAY);
             }
+
+            // //figuring out clouds
+            // for(int i = 0; i < cloud_coords_counter; i++) {
+            //     DrawRectangle(cloud_coords[i].x, cloud_coords[i].z, 1, 1, WHITE);
+            // }
 
             DrawFPS(10, 10);
         EndDrawing();
