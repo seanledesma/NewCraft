@@ -127,20 +127,38 @@ int main(void) {
     // is visible, only draw those. Each quadrant is 10x10, we have an array of cloud coords that passed the 
     // cloud noise test we loop through every frame to draw. For now, just divide sky above player and figure out 
     // cloud noise function in world.c
-    Vector3 starting_cloud_position = (Vector3) { current_chunk_pos.x, 20, current_chunk_pos.z };
+    // Vector3 starting_cloud_position = (Vector3) { current_chunk_pos.x, 20, current_chunk_pos.z };
+    // Vector3* sky_quadrants = (Vector3*)MemAlloc(1000 * sizeof(Vector3));
+    // Vector3* cloud_coords = (Vector3*)MemAlloc(100 * sizeof(Vector3));
+    // int num_of_sky_quadrants = 0;
+    // int cloud_coords_counter = 0;
+    // num_of_sky_quadrants = SpiralTraversal2D(sky_quadrants, num_of_sky_quadrants, starting_cloud_position, 10);
+    // for(int i = 0; i < num_of_sky_quadrants; i++) {
+    //     if(CloudNoise((int)sky_quadrants->x, (int)sky_quadrants->z)) {
+    //         cloud_coords[cloud_coords_counter] = sky_quadrants[i];
+    //         cloud_coords_counter++;
+    //     }
+    // }
+    // TraceLog(LOG_WARNING, "num of sky quadrants: %d", num_of_sky_quadrants);
+    // TraceLog(LOG_WARNING, "cloud coord counter: %d", cloud_coords_counter);
+
+    Vector3 starting_cloud_position = (Vector3) { current_chunk_pos.x, 1000, current_chunk_pos.z };
     Vector3* sky_quadrants = (Vector3*)MemAlloc(1000 * sizeof(Vector3));
-    Vector3* cloud_coords = (Vector3*)MemAlloc(100 * sizeof(Vector3));
+    Vector3* cloud_coords = (Vector3*)MemAlloc(10000 * sizeof(Vector3));
     int num_of_sky_quadrants = 0;
     int cloud_coords_counter = 0;
-    num_of_sky_quadrants = SpiralTraversal2D(sky_quadrants, num_of_sky_quadrants, starting_cloud_position, 10);
-    for(int i = 0; i < num_of_sky_quadrants; i++) {
-        if(CloudNoise((int)sky_quadrants->x, (int)sky_quadrants->z)) {
-            cloud_coords[cloud_coords_counter] = sky_quadrants[i];
-            cloud_coords_counter++;
+    //num_of_sky_quadrants = SpiralTraversal2D(sky_quadrants, num_of_sky_quadrants, starting_cloud_position, 10);
+
+    for(int i = (int)starting_cloud_position.x-1000; i < (int)starting_cloud_position.z+1000; i+=10) {
+        for(int j = (int)starting_cloud_position.x-1000; j < (int)starting_cloud_position.z+1000; j+=10) {
+            if(CloudNoise(i, j)) {
+                cloud_coords[cloud_coords_counter] = (Vector3) { i, 100, j };
+                cloud_coords_counter++;
+                if(cloud_coords_counter >= 9999) break;
+            }
         }
+        if(cloud_coords_counter >= 9999) break;        
     }
-    TraceLog(LOG_WARNING, "num of sky quadrants: %d", num_of_sky_quadrants);
-    TraceLog(LOG_WARNING, "cloud coord counter: %d", cloud_coords_counter);
 
 
     DisableCursor();
@@ -417,9 +435,9 @@ int main(void) {
 
                 //figuring out clouds
                 for(int i = 0; i < cloud_coords_counter; i++) {
-                    TraceLog(LOG_WARNING, TextFormat("cloud coord index %d, x: %.2f, y: %.2f, z: %.2f", i, cloud_coords[i].x, cloud_coords[i].y, cloud_coords[i].z));
+                    //TraceLog(LOG_WARNING, TextFormat("cloud coord index %d, x: %.2f, y: %.2f, z: %.2f", i, cloud_coords[i].x, cloud_coords[i].y, cloud_coords[i].z));
                     //DrawRectangle(cloud_coords[i].x, cloud_coords[i].z, 1, 1, WHITE);
-                    DrawCube(cloud_coords[i], 1, 0.5f, 1, WHITE);
+                    DrawCube(cloud_coords[i], 10, 2, 10, RAYWHITE);
                 }
 
 

@@ -64,7 +64,7 @@ bool CloudNoise(int x, int z) {
     //will return a value between -1 and 1 !!
     float value = fnlGetNoise2D(&cloud_noise, x, z);
 
-    if(value > 0.7) return true;
+    if(value > 0.6) return true;
     else return false;
 }
 
