@@ -65,6 +65,8 @@
 #define BLOCK_LAVA (int8_t)4
 #define BLOCK_MAGMA (int8_t)5
 #define BLOCK_UNKNOWN (int8_t)6
+#define BLOCK_OAK_WOOD (int8_t)7
+#define BLOCK_OAK_PLANK (int8_t)8
 
 #define DIRT_TEX_COORD_U_MIN 0.05f
 #define DIRT_TEX_COORD_U_MAX 0.18f
@@ -96,10 +98,16 @@
 // #define STONE_TEX_COORD_V_MIN 0.82f
 // #define STONE_TEX_COORD_V_MAX 0.98f
 
-#define STONE_TEX_COORD_U_MIN 0.609f
-#define STONE_TEX_COORD_U_MAX 0.782f
-#define STONE_TEX_COORD_V_MIN 0.023f
-#define STONE_TEX_COORD_V_MAX 0.195f
+// OG light colored stone, switching to improved stone block
+// #define STONE_TEX_COORD_U_MIN 0.609f
+// #define STONE_TEX_COORD_U_MAX 0.782f
+// #define STONE_TEX_COORD_V_MIN 0.023f
+// #define STONE_TEX_COORD_V_MAX 0.195f
+
+#define STONE_TEX_COORD_U_MIN 0.415f
+#define STONE_TEX_COORD_U_MAX 0.585f
+#define STONE_TEX_COORD_V_MIN 0.218f
+#define STONE_TEX_COORD_V_MAX 0.391f
 
 #define LAVA_TEX_COORD_U_MIN 0.82f
 #define LAVA_TEX_COORD_U_MAX 0.98f
@@ -115,6 +123,16 @@
 #define DIRTGRASS_TEX_COORD_U_MAX 0.391f
 #define DIRTGRASS_TEX_COORD_V_MIN 0.023f
 #define DIRTGRASS_TEX_COORD_V_MAX 0.195f
+
+#define OAK_WOOD_TEX_COORD_U_MIN 0.023f
+#define OAK_WOOD_TEX_COORD_U_MAX 0.195f
+#define OAK_WOOD_TEX_COORD_V_MIN 0.218f
+#define OAK_WOOD_TEX_COORD_V_MAX 0.391f
+
+#define OAK_PLANK_TEX_COORD_U_MIN 0.218f
+#define OAK_PLANK_TEX_COORD_U_MAX 0.391f
+#define OAK_PLANK_TEX_COORD_V_MIN 0.218f
+#define OAK_PLANK_TEX_COORD_V_MAX 0.391f
 
 
 extern Vector3 relative_positions[];

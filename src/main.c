@@ -26,6 +26,8 @@ int main(void) {
 
     int screenWidth = 1920;
     int screenHeight = 1080;
+    // int screenWidth = 3840;
+    // int screenHeight = 2160;
     SetConfigFlags(FLAG_WINDOW_RESIZABLE);
     SetConfigFlags(FLAG_WINDOW_UNDECORATED);
     //SetConfigFlags(FLAG_WINDOW_HIGHDPI);
