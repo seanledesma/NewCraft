@@ -1849,5 +1849,6 @@ void* GenMeshChunkReworkVoid(void* arg) {
 
     chunk_mesh->generating = false;
     free(arg);
+    pthread_detach(pthread_self());
     pthread_exit(NULL);
 }
