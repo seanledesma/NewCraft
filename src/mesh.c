@@ -106,18 +106,6 @@ void GenMeshChunkRework(ChunkMesh* chunk_mesh, HashTable* hash_table) {
                             v_min = STONE_TEX_COORD_V_MIN;
                             v_max = STONE_TEX_COORD_V_MAX;
                             break;
-                        case BLOCK_OAK_WOOD:
-                            u_min = OAK_WOOD_TEX_COORD_U_MIN;
-                            u_max = OAK_WOOD_TEX_COORD_U_MAX;
-                            v_min = OAK_WOOD_TEX_COORD_V_MIN;
-                            v_max = OAK_WOOD_TEX_COORD_V_MAX;
-                            break;
-                        case BLOCK_OAK_PLANK:
-                            u_min = OAK_PLANK_TEX_COORD_U_MIN;
-                            u_max = OAK_PLANK_TEX_COORD_U_MAX;
-                            v_min = OAK_PLANK_TEX_COORD_V_MIN;
-                            v_max = OAK_PLANK_TEX_COORD_V_MAX;
-                            break;
                         default:
                             // if you see all magma, something went wrong
                             u_min = MAGMA_TEX_COORD_U_MIN;
@@ -244,18 +232,6 @@ void GenMeshChunkRework(ChunkMesh* chunk_mesh, HashTable* hash_table) {
                             v_min = STONE_TEX_COORD_V_MIN;
                             v_max = STONE_TEX_COORD_V_MAX;
                             break;
-                        case BLOCK_OAK_WOOD:
-                            u_min = OAK_WOOD_TEX_COORD_U_MIN;
-                            u_max = OAK_WOOD_TEX_COORD_U_MAX;
-                            v_min = OAK_WOOD_TEX_COORD_V_MIN;
-                            v_max = OAK_WOOD_TEX_COORD_V_MAX;
-                            break;
-                        case BLOCK_OAK_PLANK:
-                            u_min = OAK_PLANK_TEX_COORD_U_MIN;
-                            u_max = OAK_PLANK_TEX_COORD_U_MAX;
-                            v_min = OAK_PLANK_TEX_COORD_V_MIN;
-                            v_max = OAK_PLANK_TEX_COORD_V_MAX;
-                            break;
                         default:
                             // if you see all magma, something went wrong
                             u_min = MAGMA_TEX_COORD_U_MIN;
@@ -379,18 +355,6 @@ void GenMeshChunkRework(ChunkMesh* chunk_mesh, HashTable* hash_table) {
                             u_max = STONE_TEX_COORD_U_MAX;
                             v_min = STONE_TEX_COORD_V_MIN;
                             v_max = STONE_TEX_COORD_V_MAX;
-                            break;
-                        case BLOCK_OAK_WOOD:
-                            u_min = OAK_WOOD_TEX_COORD_U_MIN;
-                            u_max = OAK_WOOD_TEX_COORD_U_MAX;
-                            v_min = OAK_WOOD_TEX_COORD_V_MIN;
-                            v_max = OAK_WOOD_TEX_COORD_V_MAX;
-                            break;
-                        case BLOCK_OAK_PLANK:
-                            u_min = OAK_PLANK_TEX_COORD_U_MIN;
-                            u_max = OAK_PLANK_TEX_COORD_U_MAX;
-                            v_min = OAK_PLANK_TEX_COORD_V_MIN;
-                            v_max = OAK_PLANK_TEX_COORD_V_MAX;
                             break;
                         default:
                             // if you see all magma, something went wrong
@@ -534,18 +498,6 @@ void GenMeshChunkRework(ChunkMesh* chunk_mesh, HashTable* hash_table) {
                             v_min = STONE_TEX_COORD_V_MIN;
                             v_max = STONE_TEX_COORD_V_MAX;
                             break;
-                        case BLOCK_OAK_WOOD:
-                            u_min = OAK_WOOD_TEX_COORD_U_MIN;
-                            u_max = OAK_WOOD_TEX_COORD_U_MAX;
-                            v_min = OAK_WOOD_TEX_COORD_V_MIN;
-                            v_max = OAK_WOOD_TEX_COORD_V_MAX;
-                            break;
-                        case BLOCK_OAK_PLANK:
-                            u_min = OAK_PLANK_TEX_COORD_U_MIN;
-                            u_max = OAK_PLANK_TEX_COORD_U_MAX;
-                            v_min = OAK_PLANK_TEX_COORD_V_MIN;
-                            v_max = OAK_PLANK_TEX_COORD_V_MAX;
-                            break;
                         default:
                             // if you see all magma, something went wrong
                             u_min = MAGMA_TEX_COORD_U_MIN;
@@ -670,18 +622,6 @@ void GenMeshChunkRework(ChunkMesh* chunk_mesh, HashTable* hash_table) {
                             v_min = STONE_TEX_COORD_V_MIN;
                             v_max = STONE_TEX_COORD_V_MAX;
                             break;
-                        case BLOCK_OAK_WOOD:
-                            u_min = OAK_WOOD_TEX_COORD_U_MIN;
-                            u_max = OAK_WOOD_TEX_COORD_U_MAX;
-                            v_min = OAK_WOOD_TEX_COORD_V_MIN;
-                            v_max = OAK_WOOD_TEX_COORD_V_MAX;
-                            break;
-                        case BLOCK_OAK_PLANK:
-                            u_min = OAK_PLANK_TEX_COORD_U_MIN;
-                            u_max = OAK_PLANK_TEX_COORD_U_MAX;
-                            v_min = OAK_PLANK_TEX_COORD_V_MIN;
-                            v_max = OAK_PLANK_TEX_COORD_V_MAX;
-                            break;
                         default:
                             // if you see all magma, something went wrong
                             u_min = MAGMA_TEX_COORD_U_MIN;
@@ -805,18 +745,6 @@ void GenMeshChunkRework(ChunkMesh* chunk_mesh, HashTable* hash_table) {
                             u_max = STONE_TEX_COORD_U_MAX;
                             v_min = STONE_TEX_COORD_V_MIN;
                             v_max = STONE_TEX_COORD_V_MAX;
-                            break;
-                        case BLOCK_OAK_WOOD:
-                            u_min = OAK_WOOD_TEX_COORD_U_MIN;
-                            u_max = OAK_WOOD_TEX_COORD_U_MAX;
-                            v_min = OAK_WOOD_TEX_COORD_V_MIN;
-                            v_max = OAK_WOOD_TEX_COORD_V_MAX;
-                            break;
-                        case BLOCK_OAK_PLANK:
-                            u_min = OAK_PLANK_TEX_COORD_U_MIN;
-                            u_max = OAK_PLANK_TEX_COORD_U_MAX;
-                            v_min = OAK_PLANK_TEX_COORD_V_MIN;
-                            v_max = OAK_PLANK_TEX_COORD_V_MAX;
                             break;
                         default:
                             // if you see all magma, something went wrong
@@ -1013,18 +941,6 @@ void* GenMeshChunkReworkVoid(void* arg) {
                             v_min = STONE_TEX_COORD_V_MIN;
                             v_max = STONE_TEX_COORD_V_MAX;
                             break;
-                        case BLOCK_OAK_WOOD:
-                            u_min = OAK_WOOD_TEX_COORD_U_MIN;
-                            u_max = OAK_WOOD_TEX_COORD_U_MAX;
-                            v_min = OAK_WOOD_TEX_COORD_V_MIN;
-                            v_max = OAK_WOOD_TEX_COORD_V_MAX;
-                            break;
-                        case BLOCK_OAK_PLANK:
-                            u_min = OAK_PLANK_TEX_COORD_U_MIN;
-                            u_max = OAK_PLANK_TEX_COORD_U_MAX;
-                            v_min = OAK_PLANK_TEX_COORD_V_MIN;
-                            v_max = OAK_PLANK_TEX_COORD_V_MAX;
-                            break;
                         default:
                             // if you see all magma, something went wrong
                             u_min = MAGMA_TEX_COORD_U_MIN;
@@ -1151,18 +1067,6 @@ void* GenMeshChunkReworkVoid(void* arg) {
                             v_min = STONE_TEX_COORD_V_MIN;
                             v_max = STONE_TEX_COORD_V_MAX;
                             break;
-                        case BLOCK_OAK_WOOD:
-                            u_min = OAK_WOOD_TEX_COORD_U_MIN;
-                            u_max = OAK_WOOD_TEX_COORD_U_MAX;
-                            v_min = OAK_WOOD_TEX_COORD_V_MIN;
-                            v_max = OAK_WOOD_TEX_COORD_V_MAX;
-                            break;
-                        case BLOCK_OAK_PLANK:
-                            u_min = OAK_PLANK_TEX_COORD_U_MIN;
-                            u_max = OAK_PLANK_TEX_COORD_U_MAX;
-                            v_min = OAK_PLANK_TEX_COORD_V_MIN;
-                            v_max = OAK_PLANK_TEX_COORD_V_MAX;
-                            break;
                         default:
                             // if you see all magma, something went wrong
                             u_min = MAGMA_TEX_COORD_U_MIN;
@@ -1286,18 +1190,6 @@ void* GenMeshChunkReworkVoid(void* arg) {
                             u_max = STONE_TEX_COORD_U_MAX;
                             v_min = STONE_TEX_COORD_V_MIN;
                             v_max = STONE_TEX_COORD_V_MAX;
-                            break;
-                        case BLOCK_OAK_WOOD:
-                            u_min = OAK_WOOD_TEX_COORD_U_MIN;
-                            u_max = OAK_WOOD_TEX_COORD_U_MAX;
-                            v_min = OAK_WOOD_TEX_COORD_V_MIN;
-                            v_max = OAK_WOOD_TEX_COORD_V_MAX;
-                            break;
-                        case BLOCK_OAK_PLANK:
-                            u_min = OAK_PLANK_TEX_COORD_U_MIN;
-                            u_max = OAK_PLANK_TEX_COORD_U_MAX;
-                            v_min = OAK_PLANK_TEX_COORD_V_MIN;
-                            v_max = OAK_PLANK_TEX_COORD_V_MAX;
                             break;
                         default:
                             // if you see all magma, something went wrong
@@ -1441,18 +1333,6 @@ void* GenMeshChunkReworkVoid(void* arg) {
                             v_min = STONE_TEX_COORD_V_MIN;
                             v_max = STONE_TEX_COORD_V_MAX;
                             break;
-                        case BLOCK_OAK_WOOD:
-                            u_min = OAK_WOOD_TEX_COORD_U_MIN;
-                            u_max = OAK_WOOD_TEX_COORD_U_MAX;
-                            v_min = OAK_WOOD_TEX_COORD_V_MIN;
-                            v_max = OAK_WOOD_TEX_COORD_V_MAX;
-                            break;
-                        case BLOCK_OAK_PLANK:
-                            u_min = OAK_PLANK_TEX_COORD_U_MIN;
-                            u_max = OAK_PLANK_TEX_COORD_U_MAX;
-                            v_min = OAK_PLANK_TEX_COORD_V_MIN;
-                            v_max = OAK_PLANK_TEX_COORD_V_MAX;
-                            break;
                         default:
                             // if you see all magma, something went wrong
                             u_min = MAGMA_TEX_COORD_U_MIN;
@@ -1577,18 +1457,6 @@ void* GenMeshChunkReworkVoid(void* arg) {
                             v_min = STONE_TEX_COORD_V_MIN;
                             v_max = STONE_TEX_COORD_V_MAX;
                             break;
-                        case BLOCK_OAK_WOOD:
-                            u_min = OAK_WOOD_TEX_COORD_U_MIN;
-                            u_max = OAK_WOOD_TEX_COORD_U_MAX;
-                            v_min = OAK_WOOD_TEX_COORD_V_MIN;
-                            v_max = OAK_WOOD_TEX_COORD_V_MAX;
-                            break;
-                        case BLOCK_OAK_PLANK:
-                            u_min = OAK_PLANK_TEX_COORD_U_MIN;
-                            u_max = OAK_PLANK_TEX_COORD_U_MAX;
-                            v_min = OAK_PLANK_TEX_COORD_V_MIN;
-                            v_max = OAK_PLANK_TEX_COORD_V_MAX;
-                            break;
                         default:
                             // if you see all magma, something went wrong
                             u_min = MAGMA_TEX_COORD_U_MIN;
@@ -1712,18 +1580,6 @@ void* GenMeshChunkReworkVoid(void* arg) {
                             u_max = STONE_TEX_COORD_U_MAX;
                             v_min = STONE_TEX_COORD_V_MIN;
                             v_max = STONE_TEX_COORD_V_MAX;
-                            break;
-                        case BLOCK_OAK_WOOD:
-                            u_min = OAK_WOOD_TEX_COORD_U_MIN;
-                            u_max = OAK_WOOD_TEX_COORD_U_MAX;
-                            v_min = OAK_WOOD_TEX_COORD_V_MIN;
-                            v_max = OAK_WOOD_TEX_COORD_V_MAX;
-                            break;
-                        case BLOCK_OAK_PLANK:
-                            u_min = OAK_PLANK_TEX_COORD_U_MIN;
-                            u_max = OAK_PLANK_TEX_COORD_U_MAX;
-                            v_min = OAK_PLANK_TEX_COORD_V_MIN;
-                            v_max = OAK_PLANK_TEX_COORD_V_MAX;
                             break;
                         default:
                             // if you see all magma, something went wrong
