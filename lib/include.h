@@ -9,7 +9,6 @@
 #include <pthread.h>
 #include <stdio.h>
 #include <time.h>
-#include <stdatomic.h>
 
 #ifndef INCLUDE_H
 #define INCLUDE_H
@@ -149,9 +148,9 @@ typedef struct Chunk {
 
 typedef struct ChunkMesh {
     bool new;
-    atomic_bool dirty;
-    atomic_bool uploaded;
-    atomic_bool generating;
+    bool dirty;
+    bool uploaded;
+    bool generating;
     bool is_all_air;
     int id;
     Mesh* mesh;
