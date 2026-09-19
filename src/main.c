@@ -26,6 +26,10 @@ int main(void) {
 
     ThreadStruct* thread_struct = (ThreadStruct*)MemAlloc(sizeof(ThreadStruct));
 
+    JobList* job_list = (JobList*)MemAlloc(sizeof(JobList));
+    init_list(job_list);
+
+
     int screenWidth = 1920;
     int screenHeight = 1080;
     // int screenWidth = 3840;
@@ -286,16 +290,21 @@ int main(void) {
                     chunkmeshes[i]->dirty = true;
                 }
             }
-
         }
 
         // bro, you are CREATING A NEW THREAD EVERY FRAME... change this
         for (int i = 0; i < number_of_chunkmeshes; i++) {
             if(chunkmeshes[i]->dirty && !chunkmeshes[i]->generating) {
-                // ThreadStruct* thread_struct = (ThreadStruct*)MemAlloc(sizeof(ThreadStruct));
+                ThreadStruct* thread_struct = (ThreadStruct*)MemAlloc(sizeof(ThreadStruct));
                 thread_struct->chunkmesh = chunkmeshes[i];
                 thread_struct->hashtable = hash_table;
-                pthread_create(&thread_1, NULL, GenMeshChunkReworkVoid, thread_struct); //BAD
+
+                push_job(job_list, thread_struct);
+
+                chunkmeshes[i]->dirty = false;
+
+
+                //pthread_create(&thread_1, NULL, GenMeshChunkReworkVoid, thread_struct); //BAD
                 break;
             }
             // if we get here then theoretically all chunkmeshes have been created
@@ -530,6 +539,7 @@ int main(void) {
     free(boxes);
     UnloadTexture(texture);
     DestroyTable(hash_table);
+    cleanup_jobs(job_list);
 
     CloseWindow();
 

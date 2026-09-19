@@ -192,6 +192,20 @@ typedef struct ThreadStruct {
     HashTable* hashtable;
 }ThreadStruct;
 
+typedef struct Job {
+    ThreadStruct* thread_struct;
+}Job;
+
+typedef struct Node {
+    ThreadStruct* thread_struct; //do i want to use a job here instead?
+    struct Node* next;
+}Node;
+
+typedef struct JobList {
+    Node* head;
+    Node* tail;
+}JobList;
+
 // typedef struct MegaChunk {
 //     ChunkMesh* chunkmeshes[3*3*3];
 //     Vector3 center_pos;
@@ -246,5 +260,11 @@ void PlayerMoveRight(Player* player, float distance);
 void UpdatePlayer(Player* player, Camera* camera, BoundingBox* boxes, int nearby_boxes_count, HashTable* hash_table);
 void PlayerYaw(Player* player, float angle);
 void PlayerPitch(Player* player, float angle);
+
+//workers.c
+void init_list(JobList* job_list);
+void push_job(JobList* job_list, ThreadStruct* thread_struct);
+ThreadStruct* pop_job(JobList* job_list);
+void cleanup_jobs(JobList* job_list);
 
 #endif

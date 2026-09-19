@@ -938,7 +938,7 @@ void* GenMeshChunkReworkVoid(void* arg) {
     if(chunk_mesh->uploaded && chunk_mesh->mesh->vertices[0] != 0) {
         if(chunk_mesh->mesh != NULL) {
             chunk_mesh->uploaded = false;
-            UnloadMesh(*chunk_mesh->mesh);
+            UnloadMesh(*chunk_mesh->mesh);      //BAD! do not use raylib functions on seperate threads!
             chunk_mesh->mesh = NULL;
         }
 
